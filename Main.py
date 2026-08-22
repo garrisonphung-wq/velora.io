@@ -835,7 +835,7 @@ PETAL_RELOAD = {
     "Pincer": 10,
 
     "Shell": 10,
-    
+
     "Beetle Egg": 60,
 
     "Third Eye": 10,
@@ -1064,8 +1064,8 @@ class Ladybug:
         self.y = random.randint(-500, 500)
         self.knockback_x = 0
         self.knockback_y = 0
-        self.rarity = "Common" 
-        self.angry = False  
+        self.rarity = "Common"
+        self.angry = False
 
         # bigger
         # HP
@@ -1504,7 +1504,7 @@ class Ladybug:
 
         # ---------------- RARITY TEXT ----------------
 
-        font = pygame.font.SysFont( 
+        font = pygame.font.SysFont(
             None,
             18
         )
@@ -1960,7 +1960,7 @@ class Bee:
                     int(self.radius)
                 )
             )
-            
+
         # ---------------- RARITY TEXT ----------------
 
         font = pygame.font.SysFont(
@@ -4716,18 +4716,18 @@ def get_petal_count(petal_name, rarity):
             "Super"
         ]:
             return 1
-        elif rarity in ["Omega", 
-                        "Unique", 
-                        "Eternal", 
-                        "Cosmo", 
-                        "Jeddiful", 
-                        "Tacnac", 
+        elif rarity in ["Omega",
+                        "Unique",
+                        "Eternal",
+                        "Cosmo",
+                        "Jeddiful",
+                        "Tacnac",
                         "Radium"
                     ]:
             return 3
         else:
             return 5
-                        
+
 
     # ---------------- RICE ----------------
 
@@ -4787,7 +4787,7 @@ def get_petal_count(petal_name, rarity):
             return 2
         else:
             return 4
-            
+
     elif petal_name == "Wing":
         if rarity in [
             "Common",
@@ -4809,7 +4809,7 @@ def get_petal_count(petal_name, rarity):
             return 2
         else:
             return 3
-        
+
     elif petal_name == "Leaf":
 
         if rarity in [
@@ -4838,7 +4838,7 @@ def get_petal_count(petal_name, rarity):
 
         else:
             return 5
-        
+
     elif petal_name == "Glass":
 
         if rarity in [
@@ -4920,7 +4920,7 @@ def get_petal_count(petal_name, rarity):
             return 3
         else:
             return 5
-        
+
     elif petal_name == "Poison":
         if rarity in [
             "Common",
@@ -4945,7 +4945,7 @@ def get_petal_count(petal_name, rarity):
             return 3
         else:
             return 5
-        
+
     elif petal_name == "Pincer":
         if rarity in [
             "Common",
@@ -4962,7 +4962,7 @@ def get_petal_count(petal_name, rarity):
             return 1
         else:
             return 2
-        
+
     elif petal_name == "Beetle Egg":
         if rarity in [
             "Common",
@@ -5029,7 +5029,7 @@ def get_petal_count(petal_name, rarity):
             return 5
         else:
             return 6
-        
+
     elif petal_name == "Pea":
         if rarity in [
             "Common",
@@ -5054,7 +5054,7 @@ def get_petal_count(petal_name, rarity):
             return 5
         else:
             return 6
-        
+
     elif petal_name == "Web":
         if rarity in [
             "Common",
@@ -5187,7 +5187,7 @@ def get_petal_count(petal_name, rarity):
             return 1
         else:
             return 2
-        
+
     elif petal_name == "Pollen":
         Random_Pick_Pollen = [4,5]
         if rarity in [
@@ -5406,7 +5406,7 @@ def random_ultra_position():
 
         if not blocked:
             return x, y
-        
+
 def random_super_baby_ant_position():
 
     while True:
@@ -5423,7 +5423,7 @@ def random_super_baby_ant_position():
         y = random.randint(top + 50, bottom - 50)
 
         return x, y
-    
+
 def random_omnient_position():
     omnient_spaces = [
         (2200, 100, 4900, 1400)
@@ -5538,7 +5538,19 @@ def format_number(number):
         number /= 1000
         index += 1
 
-    return str(round(number, 1)) + suffixes[index]
+    # No suffix
+    if index == 0:
+        return str(int(number))
+
+    # If the ORIGINAL value for this suffix was exact,
+    # show no .0
+    if number.is_integer():
+        return str(int(number)) + suffixes[index]
+
+    # Truncate instead of rounding
+    truncated = int(number * 10) / 10
+
+    return f"{truncated:.1f}{suffixes[index]}"
 
 def damage_petal(amount):
 
@@ -5977,7 +5989,7 @@ def draw_petal(name, x, y, rarity):
     elif name == "Stinger":
 
         count = get_petal_count(
-            name, 
+            name,
             rarity
         )
 
@@ -6534,7 +6546,7 @@ def draw_petal(name, x, y, rarity):
                 (int(draw_x), int(draw_y)),
                 int(PETAL_RADIUS * 0.32 * scale)
             )
-    
+
     elif name == "Leaf":
 
         count = get_petal_count(name, rarity)
@@ -8050,7 +8062,7 @@ def draw_petal(name, x, y, rarity):
             ),
             int(pollen_radius)
         )
-        
+
     elif name == "Soil":
 
         radius = PETAL_RADIUS * 0.9
@@ -8905,7 +8917,7 @@ def draw_moving_gradient_rect(surface, rect, colors):
                 (x,y),
                 (r,g,b,255)
             )
-            
+
 
 
     # rotate the whole gradient
@@ -9414,7 +9426,7 @@ def calculate_xp_needed(level):
     for i in range(level - 1):
         xp = round(xp * 1.5)
 
-    return xp    
+    return xp
 
 def give_xp(amount):
 
@@ -9533,7 +9545,7 @@ def enemy_can_see_player(enemy):
                 return False
 
 
-    return True       
+    return True
 
 def draw_minimap():
 
@@ -9713,20 +9725,20 @@ def get_enemy_rarity(zone):
 
         else:
             return "Legendary"
-        
+
     if zone == "super":
 
         roll = random.random()
 
         if roll < 0.90:
             return "Super"
-        
+
         elif roll < 0.10:
             return "Omega"
 
         else:
             return "Ultra"
-        
+
     if zone == "omnient":
 
         roll = random.random()
@@ -10209,7 +10221,7 @@ while running:
 
                     upgrade_player_hp()
 
-            
+
             if game_state == "login":
 
                 if password_box.collidepoint(event.pos):
@@ -10428,7 +10440,7 @@ while running:
 
                 if inventory_scroll < 0:
                     inventory_scroll = 0
-        
+
     if game_state == "login":
 
         if login_error_timer > 0:
@@ -11220,7 +11232,7 @@ while running:
                 )
 
             # ---------------- HP UPGRADE BUTTON --------------
-        
+
             # Draw equipped basic petal
 
             if i < PETAL_SLOTS:
@@ -11870,7 +11882,7 @@ while running:
                 inventory_panel_rect,
                 4,
                 border_radius=15
-            )    
+            )
 
 
             # inventory grid settings
