@@ -12568,7 +12568,10 @@ while running:
             ]
             for biome_name, btn in biome_rects:
                 if btn.collidepoint(mx, my):
-                    welcome_selected_biome = biome_name
+                    if welcome_selected_biome == biome_name:
+                        welcome_selected_biome = None
+                    else:
+                        welcome_selected_biome = biome_name
 
         # draw a white glow overlay on the currently selected biome button
         if welcome_selected_biome is not None:
