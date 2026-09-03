@@ -998,7 +998,7 @@ welcome_transition_progress = 0.0
 WELCOME_IRIS_START_RADIUS = 1200
 WELCOME_IRIS_END_RADIUS = 0
 # how many frames each phase takes
-WELCOME_TRANSITION_LENGTH = 60
+WELCOME_TRANSITION_LENGTH = 24
 
 # Flying petals that sweep across the welcome grid. Each one starts offscreen
 # on the left edge with a random y and size, and flies right (clipped to the
@@ -12604,9 +12604,11 @@ while running:
                         welcome_selected_biome = biome_name
 
             # start the iris wipe when the (green) play button is clicked:
-            # only works once a biome has been selected
+            # only works once a biome has been selected, and never restarts
+            # a wipe that is already running
             if (
-                welcome_selected_biome is not None
+                not welcome_transition_active
+                and welcome_selected_biome is not None
                 and play_btn.collidepoint(mx, my)
             ):
                 welcome_transition_active = True
