@@ -983,6 +983,23 @@ welcome_selected_biome = None
 
 welcome_click_pending = False
 
+# Iris wipe transition used when the player clicks Play on the welcome screen.
+# Phase "close": a full-screen black rectangle with a big circular hole in the
+# center shrinks the hole down until the screen is fully black. Phase "open":
+# after the game is shown, the hole expands back out until it is bigger than
+# the screen (so no black edges are visible). progress runs 0 -> 1 in each
+# phase.
+
+welcome_transition_active = False
+welcome_transition_phase = "close"   # "close" then "open"
+welcome_transition_progress = 0.0
+
+# radius of the circular hole in the black rect, in pixels
+WELCOME_IRIS_START_RADIUS = 1200
+WELCOME_IRIS_END_RADIUS = 0
+# how many frames each phase takes
+WELCOME_TRANSITION_LENGTH = 60
+
 # Flying petals that sweep across the welcome grid. Each one starts offscreen
 # on the left edge with a random y and size, and flies right (clipped to the
 # screen).
@@ -1030,6 +1047,19 @@ def init_welcome_petals():
             "name": random.choice(WELCOME_PETAL_NAMES),
             "surf": None,
         })
+
+def draw_iris_wipe(radius):
+
+    # full-screen black rectangle with a circular transparent hole of the
+    # given radius centered on the screen. If the hole radius is 0 the whole
+    # screen is black; if it is big enough to reach off-screen no black is
+    # visible.
+
+    wipe = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    wipe.fill((0, 0, 0, 255))
+    if radius > 0:
+        pygame.draw.circle(wipe, (0, 0, 0, 0), (WIDTH // 2, HEIGHT // 2), radius)
+    screen.blit(wipe, (0, 0))
 
 def make_petal_surface(name, x, y, rarity, size_scale=1.0):
 
@@ -12573,6 +12603,16 @@ while running:
                     else:
                         welcome_selected_biome = biome_name
 
+            # start the iris wipe when the (green) play button is clicked:
+            # only works once a biome has been selected
+            if (
+                welcome_selected_biome is not None
+                and play_btn.collidepoint(mx, my)
+            ):
+                welcome_transition_active = True
+                welcome_transition_phase = "close"
+                welcome_transition_progress = 0.0
+
         # draw a white glow overlay on the currently selected biome button
         if welcome_selected_biome is not None:
             biome_rects = [
@@ -12654,8 +12694,6 @@ while running:
                 HEIGHT // 2 + welcome_panel_h // 2 - 41
             )
         )
-
-        pygame.display.flip()
 
     elif game_state == "game":
 
@@ -17128,6 +17166,39 @@ while running:
                 )
             )
         # ---------------- UPDATE SCREEN ----------------
+
+    # ---------------- IRIS WIPE TRANSITION ----------------
+    if welcome_transition_active:
+
+        if welcome_transition_phase == "close":
+
+            p = welcome_transition_progress / WELCOME_TRANSITION_LENGTH
+            radius = WELCOME_IRIS_START_RADIUS * (1.0 - p)
+            draw_iris_wipe(int(radius))
+
+            welcome_transition_progress += 1.0
+
+            if welcome_transition_progress >= WELCOME_TRANSITION_LENGTH:
+
+                # hole fully closed; reveal the game under a fresh black
+                # screen and start expanding the hole back out again
+                game_state = "game"
+                welcome_transition_phase = "open"
+                welcome_transition_progress = 0.0
+
+        else:  # "open"
+
+            p = welcome_transition_progress / WELCOME_TRANSITION_LENGTH
+            radius = WELCOME_IRIS_END_RADIUS + (
+                WELCOME_IRIS_START_RADIUS - WELCOME_IRIS_END_RADIUS
+            ) * p
+            draw_iris_wipe(int(radius))
+
+            welcome_transition_progress += 1.0
+
+            if welcome_transition_progress >= WELCOME_TRANSITION_LENGTH:
+
+                welcome_transition_active = False
 
     pygame.display.flip()
 
