@@ -13760,7 +13760,7 @@ while running:
                         0,
                         0,
                         petal_slots[i]["rarity"],
-                        size_scale=2.2
+                        size_scale=1.4
                     )
                     sprite_rect = slot_sprite.get_bounding_rect()
                     if sprite_rect.w > 0 and sprite_rect.h > 0:
