@@ -13753,7 +13753,7 @@ while running:
 
             if i < PETAL_SLOTS:
 
-                if petal_slots[i]["filled"] and petal_alive[i]:
+                if petal_slots[i]["filled"]:
 
                     slot_sprite = make_petal_surface(
                         petal_slots[i]["petal"],
