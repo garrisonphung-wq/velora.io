@@ -12598,8 +12598,8 @@ while running:
                     )
                     screen.blit(glow_surf, glow_rect.topleft)
 
-        # green "play" button below the panel, with its own outline and a
-        # dark green label
+        # play button below the panel: red when no biome selected, green
+        # once a biome is selected, with a matching label color
         play_btn_w = 200
         play_btn_h = 60
         play_btn = pygame.Rect(
@@ -12608,15 +12608,23 @@ while running:
             play_btn_w,
             play_btn_h
         )
+        if welcome_selected_biome is None:
+            play_btn_fill = (210, 70, 70)
+            play_btn_outline = (140, 35, 35)
+            play_btn_text_color = (255, 255, 255)
+        else:
+            play_btn_fill = (80, 200, 90)
+            play_btn_outline = (40, 130, 55)
+            play_btn_text_color = (20, 80, 40)
         pygame.draw.rect(
             screen,
-            (80, 200, 90),
+            play_btn_fill,
             play_btn,
             border_radius=10
         )
         pygame.draw.rect(
             screen,
-            (40, 130, 55),
+            play_btn_outline,
             play_btn,
             3,
             border_radius=10
@@ -12624,7 +12632,7 @@ while running:
 
         play_btn_font = pygame.font.SysFont("arialnarrow", 30)
         play_btn_play_text = play_btn_font.render(
-            "Play", True, (20, 80, 40)
+            "Play", True, play_btn_text_color
         )
         screen.blit(
             play_btn_play_text,
