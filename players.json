@@ -1,6 +1,34 @@
 {
     "Jed": {
         "inventory": [],
+        "craft_slots": [],
+        "equipped_reserved": [
+            {
+                "petal": "Heavy",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Infino",
+                "amount": 1
+            }
+        ],
         "petals": [
             {
                 "filled": true,
@@ -32,7 +60,8 @@
         "flower_xp": 2832188,
         "upgrade_points": 1,
         "hp_level": 5,
-        "hp_upgrade_cost": 2
+        "hp_upgrade_cost": 2,
+        "mob_gallery_unlocks": {}
     },
     "DevGuard": {
         "inventory": [
@@ -3769,12 +3798,12 @@
         "hp_level": 0,
         "hp_upgrade_cost": 100000000000000,
         "mob_gallery_unlocks": {
-            "Rock|Common": 113,
-            "Soldier Ant|Common": 154,
-            "Baby Ant|Common": 116,
+            "Rock|Common": 115,
+            "Soldier Ant|Common": 155,
+            "Baby Ant|Common": 118,
             "Ladybug|Common": 117,
-            "Spider|Common": 153,
-            "Bee|Common": 99,
+            "Spider|Common": 154,
+            "Bee|Common": 102,
             "Hornet|Common": 115,
             "Ladybug|Ultra": 20,
             "Baby Ant|Unique": 8,
@@ -4081,13 +4110,15 @@
             }
         ],
         "flower_level": 17,
-        "flower_xp": 55760,
+        "flower_xp": 55790,
         "upgrade_points": 30,
         "hp_level": 3,
         "hp_upgrade_cost": 4,
         "mob_gallery_unlocks": {
             "Hornet|Common": 1,
-            "Soldier Ant|Common": 3
+            "Soldier Ant|Common": 4,
+            "Bee|Common": 1,
+            "Rock|Common": 1
         }
     },
     "K": {
@@ -4227,36 +4258,38 @@
         "equipped_reserved": [],
         "petals": [
             {
-                "filled": false,
+                "filled": true,
                 "petal": "Basic",
                 "rarity": "Common"
             },
             {
-                "filled": false,
+                "filled": true,
                 "petal": "Basic",
                 "rarity": "Common"
             },
             {
-                "filled": false,
+                "filled": true,
                 "petal": "Basic",
                 "rarity": "Common"
             },
             {
-                "filled": false,
+                "filled": true,
                 "petal": "Basic",
                 "rarity": "Common"
             },
             {
-                "filled": false,
+                "filled": true,
                 "petal": "Basic",
                 "rarity": "Common"
             }
         ],
         "flower_level": 1,
-        "flower_xp": 0,
+        "flower_xp": 10,
         "upgrade_points": 0,
         "hp_level": 0,
         "hp_upgrade_cost": 1,
-        "mob_gallery_unlocks": {}
+        "mob_gallery_unlocks": {
+            "Ladybug|Common": 1
+        }
     }
 }
