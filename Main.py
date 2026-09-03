@@ -6057,6 +6057,13 @@ def damage_petal(amount):
 
                 save_player()
 
+def apply_enemy_rarity_stats(enemy):
+
+    enemy.max_hp *= MOB_HP_MULTIPLIER[enemy.rarity]
+    enemy.damage *= MOB_DAMAGE_MULTIPLIER[enemy.rarity]
+    enemy.radius *= MOB_SIZE_MULTIPLIER[enemy.rarity]
+    enemy.hp = enemy.max_hp
+
 def spawn_random_mob():
 
     enemy_classes = [
@@ -6076,10 +6083,7 @@ def spawn_random_mob():
     enemy.rarity = random.choice(ENEMY_RARITIES)
 
     # Update HP after changing rarity
-    enemy.max_hp *= MOB_HP_MULTIPLIER[enemy.rarity]
-    enemy.damage *= MOB_DAMAGE_MULTIPLIER[enemy.rarity]
-    enemy.radius *= MOB_SIZE_MULTIPLIER[enemy.rarity]
-    enemy.hp = enemy.max_hp
+    apply_enemy_rarity_stats(enemy)
 
     enemy.x = player_x + random.randint(-300, 300)
     enemy.y = player_y + random.randint(-300, 300)
@@ -10920,6 +10924,8 @@ for i in range(random.randint(1, 30)):
         zone
     )
 
+    apply_enemy_rarity_stats(ladybug)
+
     ladybugs.append(ladybug)
 
 for i in range(20):
@@ -10929,6 +10935,8 @@ for i in range(20):
     ladybug.x, ladybug.y = random_omnient_position()
 
     ladybug.rarity = get_enemy_rarity("omnient")
+
+    apply_enemy_rarity_stats(ladybug)
 
     ladybugs.append(ladybug)
 # ---------------- BEE ----------------
@@ -10951,6 +10959,8 @@ for i in range(random.randint(1, 30)):
         zone
     )
 
+    apply_enemy_rarity_stats(bee)
+
     bees.append(bee)
 
 for i in range(20):
@@ -10960,6 +10970,8 @@ for i in range(20):
     bee.x, bee.y = random_omnient_position()
 
     bee.rarity = get_enemy_rarity("omnient")
+
+    apply_enemy_rarity_stats(bee)
 
     bees.append(bee)
 
@@ -10983,6 +10995,8 @@ for i in range(random.randint(1, 30)):
         zone
     )
 
+    apply_enemy_rarity_stats(spider)
+
     spiders.append(spider)
 
 for i in range(20):
@@ -10992,6 +11006,8 @@ for i in range(20):
     spider.x, spider.y = random_omnient_position()
 
     spider.rarity = get_enemy_rarity("omnient")
+
+    apply_enemy_rarity_stats(spider)
 
     spiders.append(spider)
 
@@ -11015,6 +11031,8 @@ for i in range(random.randint(1, 30)):
         zone
     )
 
+    apply_enemy_rarity_stats(rock)
+
     rocks.append(rock)
 
 for i in range(20):
@@ -11024,6 +11042,8 @@ for i in range(20):
     rock.x, rock.y = random_omnient_position()
 
     rock.rarity = get_enemy_rarity("omnient")
+
+    apply_enemy_rarity_stats(rock)
 
     rocks.append(rock)
 
@@ -11047,6 +11067,8 @@ for i in range(random.randint(1, 30)):
         zone
     )
 
+    apply_enemy_rarity_stats(hornet)
+
     hornets.append(hornet)
 
 for i in range(20):
@@ -11056,6 +11078,8 @@ for i in range(20):
     hornet.x, hornet.y = random_omnient_position()
 
     hornet.rarity = get_enemy_rarity("omnient")
+
+    apply_enemy_rarity_stats(hornet)
 
     hornets.append(hornet)
 
@@ -11081,6 +11105,8 @@ for i in range(random.randint(1, 30)):
         zone
     )
 
+    apply_enemy_rarity_stats(ant)
+
     baby_ants.append(ant)
 
 for i in range(20):
@@ -11090,6 +11116,8 @@ for i in range(20):
     ant.x, ant.y = random_omnient_position()
 
     ant.rarity = get_enemy_rarity("omnient")
+
+    apply_enemy_rarity_stats(ant)
 
     baby_ants.append(ant)
 
@@ -11102,6 +11130,8 @@ for i in range(random.randint(1, 50)):
     ant.x, ant.y = random_super_baby_ant_position()
 
     ant.rarity = get_enemy_rarity("super")
+
+    apply_enemy_rarity_stats(ant)
 
     baby_ants.append(ant)
 
@@ -11125,6 +11155,8 @@ for i in range(random.randint(1, 30)):
         zone
     )
 
+    apply_enemy_rarity_stats(soldier_ant)
+
     soldier_ants.append(soldier_ant)
 
 for i in range(20):
@@ -11134,6 +11166,8 @@ for i in range(20):
     soldier_ant.x, soldier_ant.y = random_omnient_position()
 
     soldier_ant.rarity = get_enemy_rarity("omnient")
+
+    apply_enemy_rarity_stats(soldier_ant)
 
     soldier_ants.append(soldier_ant)
 
