@@ -13755,11 +13755,24 @@ while running:
 
                 if petal_slots[i]["filled"] and petal_alive[i]:
 
-                    draw_petal(
+                    slot_sprite = make_petal_surface(
                         petal_slots[i]["petal"],
-                        x + PETAL_SLOT_SIZE//2,
-                        y + PETAL_SLOT_SIZE//2,
-                        petal_slots[i]["rarity"]
+                        0,
+                        0,
+                        petal_slots[i]["rarity"],
+                        size_scale=2.2
+                    )
+                    sprite_rect = slot_sprite.get_bounding_rect()
+                    if sprite_rect.w > 0 and sprite_rect.h > 0:
+                        slot_sprite = slot_sprite.subsurface(sprite_rect)
+                    cx = x + PETAL_SLOT_SIZE // 2
+                    cy = y + PETAL_SLOT_SIZE // 2
+                    screen.blit(
+                        slot_sprite,
+                        (
+                            cx - slot_sprite.get_width() // 2,
+                            cy - slot_sprite.get_height() // 2
+                        )
                     )
 
             # Respawn timer number above slot
