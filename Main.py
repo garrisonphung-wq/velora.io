@@ -11358,7 +11358,7 @@ while running:
                     upgrade_player_hp()
 
 
-            if game_state == "welcome":
+            if game_state == "welcome" and not welcome_transition_active:
 
                 welcome_click_pending = True
 
