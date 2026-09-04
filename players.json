@@ -4255,7 +4255,33 @@
     "l": {
         "inventory": [],
         "craft_slots": [],
-        "equipped_reserved": [],
+        "equipped_reserved": [
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            }
+        ],
         "petals": [
             {
                 "filled": true,
@@ -4283,13 +4309,19 @@
                 "rarity": "Common"
             }
         ],
-        "flower_level": 1,
-        "flower_xp": 10,
-        "upgrade_points": 0,
-        "hp_level": 0,
-        "hp_upgrade_cost": 1,
+        "flower_level": 3,
+        "flower_xp": 130,
+        "upgrade_points": 1,
+        "hp_level": 1,
+        "hp_upgrade_cost": 2,
         "mob_gallery_unlocks": {
-            "Ladybug|Common": 1
+            "Ladybug|Common": 5,
+            "Soldier Ant|Common": 14,
+            "Spider|Common": 10,
+            "Hornet|Common": 3,
+            "Rock|Common": 2,
+            "Baby Ant|Common": 4,
+            "Bee|Common": 1
         }
     }
 }
