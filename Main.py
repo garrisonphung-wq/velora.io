@@ -1901,7 +1901,6 @@ class Bee:
         self.flash_timer = 0
         self.attack_cooldown = 2
         self.petal_attack_cooldown = 2   # <-- add this
-        self.flee = False
 
         # Bees wander like slow slugs, but keep their original chase speed.
         self.wander_speed = 0.28
@@ -1925,7 +1924,6 @@ class Bee:
 
         self.wave_offset = random.random() * 100
         self.time = random.random() * 100
-        self.player_is_animal = False
 
         self.view_range = 250
 
@@ -2007,20 +2005,6 @@ class Bee:
             # bee becomes angry when hit
             self.angry = True
 
-    def decide_player(self):
-
-        player_is_animal = False
-
-
-        if player_is_animal:
-
-            self.flee = True
-
-        else:
-
-            self.flee = False
-
-
     def update(self):
 
         if not self.alive:
@@ -2034,60 +2018,13 @@ class Bee:
 
         # ---------------- CHECK PLAYER ----------------
 
-        # ---------------- CHECK PLAYER ----------------
-
         distance_to_player = math.sqrt(
             (player_x - self.x) ** 2 +
             (player_y - self.y) ** 2
         )
 
 
-        if distance_to_player <= self.view_range:
-
-            self.decide_player()
-
-
-        self.flee = False
-
-
-        if distance_to_player <= self.view_range:
-
-
-            # ---------------- CHECK WHAT PLAYER IS ----------------
-
-            player_is_animal = True
-
-
-            if player_is_animal:
-
-                self.flee = True
-
-
-
-        # ---------------- FLEE ----------------
-
-        if self.flee:
-
-
-            flee_angle = math.degrees(
-                math.atan2(
-                    self.y - player_y,
-                    self.x - player_x
-                )
-            )
-
-
-            self.turn_to(
-                flee_angle,
-                7
-            )
-
-
-
-        # ---------------- ANGRY ----------------
-
-        elif self.angry:
-
+        if distance_to_player <= self.view_range and self.angry:
 
             target_angle = math.degrees(
                 math.atan2(
@@ -2096,18 +2033,14 @@ class Bee:
                 )
             )
 
-
             self.turn_to(
                 target_angle,
                 7
             )
 
-
-
         # ---------------- NORMAL WANDER ----------------
 
         else:
-
 
             difference_to_target = (
                 self.base_angle - self.angle + 180
