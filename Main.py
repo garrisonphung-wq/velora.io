@@ -4,7 +4,6 @@ import math
 import random
 import json
 import os
-import Main
 
 player_accounts = {}
 
@@ -10631,11 +10630,6 @@ def create_account():
     welcome_timer = 90
     init_welcome_petals()
     save_player()
-    import traceback
-    with open("/tmp/velora_welcome_trace.log", "a") as _tf:
-        _tf.write("=== CREATE_ACCOUNT->WELCOME ===\n")
-        traceback.print_stack(file=_tf)
-        _tf.write("\n")
 
 def get_enemy_rarity(zone):
 
@@ -11459,11 +11453,6 @@ while running:
                     game_state = "welcome"
                     welcome_timer = 90
                     init_welcome_petals()
-                    import traceback
-                    with open("/tmp/velora_welcome_trace.log", "a") as _tf:
-                        _tf.write("=== LOGIN->WELCOME ===\n")
-                        traceback.print_stack(file=_tf)
-                        _tf.write("\n")
 
 
             if create_acc_button_rect.collidepoint(event.pos):
