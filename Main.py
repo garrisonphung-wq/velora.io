@@ -6280,6 +6280,12 @@ GALLERY_MOB_DESCRIPTIONS = {
     )
 }
 
+# Petal each mob drops at a given rarity, and its drop chance as a
+# percentage.  Rarity cells without an entry show no drop info yet.
+MOB_DROP_INFO = {
+    ("Ladybug", "Common"): ("Light", 37),
+}
+
 gallery_enemy_icon_cache = {}
 
 def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
@@ -15796,6 +15802,7 @@ while running:
                         RARITIES[hover_column]
                     )
                 )
+                drop_info = None
                 if hover_enemy is not None:
                     hover_hp_text = (
                         "mob hp: "
@@ -15904,10 +15911,97 @@ while running:
                                 desc_line_surface,
                                 (6, desc_y)
                             )
+                    drop_info = MOB_DROP_INFO.get(
+                        (
+                            mob_gallery_names[hover_row],
+                            RARITIES[hover_column]
+                        )
+                    )
+                    drop_box_center_x = 0
+                    drop_box_center_y = 0
+                    if drop_info is not None:
+                        drop_petal_name, drop_chance = drop_info
+                        drop_box_size = 36
+                        drop_box_x = 6
+                        drop_box_y = desc_y + 8
+                        pygame.draw.rect(
+                            hover_box_surface,
+                            RARITY_COLORS.get(
+                                RARITIES[hover_column],
+                                (0, 255, 0)
+                            ),
+                            (
+                                drop_box_x,
+                                drop_box_y,
+                                drop_box_size,
+                                drop_box_size
+                            ),
+                            border_radius=4
+                        )
+                        pygame.draw.rect(
+                            hover_box_surface,
+                            (255, 255, 255),
+                            (
+                                drop_box_x,
+                                drop_box_y,
+                                drop_box_size,
+                                drop_box_size
+                            ),
+                            2,
+                            border_radius=4
+                        )
+                        drop_text_y = drop_box_y + drop_box_size + 5
+                        drop_pct_text = f"{drop_chance}%"
+                        drop_pct_white = (
+                            gallery_hover_name_font.render(
+                                drop_pct_text,
+                                True,
+                                (255, 255, 255)
+                            )
+                        )
+                        drop_pct_black = (
+                            gallery_hover_name_font.render(
+                                drop_pct_text,
+                                True,
+                                (0, 0, 0)
+                            )
+                        )
+                        for outline_x in (-1, 0, 1):
+                            for outline_y in (-1, 0, 1):
+                                if outline_x or outline_y:
+                                    hover_box_surface.blit(
+                                        drop_pct_black,
+                                        (
+                                            drop_box_x + outline_x,
+                                            drop_text_y + outline_y
+                                        )
+                                    )
+                        hover_box_surface.blit(
+                            drop_pct_white,
+                            (drop_box_x + 1, drop_text_y + 1)
+                        )
+                        drop_box_center_x = (
+                            hover_box_rect.x
+                            + drop_box_x
+                            + drop_box_size // 2
+                        )
+                        drop_box_center_y = (
+                            hover_box_rect.y
+                            + drop_box_y
+                            + drop_box_size // 2
+                        )
                 screen.blit(
                     hover_box_surface,
                     hover_box_rect
                 )
+                if drop_info is not None:
+                    draw_petal(
+                        drop_petal_name,
+                        drop_box_center_x,
+                        drop_box_center_y,
+                        RARITIES[hover_column],
+                        size_scale=(drop_box_size * 0.92) / (PETAL_RADIUS * 2)
+                    )
 
             gallery_track_top = gallery_grid_rect.y
             gallery_track_height = gallery_grid_rect.height
