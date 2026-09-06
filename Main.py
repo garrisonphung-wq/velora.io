@@ -15419,6 +15419,31 @@ while running:
                 new_button_panel_rect.width - 40,
                 GALLERY_GRID_WINDOW_HEIGHT
             )
+
+            # The transparent inner rect keeps its top edge at the grid top
+            # but extends further down the panel (below the 3-row cut), so
+            # the lower part is reserved for the petal drop chance % text
+            # and rarity petal pictures that come later.
+            gallery_reserve_top = gallery_grid_rect.bottom
+            gallery_reserve_bottom = new_button_panel_rect.bottom - 22
+            if gallery_reserve_bottom > gallery_reserve_top:
+                gallery_reserve_rect = pygame.Rect(
+                    new_button_panel_rect.x + 10,
+                    gallery_reserve_top,
+                    new_button_panel_rect.width - 40,
+                    gallery_reserve_bottom - gallery_reserve_top
+                )
+                gallery_reserve_surface = pygame.Surface(
+                    gallery_reserve_rect.size,
+                    pygame.SRCALPHA
+                )
+                pygame.draw.rect(
+                    gallery_reserve_surface,
+                    (90, 90, 90, 75),
+                    gallery_reserve_surface.get_rect(),
+                    border_radius=6
+                )
+                screen.blit(gallery_reserve_surface, gallery_reserve_rect)
             gallery_visible_rows = max(
                 1,
                 min(
