@@ -114,6 +114,13 @@ minimap_y = HEIGHT - MINIMAP_SIZE - 10
 PLAYER_SPEED = 2.5
 PLAYER_RADIUS = 25
 
+# Enemy loot boxes: a small grey box that always keeps the same size,
+# despawns on its own after a while, and disappears if the flower touches
+# it.  (Colours / petal art inside come later.)
+PICKUP_SIZE = 14
+PICKUP_LIFETIME = 300.0
+PICKUP_LIST = []
+
 PLAYER_ACCEL = 0.14
 PLAYER_FRICTION = 0.90
 PLAYER_DEATH_DURATION = 90
@@ -1674,6 +1681,7 @@ class Ladybug:
 
             self.alive = False
             register_mob_kill(self)
+            spawn_pickup(self.x, self.y, self.rarity)
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -1990,6 +1998,7 @@ class Bee:
 
             self.alive = False
             register_mob_kill(self)
+            spawn_pickup(self.x, self.y, self.rarity)
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -2450,6 +2459,7 @@ class Spider:
 
             self.alive = False
             register_mob_kill(self)
+            spawn_pickup(self.x, self.y, self.rarity)
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -2788,6 +2798,7 @@ class Rock:
 
             self.alive = False
             register_mob_kill(self)
+            spawn_pickup(self.x, self.y, self.rarity)
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -2981,6 +2992,7 @@ class Hornet:
 
             self.alive = False
             register_mob_kill(self)
+            spawn_pickup(self.x, self.y, self.rarity)
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -3485,6 +3497,7 @@ class BabyAnt:
 
             self.alive = False
             register_mob_kill(self)
+            spawn_pickup(self.x, self.y, self.rarity)
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -3892,6 +3905,7 @@ class SoldierAnt:
 
             self.alive = False
             register_mob_kill(self)
+            spawn_pickup(self.x, self.y, self.rarity)
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -6094,6 +6108,17 @@ def register_mob_kill(enemy):
     # and are saved by the normal player-save flow.
     if previous_count == 0:
         save_player()
+
+def spawn_pickup(x, y, rarity):
+
+    PICKUP_LIST.append(
+        {
+            "x": x,
+            "y": y,
+            "rarity": rarity,
+            "timer": PICKUP_LIFETIME
+        }
+    )
 
 def draw_clean_line(surface, color, start_pos, end_pos, width):
 
@@ -13047,6 +13072,26 @@ while running:
             min(player_y, WORLD_HEIGHT - PLAYER_RADIUS)
         )
 
+        # -------- PICKUPS -------- (loot boxes)
+        pickup_dt = dt / 1000.0
+        pickup_radius = PICKUP_SIZE // 2
+        for pickup in PICKUP_LIST[:]:
+
+            pickup["timer"] -= pickup_dt
+
+            if pickup["timer"] <= 0:
+                PICKUP_LIST.remove(pickup)
+                continue
+
+            pickup_dx = pickup["x"] - player_x
+            pickup_dy = pickup["y"] - player_y
+
+            if (
+                pickup_dx * pickup_dx + pickup_dy * pickup_dy
+                < PLAYER_RADIUS * PLAYER_RADIUS
+            ):
+                PICKUP_LIST.remove(pickup)
+
         spin_speed = 2
 
         for i in range(PETAL_SLOTS):
@@ -13628,6 +13673,31 @@ while running:
         for soldier_ant in soldier_ants:
 
             soldier_ant.draw()
+
+        for pickup in PICKUP_LIST:
+
+            px = pickup["x"] - camera_x
+            py = pickup["y"] - camera_y
+            half = PICKUP_SIZE // 2
+            pickup_rect = pygame.Rect(
+                px - half,
+                py - half,
+                PICKUP_SIZE,
+                PICKUP_SIZE
+            )
+            pygame.draw.rect(
+                screen,
+                (140, 140, 140),
+                pickup_rect,
+                border_radius=2
+            )
+            pygame.draw.rect(
+                screen,
+                (90, 90, 90),
+                pickup_rect,
+                2,
+                border_radius=2
+            )
 
         # draw the merged wall layer (one shared outline, connected look)
         vx0 = int(camera_x)
