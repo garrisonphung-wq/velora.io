@@ -1216,7 +1216,7 @@ new_button_panel_target_rect = pygame.Rect(
     280,
     max(400, above_craft_button_rect.y - 30)
 )
-mob_gallery_grid_top = above_craft_button_rect.y - 345
+mob_gallery_grid_top = above_craft_button_rect.y - 168
 new_button_panel_rect = new_button_panel_target_rect.copy()
 new_button_panel_rect.x = -new_button_panel_rect.width
 new_button_panel_slide_velocity = 0.0
