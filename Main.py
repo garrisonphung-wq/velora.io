@@ -1214,7 +1214,7 @@ new_button_panel_target_rect = pygame.Rect(
     10,
     10,
     280,
-    max(400, above_craft_button_rect.y - 30)
+    HEIGHT - 20
 )
 mob_gallery_grid_top = above_craft_button_rect.y - 168
 new_button_panel_rect = new_button_panel_target_rect.copy()
@@ -1232,6 +1232,10 @@ mob_gallery_names = (
 mob_gallery_scroll_target = 0
 mob_gallery_scroll_position = 0.0
 GALLERY_MAX_VISIBLE_ROWS = 3
+GALLERY_CELL_SIZE = 42
+GALLERY_GRID_WINDOW_HEIGHT = (
+    GALLERY_MAX_VISIBLE_ROWS * GALLERY_CELL_SIZE
+)
 mob_gallery_horizontal_scroll_target = 0
 mob_gallery_horizontal_scroll_position = 0.0
 mob_gallery_dragging = False
@@ -12085,10 +12089,7 @@ while running:
                 len(mob_gallery_names) - gallery_visible_rows
             )
             track_top = mob_gallery_grid_top
-            track_height = max(
-                1,
-                new_button_panel_rect.bottom - track_top - 22
-            )
+            track_height = GALLERY_GRID_WINDOW_HEIGHT
             thumb_height = mob_gallery_scrollbar_rect.height
             usable_track = max(1, track_height - thumb_height)
             scroll_position = event.pos[1] - track_top
@@ -15411,17 +15412,12 @@ while running:
                 border_radius=10
             )
 
-            gallery_cell_size = 42
+            gallery_cell_size = GALLERY_CELL_SIZE
             gallery_grid_rect = pygame.Rect(
                 new_button_panel_rect.x + 10,
                 mob_gallery_grid_top,
                 new_button_panel_rect.width - 40,
-                max(
-                    1,
-                    new_button_panel_rect.bottom
-                    - mob_gallery_grid_top
-                    - 22
-                )
+                GALLERY_GRID_WINDOW_HEIGHT
             )
             gallery_visible_rows = max(
                 1,
@@ -15877,7 +15873,11 @@ while running:
             )
 
             gallery_track_left = gallery_grid_rect.x
-            gallery_track_top = new_button_panel_rect.bottom - 18
+            gallery_track_top = (
+                mob_gallery_grid_top
+                + GALLERY_GRID_WINDOW_HEIGHT
+                + 4
+            )
             gallery_track_width = gallery_grid_rect.width
             pygame.draw.rect(
                 screen,
