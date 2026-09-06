@@ -13695,7 +13695,7 @@ while running:
             px = pickup["x"] - camera_x
             py = pickup["y"] - camera_y
             box_size = PICKUP_SIZE + int(
-                (math.sin(pickup_pulse_phase) + 1.0) * 1.0
+                (math.sin(pickup_pulse_phase) + 1.0) * 3.0
             )
             half = box_size // 2
             pickup_rect = pygame.Rect(
