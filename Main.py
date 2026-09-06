@@ -1214,7 +1214,7 @@ new_button_panel_target_rect = pygame.Rect(
     10,
     10,
     280,
-    HEIGHT - 20
+    max(400, above_craft_button_rect.y - 30)
 )
 mob_gallery_grid_top = above_craft_button_rect.y - 168
 new_button_panel_rect = new_button_panel_target_rect.copy()
@@ -15419,31 +15419,6 @@ while running:
                 new_button_panel_rect.width - 40,
                 GALLERY_GRID_WINDOW_HEIGHT
             )
-
-            # The transparent inner rect keeps its top edge at the grid top
-            # but extends further down the panel (below the 3-row cut), so
-            # the lower part is reserved for the petal drop chance % text
-            # and rarity petal pictures that come later.
-            gallery_reserve_top = gallery_grid_rect.bottom
-            gallery_reserve_bottom = new_button_panel_rect.bottom - 22
-            if gallery_reserve_bottom > gallery_reserve_top:
-                gallery_reserve_rect = pygame.Rect(
-                    new_button_panel_rect.x + 10,
-                    gallery_reserve_top,
-                    new_button_panel_rect.width - 40,
-                    gallery_reserve_bottom - gallery_reserve_top
-                )
-                gallery_reserve_surface = pygame.Surface(
-                    gallery_reserve_rect.size,
-                    pygame.SRCALPHA
-                )
-                pygame.draw.rect(
-                    gallery_reserve_surface,
-                    (90, 90, 90, 75),
-                    gallery_reserve_surface.get_rect(),
-                    border_radius=6
-                )
-                screen.blit(gallery_reserve_surface, gallery_reserve_rect)
             gallery_visible_rows = max(
                 1,
                 min(
@@ -15675,20 +15650,13 @@ while running:
                 space_top = new_button_panel_rect.y + 12
                 space_bottom = gallery_grid_rect.y - 12
                 hover_box_rect = pygame.Rect(
-                    0,
-                    0,
+                    new_button_panel_rect.x + 10,
+                    space_top,
                     new_button_panel_rect.width - 40,
                     max(
                         40,
-                        min(
-                            160,
-                            space_bottom - space_top
-                        )
+                        space_bottom - space_top
                     )
-                )
-                hover_box_rect.center = (
-                    new_button_panel_rect.centerx,
-                    (space_top + space_bottom) // 2
                 )
                 hover_box_surface = pygame.Surface(
                     hover_box_rect.size,
