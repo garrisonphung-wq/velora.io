@@ -117,7 +117,7 @@ PLAYER_RADIUS = 25
 # Enemy loot boxes: a small grey box that always keeps the same size,
 # despawns on its own after a while, and disappears if the flower touches
 # it.  (Colours / petal art inside come later.)
-PICKUP_SIZE = 14
+PICKUP_SIZE = 20
 PICKUP_LIFETIME = 300.0
 PICKUP_LIST = []
 
@@ -13074,7 +13074,7 @@ while running:
 
         # -------- PICKUPS -------- (loot boxes)
         pickup_dt = dt / 1000.0
-        pickup_radius = PICKUP_SIZE // 2
+        pickup_half = PICKUP_SIZE // 2
         for pickup in PICKUP_LIST[:]:
 
             pickup["timer"] -= pickup_dt
@@ -13083,8 +13083,22 @@ while running:
                 PICKUP_LIST.remove(pickup)
                 continue
 
-            pickup_dx = pickup["x"] - player_x
-            pickup_dy = pickup["y"] - player_y
+            pickup_box = pygame.Rect(
+                pickup["x"] - pickup_half,
+                pickup["y"] - pickup_half,
+                PICKUP_SIZE,
+                PICKUP_SIZE
+            )
+            closest_x = max(
+                pickup_box.left,
+                min(player_x, pickup_box.right)
+            )
+            closest_y = max(
+                pickup_box.top,
+                min(player_y, pickup_box.bottom)
+            )
+            pickup_dx = player_x - closest_x
+            pickup_dy = player_y - closest_y
 
             if (
                 pickup_dx * pickup_dx + pickup_dy * pickup_dy
