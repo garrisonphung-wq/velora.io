@@ -11372,7 +11372,7 @@ while running:
 
                     active_input = None
 
-            if login_rect.collidepoint(event.pos):
+            if game_state == "login" and login_rect.collidepoint(event.pos):
 
                 # empty check
                 if password_text == "" or acc_name_text == "":
@@ -11455,7 +11455,7 @@ while running:
                     init_welcome_petals()
 
 
-            if create_acc_button_rect.collidepoint(event.pos):
+            if game_state == "login" and create_acc_button_rect.collidepoint(event.pos):
 
                 if password_text == "" or acc_name_text == "":
 
