@@ -117,7 +117,7 @@ PLAYER_RADIUS = 25
 # Enemy loot boxes: a small grey box that always keeps the same size,
 # despawns on its own after a while, and disappears if the flower touches
 # it.  (Colours / petal art inside come later.)
-PICKUP_SIZE = 26
+PICKUP_SIZE = 34
 PICKUP_LIFETIME = 300.0
 PICKUP_LIST = []
 
