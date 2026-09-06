@@ -1231,6 +1231,7 @@ mob_gallery_names = (
 )
 mob_gallery_scroll_target = 0
 mob_gallery_scroll_position = 0.0
+GALLERY_MAX_VISIBLE_ROWS = 3
 mob_gallery_horizontal_scroll_target = 0
 mob_gallery_horizontal_scroll_position = 0.0
 mob_gallery_dragging = False
@@ -11964,7 +11965,10 @@ while running:
             if new_button_panel_open:
                 gallery_visible_rows = max(
                     1,
-                    (new_button_panel_target_rect.height - 97) // 42
+                    min(
+                        GALLERY_MAX_VISIBLE_ROWS,
+                        (new_button_panel_target_rect.height - 97) // 42
+                    )
                 )
                 gallery_visible_columns = max(1, (280 - 40) // 42)
                 gallery_max_scroll = max(
@@ -12071,7 +12075,10 @@ while running:
         if event.type == pygame.MOUSEMOTION and mob_gallery_dragging:
             gallery_visible_rows = max(
                 1,
-                (new_button_panel_target_rect.height - 97) // 42
+                min(
+                    GALLERY_MAX_VISIBLE_ROWS,
+                    (new_button_panel_target_rect.height - 97) // 42
+                )
             )
             gallery_max_scroll = max(
                 0,
@@ -15418,7 +15425,10 @@ while running:
             )
             gallery_visible_rows = max(
                 1,
-                gallery_grid_rect.height // gallery_cell_size
+                min(
+                    GALLERY_MAX_VISIBLE_ROWS,
+                    gallery_grid_rect.height // gallery_cell_size
+                )
             )
             gallery_visible_columns = max(
                 1,
