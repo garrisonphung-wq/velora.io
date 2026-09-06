@@ -120,6 +120,7 @@ PLAYER_RADIUS = 25
 PICKUP_SIZE = 34
 PICKUP_LIFETIME = 300.0
 PICKUP_LIST = []
+pickup_pulse_phase = 0.0
 
 PLAYER_ACCEL = 0.14
 PLAYER_FRICTION = 0.90
@@ -13074,6 +13075,7 @@ while running:
 
         # -------- PICKUPS -------- (loot boxes)
         pickup_dt = dt / 1000.0
+        pickup_pulse_phase += pickup_dt * 3.5
         pickup_half = PICKUP_SIZE // 2
         for pickup in PICKUP_LIST[:]:
 
@@ -13692,12 +13694,15 @@ while running:
 
             px = pickup["x"] - camera_x
             py = pickup["y"] - camera_y
-            half = PICKUP_SIZE // 2
+            box_size = PICKUP_SIZE + int(
+                (math.sin(pickup_pulse_phase) + 1.0) * 1.0
+            )
+            half = box_size // 2
             pickup_rect = pygame.Rect(
                 px - half,
                 py - half,
-                PICKUP_SIZE,
-                PICKUP_SIZE
+                box_size,
+                box_size
             )
             pygame.draw.rect(
                 screen,
