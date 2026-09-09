@@ -114,9 +114,10 @@ minimap_y = HEIGHT - MINIMAP_SIZE - 10
 PLAYER_SPEED = 2.5
 PLAYER_RADIUS = 25
 
-# Enemy loot boxes: a small grey box that always keeps the same size,
-# despawns on its own after a while, and disappears if the flower touches
-# it.  (Colours / petal art inside come later.)
+# Enemy loot boxes: a small box tinted by the drop's rarity with the
+# petal art drawn inside.  Despawns on its own after a while, and is
+# collected when the flower touches it, adding the petal to the
+# inventory.
 PICKUP_SIZE = 34
 PICKUP_LIFETIME = 300.0
 PICKUP_LIST = []
@@ -1682,7 +1683,7 @@ class Ladybug:
 
             self.alive = False
             register_mob_kill(self)
-            spawn_pickup(self.x, self.y, self.rarity)
+            drop_mob_loot(self)
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -1999,7 +2000,7 @@ class Bee:
 
             self.alive = False
             register_mob_kill(self)
-            spawn_pickup(self.x, self.y, self.rarity)
+            drop_mob_loot(self)
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -2460,7 +2461,7 @@ class Spider:
 
             self.alive = False
             register_mob_kill(self)
-            spawn_pickup(self.x, self.y, self.rarity)
+            drop_mob_loot(self)
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -2799,7 +2800,7 @@ class Rock:
 
             self.alive = False
             register_mob_kill(self)
-            spawn_pickup(self.x, self.y, self.rarity)
+            drop_mob_loot(self)
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -2993,7 +2994,7 @@ class Hornet:
 
             self.alive = False
             register_mob_kill(self)
-            spawn_pickup(self.x, self.y, self.rarity)
+            drop_mob_loot(self)
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -3498,7 +3499,7 @@ class BabyAnt:
 
             self.alive = False
             register_mob_kill(self)
-            spawn_pickup(self.x, self.y, self.rarity)
+            drop_mob_loot(self)
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -3906,7 +3907,7 @@ class SoldierAnt:
 
             self.alive = False
             register_mob_kill(self)
-            spawn_pickup(self.x, self.y, self.rarity)
+            drop_mob_loot(self)
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -6110,16 +6111,40 @@ def register_mob_kill(enemy):
     if previous_count == 0:
         save_player()
 
-def spawn_pickup(x, y, rarity):
+def spawn_pickup(x, y, petal, rarity):
 
     PICKUP_LIST.append(
         {
             "x": x,
             "y": y,
+            "petal": petal,
             "rarity": rarity,
             "timer": PICKUP_LIFETIME
         }
     )
+
+def drop_mob_loot(enemy):
+
+    mob_name = type(enemy).__name__
+    if mob_name == "BabyAnt":
+        mob_name = "Baby Ant"
+    elif mob_name == "SoldierAnt":
+        mob_name = "Soldier Ant"
+
+    drop_table = MOB_DROP_INFO.get((mob_name, enemy.rarity))
+    if not drop_table:
+        return
+
+    for petal, petal_rarity, drop_chance in drop_table:
+
+        if random.random() * 100 < drop_chance:
+
+            spawn_pickup(
+                enemy.x + random.uniform(-14, 14),
+                enemy.y + random.uniform(-14, 14),
+                petal,
+                petal_rarity
+            )
 
 def draw_clean_line(surface, color, start_pos, end_pos, width):
 
@@ -6280,10 +6305,17 @@ GALLERY_MOB_DESCRIPTIONS = {
     )
 }
 
-# Petal each mob drops at a given rarity, and its drop chance as a
-# percentage.  Rarity cells without an entry show no drop info yet.
+# Petal drop tables.  Each (mob name, mob rarity) entry lists possible
+# drops as (petal name, petal rarity, chance percentage).  Every entry
+# is rolled independently when the mob dies, so a kill can give several
+# petals or nothing at all.
 MOB_DROP_INFO = {
-    ("Ladybug", "Common"): ("Light", 37),
+    ("Ladybug", "Common"): [
+        ("Light", "Common", 37),
+        ("Light", "Unusual", 10),
+        ("Rose", "Common", 33),
+        ("Rose", "Unusual", 5),
+    ],
 }
 
 gallery_enemy_icon_cache = {}
@@ -13112,6 +13144,12 @@ while running:
                 pickup_dx * pickup_dx + pickup_dy * pickup_dy
                 < PLAYER_RADIUS * PLAYER_RADIUS
             ):
+                if pickup.get("petal"):
+                    add_inventory_petal(
+                        pickup["petal"],
+                        pickup["rarity"],
+                        1
+                    )
                 PICKUP_LIST.remove(pickup)
 
         spin_speed = 2
@@ -13710,9 +13748,13 @@ while running:
                 box_size,
                 box_size
             )
+            pickup_box_color = RARITY_COLORS.get(
+                pickup["rarity"],
+                (140, 140, 140)
+            )
             pygame.draw.rect(
                 screen,
-                (140, 140, 140),
+                pickup_box_color,
                 pickup_rect,
                 border_radius=2
             )
@@ -13723,6 +13765,14 @@ while running:
                 2,
                 border_radius=2
             )
+            if pickup.get("petal"):
+                draw_petal(
+                    pickup["petal"],
+                    px,
+                    py,
+                    pickup["rarity"],
+                    size_scale=(PICKUP_SIZE * 0.6) / (PETAL_RADIUS * 2)
+                )
 
         # draw the merged wall layer (one shared outline, connected look)
         vx0 = int(camera_x)
@@ -15911,14 +15961,13 @@ while running:
                                 desc_line_surface,
                                 (6, desc_y)
                             )
-                    drop_info = MOB_DROP_INFO.get(
+                    drop_table = MOB_DROP_INFO.get(
                         (
                             mob_gallery_names[hover_row],
                             RARITIES[hover_column]
                         )
                     )
-                    if drop_info is not None:
-                        drop_petal_name, drop_chance = drop_info
+                    if drop_table:
                         drop_box_size = 36
                         drop_box_x = 6
                         drop_box_y = desc_y + 30
@@ -15926,48 +15975,42 @@ while running:
                         drop_pct_font_height = (
                             gallery_hover_name_font.get_height()
                         )
-                        drop_boxes = [
-                            {
-                                "x": drop_box_x,
-                                "y": drop_box_y,
-                                "rarity": RARITIES[hover_column],
-                                "petal": drop_petal_name,
-                                "pct": f"{drop_chance}%"
-                            },
-                            {
-                                "x": drop_box_x + drop_box_size + 8,
-                                "y": drop_box_y,
-                                "rarity": "Unusual",
-                                "petal": drop_petal_name,
-                                "pct": "10%"
-                            },
-                            {
-                                "x": drop_box_x,
-                                "y": (
-                                    drop_text_y
-                                    + drop_pct_font_height
-                                    + 8
-                                ),
-                                "rarity": RARITIES[hover_column],
-                                "petal": "Rose",
-                                "pct": "33%"
-                            },
-                            {
-                                "x": (
-                                    drop_box_x
-                                    + drop_box_size
-                                    + 8
-                                ),
-                                "y": (
-                                    drop_text_y
-                                    + drop_pct_font_height
-                                    + 8
-                                ),
-                                "rarity": "Unusual",
-                                "petal": "Rose",
-                                "pct": "5%"
-                            }
-                        ]
+                        drops_by_petal = {}
+                        for drop_petal, drop_rarity, drop_chance in drop_table:
+                            drops_by_petal.setdefault(
+                                drop_petal,
+                                []
+                            ).append((drop_rarity, drop_chance))
+                        drop_row_height = (
+                            drop_box_size
+                            + 5
+                            + drop_pct_font_height
+                            + 8
+                        )
+                        drop_boxes = []
+                        for row_index, drop_petal in enumerate(
+                            drops_by_petal
+                        ):
+                            for col_index, (
+                                drop_rarity,
+                                drop_chance
+                            ) in enumerate(
+                                drops_by_petal[drop_petal]
+                            ):
+                                drop_boxes.append({
+                                    "x": (
+                                        drop_box_x
+                                        + col_index
+                                        * (drop_box_size + 8)
+                                    ),
+                                    "y": (
+                                        drop_box_y
+                                        + row_index * drop_row_height
+                                    ),
+                                    "rarity": drop_rarity,
+                                    "petal": drop_petal,
+                                    "pct": f"{drop_chance}%"
+                                })
                         drop_box_centers = []
                         for drop_box in drop_boxes:
                             box_x = drop_box["x"]
@@ -16039,7 +16082,7 @@ while running:
                     hover_box_surface,
                     hover_box_rect
                 )
-                if drop_info is not None:
+                if drop_table:
                     for drop_center, drop_box in zip(
                         drop_box_centers,
                         drop_boxes
