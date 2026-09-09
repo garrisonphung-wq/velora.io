@@ -15923,7 +15923,7 @@ while running:
                         drop_petal_name, drop_chance = drop_info
                         drop_box_size = 36
                         drop_box_x = 6
-                        drop_box_y = desc_y + 14
+                        drop_box_y = desc_y + 20
                         pygame.draw.rect(
                             hover_box_surface,
                             RARITY_COLORS.get(
