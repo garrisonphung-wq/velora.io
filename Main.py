@@ -6316,6 +6316,9 @@ MOB_DROP_INFO = {
         ("Rose", "Common", 33),
         ("Rose", "Unusual", 5),
     ],
+    ("Bee", "Common"): [
+        ("Stinger", "Common", 22),
+    ],
 }
 
 gallery_enemy_icon_cache = {}
