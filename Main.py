@@ -15969,25 +15969,28 @@ while running:
                                 + drop_box_size // 2
                             ))
                         drop_text_y = drop_box_y + drop_box_size + 5
-                        drop_pct_text = f"{drop_chance}%"
-                        drop_pct_white = (
-                            gallery_hover_name_font.render(
-                                drop_pct_text,
-                                True,
-                                (255, 255, 255)
-                            )
-                        )
-                        drop_pct_black = (
-                            gallery_hover_name_font.render(
-                                drop_pct_text,
-                                True,
-                                (0, 0, 0)
-                            )
-                        )
-                        for box_x in (
-                            drop_box_x,
-                            drop_box_x + drop_box_size + 8
+                        drop_pct_texts = (f"{drop_chance}%", "10%")
+                        for box_x, drop_pct_text in zip(
+                            (
+                                drop_box_x,
+                                drop_box_x + drop_box_size + 8
+                            ),
+                            drop_pct_texts
                         ):
+                            drop_pct_white = (
+                                gallery_hover_name_font.render(
+                                    drop_pct_text,
+                                    True,
+                                    (255, 255, 255)
+                                )
+                            )
+                            drop_pct_black = (
+                                gallery_hover_name_font.render(
+                                    drop_pct_text,
+                                    True,
+                                    (0, 0, 0)
+                                )
+                            )
                             for outline_x in (-1, 0, 1):
                                 for outline_y in (-1, 0, 1):
                                     if outline_x or outline_y:
