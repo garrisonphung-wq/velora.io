@@ -674,6 +674,13 @@ RARITY_COLORS = {
 
 }
 
+def lighten_color(color, factor):
+
+    return tuple(
+        int(channel + (255 - channel) * factor)
+        for channel in color
+    )
+
 RARITY_ORDER = [
     "Infino",
     "Celestial",
@@ -13757,13 +13764,16 @@ while running:
             )
             pygame.draw.rect(
                 screen,
-                pickup_box_color,
+                lighten_color(
+                    pickup_box_color,
+                    0.4
+                ),
                 pickup_rect,
                 border_radius=2
             )
             pygame.draw.rect(
                 screen,
-                (90, 90, 90),
+                pickup_box_color,
                 pickup_rect,
                 2,
                 border_radius=2
@@ -16018,11 +16028,15 @@ while running:
                         for drop_box in drop_boxes:
                             box_x = drop_box["x"]
                             box_y = drop_box["y"]
+                            box_rarity_color = RARITY_COLORS.get(
+                                drop_box["rarity"],
+                                (0, 255, 0)
+                            )
                             pygame.draw.rect(
                                 hover_box_surface,
-                                RARITY_COLORS.get(
-                                    drop_box["rarity"],
-                                    (0, 255, 0)
+                                lighten_color(
+                                    box_rarity_color,
+                                    0.4
                                 ),
                                 (
                                     box_x,
@@ -16034,7 +16048,7 @@ while running:
                             )
                             pygame.draw.rect(
                                 hover_box_surface,
-                                (255, 255, 255),
+                                box_rarity_color,
                                 (
                                     box_x,
                                     box_y,
