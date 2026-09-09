@@ -15950,7 +15950,7 @@ while running:
                                 ),
                                 "rarity": RARITIES[hover_column],
                                 "petal": "Rose",
-                                "pct": "13%"
+                                "pct": "20%"
                             }
                         ]
                         drop_box_centers = []
