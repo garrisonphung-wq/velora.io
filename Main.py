@@ -15923,7 +15923,7 @@ while running:
                         drop_petal_name, drop_chance = drop_info
                         drop_box_size = 36
                         drop_box_x = 6
-                        drop_box_y = desc_y + 8
+                        drop_box_y = desc_y + 14
                         pygame.draw.rect(
                             hover_box_surface,
                             RARITY_COLORS.get(
@@ -16000,7 +16000,7 @@ while running:
                         drop_box_center_x,
                         drop_box_center_y,
                         RARITIES[hover_column],
-                        size_scale=(drop_box_size * 0.92) / (PETAL_RADIUS * 2)
+                        size_scale=(drop_box_size * 0.6) / (PETAL_RADIUS * 2)
                     )
 
             gallery_track_top = gallery_grid_rect.y
