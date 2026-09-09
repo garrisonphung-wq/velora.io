@@ -6325,6 +6325,7 @@ MOB_DROP_INFO = {
     ],
     ("Bee", "Common"): [
         ("Stinger", "Common", 22),
+        ("Stinger", "Unusual", 5),
     ],
 }
 
@@ -13775,7 +13776,7 @@ while running:
                 screen,
                 pickup_box_color,
                 pickup_rect,
-                2,
+                4,
                 border_radius=2
             )
             if pickup.get("petal"):
@@ -16055,7 +16056,7 @@ while running:
                                     drop_box_size,
                                     drop_box_size
                                 ),
-                                2,
+                                4,
                                 border_radius=4
                             )
                             drop_box_centers.append((
