@@ -15922,27 +15922,50 @@ while running:
                         drop_box_size = 36
                         drop_box_x = 6
                         drop_box_y = desc_y + 30
-                        drop_box_rarities = [
-                            RARITIES[hover_column],
-                            "Unusual"
+                        drop_text_y = drop_box_y + drop_box_size + 5
+                        drop_pct_font_height = (
+                            gallery_hover_name_font.get_height()
+                        )
+                        drop_boxes = [
+                            {
+                                "x": drop_box_x,
+                                "y": drop_box_y,
+                                "rarity": RARITIES[hover_column],
+                                "petal": drop_petal_name,
+                                "pct": f"{drop_chance}%"
+                            },
+                            {
+                                "x": drop_box_x + drop_box_size + 8,
+                                "y": drop_box_y,
+                                "rarity": "Unusual",
+                                "petal": drop_petal_name,
+                                "pct": "10%"
+                            },
+                            {
+                                "x": drop_box_x,
+                                "y": (
+                                    drop_text_y
+                                    + drop_pct_font_height
+                                    + 8
+                                ),
+                                "rarity": RARITIES[hover_column],
+                                "petal": "Rose",
+                                "pct": "13%"
+                            }
                         ]
                         drop_box_centers = []
-                        for box_index, drop_rarity in enumerate(
-                            drop_box_rarities
-                        ):
-                            box_x = (
-                                drop_box_x
-                                + box_index * (drop_box_size + 8)
-                            )
+                        for drop_box in drop_boxes:
+                            box_x = drop_box["x"]
+                            box_y = drop_box["y"]
                             pygame.draw.rect(
                                 hover_box_surface,
                                 RARITY_COLORS.get(
-                                    drop_rarity,
+                                    drop_box["rarity"],
                                     (0, 255, 0)
                                 ),
                                 (
                                     box_x,
-                                    drop_box_y,
+                                    box_y,
                                     drop_box_size,
                                     drop_box_size
                                 ),
@@ -15953,7 +15976,7 @@ while running:
                                 (255, 255, 255),
                                 (
                                     box_x,
-                                    drop_box_y,
+                                    box_y,
                                     drop_box_size,
                                     drop_box_size
                                 ),
@@ -15965,32 +15988,24 @@ while running:
                                 + box_x
                                 + drop_box_size // 2,
                                 hover_box_rect.y
-                                + drop_box_y
+                                + box_y
                                 + drop_box_size // 2
                             ))
-                        drop_text_y = drop_box_y + drop_box_size + 5
-                        drop_pct_texts = (f"{drop_chance}%", "10%")
-                        for box_x, drop_pct_text in zip(
-                            (
-                                drop_box_x,
-                                drop_box_x + drop_box_size + 8
-                            ),
-                            drop_pct_texts
-                        ):
                             drop_pct_white = (
                                 gallery_hover_name_font.render(
-                                    drop_pct_text,
+                                    drop_box["pct"],
                                     True,
                                     (255, 255, 255)
                                 )
                             )
                             drop_pct_black = (
                                 gallery_hover_name_font.render(
-                                    drop_pct_text,
+                                    drop_box["pct"],
                                     True,
                                     (0, 0, 0)
                                 )
                             )
+                            box_text_y = box_y + drop_box_size + 5
                             for outline_x in (-1, 0, 1):
                                 for outline_y in (-1, 0, 1):
                                     if outline_x or outline_y:
@@ -15998,27 +16013,27 @@ while running:
                                             drop_pct_black,
                                             (
                                                 box_x + outline_x,
-                                                drop_text_y + outline_y
+                                                box_text_y + outline_y
                                             )
                                         )
                             hover_box_surface.blit(
                                 drop_pct_white,
-                                (box_x + 1, drop_text_y + 1)
+                                (box_x + 1, box_text_y + 1)
                             )
                 screen.blit(
                     hover_box_surface,
                     hover_box_rect
                 )
                 if drop_info is not None:
-                    for drop_rarity, drop_box_center in zip(
-                        drop_box_rarities,
-                        drop_box_centers
+                    for drop_center, drop_box in zip(
+                        drop_box_centers,
+                        drop_boxes
                     ):
                         draw_petal(
-                            drop_petal_name,
-                            drop_box_center[0],
-                            drop_box_center[1],
-                            drop_rarity,
+                            drop_box["petal"],
+                            drop_center[0],
+                            drop_center[1],
+                            drop_box["rarity"],
                             size_scale=(
                                 drop_box_size * 0.6
                             ) / (PETAL_RADIUS * 2)
