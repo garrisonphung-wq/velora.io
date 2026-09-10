@@ -120,6 +120,7 @@ PLAYER_RADIUS = 25
 # inventory.
 PICKUP_SIZE = 34
 PICKUP_LIFETIME = 300.0
+PICKUP_SHRINK_TIME = 0.2
 PICKUP_LIST = []
 pickup_pulse_phase = 0.0
 
@@ -13161,6 +13162,18 @@ while running:
 
             pickup["timer"] -= pickup_dt
 
+            # A collected pickup shrinks away quickly instead of vanishing
+            # instantly.
+            if pickup.get("collecting") is not None:
+
+                pickup["collecting"] += pickup_dt
+
+                if pickup["collecting"] >= PICKUP_SHRINK_TIME:
+
+                    PICKUP_LIST.remove(pickup)
+
+                continue
+
             if pickup["timer"] <= 0:
                 PICKUP_LIST.remove(pickup)
                 continue
@@ -13192,7 +13205,7 @@ while running:
                         pickup["rarity"],
                         1
                     )
-                PICKUP_LIST.remove(pickup)
+                pickup["collecting"] = 0.0
 
         spin_speed = 2
 
@@ -13778,10 +13791,27 @@ while running:
 
         for pickup in PICKUP_LIST:
 
+            collect_t = pickup.get("collecting")
+            shrink_scale = 1.0
+            if collect_t is not None:
+                shrink_scale = max(
+                    0.0,
+                    1.0 - collect_t / PICKUP_SHRINK_TIME
+                )
+
             px = pickup["x"] - camera_x
             py = pickup["y"] - camera_y
-            box_size = PICKUP_SIZE + int(
-                (math.sin(pickup_pulse_phase) + 1.0) * 3.0
+            box_size = max(
+                1,
+                int(
+                    (
+                        PICKUP_SIZE
+                        + int(
+                            (math.sin(pickup_pulse_phase) + 1.0) * 3.0
+                        )
+                    )
+                    * shrink_scale
+                )
             )
             half = box_size // 2
             pickup_rect = pygame.Rect(
@@ -13816,7 +13846,11 @@ while running:
                     px,
                     py,
                     pickup["rarity"],
-                    size_scale=(PICKUP_SIZE * 0.6) / (PETAL_RADIUS * 2)
+                    size_scale=(
+                        (PICKUP_SIZE * 0.6)
+                        / (PETAL_RADIUS * 2)
+                        * shrink_scale
+                    )
                 )
 
         # draw the merged wall layer (one shared outline, connected look)
