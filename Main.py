@@ -6154,7 +6154,7 @@ def drop_mob_loot(enemy):
 
     # Lay the boxes out in a small grid so they never stack on top of
     # each other and every dropped petal stays visible.
-    box_spacing = PICKUP_SIZE + 10
+    box_spacing = PICKUP_SIZE + 22
     grid_columns = int(math.ceil(math.sqrt(len(drops))))
     grid_rows = int(
         math.ceil(len(drops) / float(grid_columns))
