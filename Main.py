@@ -682,6 +682,13 @@ def lighten_color(color, factor):
         for channel in color
     )
 
+def darken_color(color, factor):
+
+    return tuple(
+        int(channel * factor)
+        for channel in color
+    )
+
 RARITY_ORDER = [
     "Infino",
     "Celestial",
@@ -6420,7 +6427,7 @@ def build_inventory_display_rows():
     # Inventory is sorted highest rarity first.  Each rarity becomes its
     # own section with its own rows (a partial row is filled out so the
     # next rarity always starts on a fresh row), and a divider row is
-    # placed between sections.
+    # placed between sections and above the top section.
     rows = []
     current_rarity = None
     current_items = []
@@ -6440,10 +6447,10 @@ def build_inventory_display_rows():
                     })
                     current_items = []
 
-                rows.append({
-                    "type": "divider",
-                    "rarity": item_rarity
-                })
+            rows.append({
+                "type": "divider",
+                "rarity": item_rarity
+            })
 
             current_rarity = item_rarity
 
@@ -16664,10 +16671,28 @@ while running:
 
                 if display_row["type"] == "divider":
 
+                    divider_rarity_color = RARITY_COLORS.get(
+                        display_row["rarity"],
+                        (80, 80, 80)
+                    )
+                    divider_color = darken_color(
+                        divider_rarity_color,
+                        0.78
+                    )
+                    divider_outline_color = darken_color(
+                        divider_rarity_color,
+                        0.4
+                    )
+
                     divider_surface = flower_name_font.render(
                         display_row["rarity"],
                         True,
-                        (255, 255, 255)
+                        divider_color
+                    )
+                    divider_outline_surface = flower_name_font.render(
+                        display_row["rarity"],
+                        True,
+                        divider_outline_color
                     )
                     divider_center_x = inventory_panel_rect.centerx
                     divider_text_x = (
@@ -16685,9 +16710,20 @@ while running:
                     line_gap = 8
                     edge_margin = 12
 
+                    for outline_x in (-1, 0, 1):
+                        for outline_y in (-1, 0, 1):
+                            if outline_x or outline_y:
+                                screen.blit(
+                                    divider_outline_surface,
+                                    (
+                                        divider_text_x + outline_x * 2,
+                                        divider_text_y + outline_y * 2
+                                    )
+                                )
+
                     pygame.draw.line(
                         screen,
-                        (150, 150, 150),
+                        divider_color,
                         (
                             inventory_panel_rect.x + edge_margin,
                             line_y
@@ -16700,7 +16736,7 @@ while running:
                     )
                     pygame.draw.line(
                         screen,
-                        (150, 150, 150),
+                        divider_color,
                         (
                             divider_text_x
                             + divider_surface.get_width()
