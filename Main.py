@@ -6415,6 +6415,61 @@ def get_inventory_max_rows():
         - bottom_padding
     ) // (INVENTORY_SLOT_SIZE + INVENTORY_SLOT_GAP)
 
+def build_inventory_display_rows():
+
+    # Inventory is sorted highest rarity first.  Each rarity becomes its
+    # own section with its own rows (a partial row is filled out so the
+    # next rarity always starts on a fresh row), and a divider row is
+    # placed between sections.
+    rows = []
+    current_rarity = None
+    current_items = []
+
+    for item in inventory:
+
+        item_rarity = item.get("rarity", "Common")
+
+        if item_rarity != current_rarity:
+
+            if current_rarity is not None:
+
+                if current_items:
+                    rows.append({
+                        "type": "items",
+                        "items": current_items
+                    })
+                    current_items = []
+
+                rows.append({
+                    "type": "divider",
+                    "rarity": item_rarity
+                })
+
+            current_rarity = item_rarity
+
+        current_items.append(item)
+
+        if len(current_items) == INVENTORY_COLS:
+
+            rows.append({
+                "type": "items",
+                "items": current_items
+            })
+            current_items = []
+
+    if current_items:
+
+        rows.append({
+            "type": "items",
+            "items": current_items
+        })
+
+    return rows
+
+def get_inventory_total_rows():
+
+    return len(build_inventory_display_rows())
+
 def update_boss_hp():
 
     global boss_hp
@@ -11983,7 +12038,7 @@ while running:
                     inventory_scroll += 1
 
 
-                total_rows = math.ceil(len(inventory) / 5)
+                total_rows = get_inventory_total_rows()
 
                 max_rows = get_inventory_max_rows()
 
@@ -12104,7 +12159,8 @@ while running:
 
                 max_scroll = max(
                     0,
-                    len(inventory) - 30
+                    get_inventory_total_rows()
+                    - get_inventory_max_rows()
                 )
 
 
@@ -12227,6 +12283,15 @@ while running:
 
                 if inventory_scroll < 0:
                     inventory_scroll = 0
+
+                inventory_scroll = min(
+                    inventory_scroll,
+                    max(
+                        0,
+                        get_inventory_total_rows()
+                        - get_inventory_max_rows()
+                    )
+                )
 
     if game_state == "login":
 
@@ -16584,104 +16649,163 @@ while running:
                 )
             )
 
-            for index, item in enumerate(inventory):
+            inventory_display_rows = build_inventory_display_rows()
 
-                row = index // inventory_cols - inventory_scroll
-                col = index % inventory_cols
+            for display_index, display_row in enumerate(
+                inventory_display_rows
+            ):
 
-
-                # hide rows outside panel
+                row = display_index - inventory_scroll
 
                 if row < 0 or row >= max_rows:
                     continue
 
-
-                x = start_x + col * (slot_size + slot_gap)
-
                 y = start_y + row * (slot_size + slot_gap)
 
+                if display_row["type"] == "divider":
 
-                rarity = item["rarity"]
-                amount = item.get(
-                    "amount",
-                    1
-                )
-
-                if rarity == "Omnient":
-
-                    draw_omnient_slot(
-                        screen,
-                        x,
-                        y,
-                        slot_size
-                    )
-
-
-                elif rarity == "Celestial":
-
-                    draw_celestial_slot(
-                        screen,
-                        x,
-                        y,
-                        slot_size
-                    )
-
-
-                elif rarity == "Infino":
-
-                    draw_infino_slot(
-                        screen,
-                        x,
-                        y,
-                        slot_size
-                    )
-
-
-                else:
-
-                    rarity_color = RARITY_COLORS.get(
-                        rarity,
-                        (80,80,80)
-                    )
-
-                    pygame.draw.rect(
-                        screen,
-                        rarity_color,
-                        (
-                            x,
-                            y,
-                            slot_size,
-                            slot_size
-                        ),
-                        border_radius=8
-                    )
-
-                # draw petal
-
-                draw_petal(
-                    item["petal"],
-                    x + slot_size // 2,
-                    y + slot_size // 2,
-                    item["rarity"]
-                )
-
-                if amount > 1:
-
-                    count_font = craft_count_font
-
-                    count_text = count_font.render(
-                        str(format_number(int(amount))),
+                    divider_surface = flower_name_font.render(
+                        display_row["rarity"],
                         True,
                         (255, 255, 255)
                     )
+                    divider_center_x = inventory_panel_rect.centerx
+                    divider_text_x = (
+                        divider_center_x
+                        - divider_surface.get_width() // 2
+                    )
+                    divider_text_y = (
+                        y
+                        + (slot_size - divider_surface.get_height()) // 2
+                    )
+                    line_y = (
+                        divider_text_y
+                        + divider_surface.get_height() // 2
+                    )
+                    line_gap = 8
+                    edge_margin = 12
+
+                    pygame.draw.line(
+                        screen,
+                        (150, 150, 150),
+                        (
+                            inventory_panel_rect.x + edge_margin,
+                            line_y
+                        ),
+                        (
+                            divider_text_x - line_gap,
+                            line_y
+                        ),
+                        2
+                    )
+                    pygame.draw.line(
+                        screen,
+                        (150, 150, 150),
+                        (
+                            divider_text_x
+                            + divider_surface.get_width()
+                            + line_gap,
+                            line_y
+                        ),
+                        (
+                            inventory_panel_rect.right - edge_margin,
+                            line_y
+                        ),
+                        2
+                    )
 
                     screen.blit(
-                        count_text,
-                        (
-                            x + slot_size - count_text.get_width() - 5,
-                            y + 3
-                        )
+                        divider_surface,
+                        (divider_text_x, divider_text_y)
                     )
+
+                    continue
+
+                for col, item in enumerate(display_row["items"]):
+
+                    x = start_x + col * (slot_size + slot_gap)
+
+                    rarity = item["rarity"]
+                    amount = item.get(
+                        "amount",
+                        1
+                    )
+
+                    if rarity == "Omnient":
+
+                        draw_omnient_slot(
+                            screen,
+                            x,
+                            y,
+                            slot_size
+                        )
+
+
+                    elif rarity == "Celestial":
+
+                        draw_celestial_slot(
+                            screen,
+                            x,
+                            y,
+                            slot_size
+                        )
+
+
+                    elif rarity == "Infino":
+
+                        draw_infino_slot(
+                            screen,
+                            x,
+                            y,
+                            slot_size
+                        )
+
+
+                    else:
+
+                        rarity_color = RARITY_COLORS.get(
+                            rarity,
+                            (80,80,80)
+                        )
+
+                        pygame.draw.rect(
+                            screen,
+                            rarity_color,
+                            (
+                                x,
+                                y,
+                                slot_size,
+                                slot_size
+                            ),
+                            border_radius=8
+                        )
+
+                    # draw petal
+
+                    draw_petal(
+                        item["petal"],
+                        x + slot_size // 2,
+                        y + slot_size // 2,
+                        item["rarity"]
+                    )
+
+                    if amount > 1:
+
+                        count_font = craft_count_font
+
+                        count_text = count_font.render(
+                            str(format_number(int(amount))),
+                            True,
+                            (255, 255, 255)
+                        )
+
+                        screen.blit(
+                            count_text,
+                            (
+                                x + slot_size - count_text.get_width() - 5,
+                                y + 3
+                            )
+                        )
 
             screen.set_clip(inventory_previous_clip)
 
