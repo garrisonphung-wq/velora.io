@@ -4674,23 +4674,7 @@ def load_player():
     ]
 
 
-    inventory.sort(
-        key=lambda item: (
-            RARITY_ORDER.index(
-                item.get(
-                    "rarity",
-                    "Common"
-                )
-            )
-            if item.get("rarity", "Common") in RARITY_ORDER
-            else 999,
-
-            item.get(
-                "petal",
-                "Basic"
-            )
-        )
-    )
+    sort_inventory()
 
 
     # ---------------- FLOWER DATA ----------------
@@ -6510,6 +6494,22 @@ def enemy_attack(amount, petal_index=None):
             else:
                 petal_respawn_timer[petal_index] = 300
 
+def sort_inventory():
+
+    global inventory
+
+    inventory.sort(
+        key=lambda item: (
+            RARITY_ORDER.index(
+                item.get("rarity", "Common")
+            )
+            if item.get("rarity", "Common") in RARITY_ORDER
+            else 999,
+
+            item.get("petal", "Basic")
+        )
+    )
+
 def add_inventory_petal(petal, rarity, amount=1):
 
     global inventory
@@ -6523,6 +6523,7 @@ def add_inventory_petal(petal, rarity, amount=1):
         ):
 
             item["amount"] += amount
+            sort_inventory()
             return
 
     inventory.append({
@@ -6530,6 +6531,8 @@ def add_inventory_petal(petal, rarity, amount=1):
         "rarity": rarity,
         "amount": amount
     })
+
+    sort_inventory()
 
 def remove_inventory_petal(petal, rarity, amount):
 
@@ -11553,14 +11556,7 @@ while running:
 
 
                     # ADD SORT HERE
-                    inventory.sort(
-                        key=lambda item: (
-                            RARITY_ORDER.index(item["rarity"])
-                            if item["rarity"] in RARITY_ORDER
-                            else 999,
-                            item["petal"]
-                        )
-                    )
+                    sort_inventory()
 
                     game_state = "welcome"
                     welcome_timer = 90
