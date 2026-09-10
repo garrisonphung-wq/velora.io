@@ -6152,24 +6152,27 @@ def drop_mob_loot(enemy):
     if not drops:
         return
 
-    # Lay the boxes out in a small grid so they never stack on top of
-    # each other and every dropped petal stays visible.
-    box_spacing = PICKUP_SIZE + 22
-    grid_columns = int(math.ceil(math.sqrt(len(drops))))
-    grid_rows = int(
-        math.ceil(len(drops) / float(grid_columns))
-    )
+    # Arrange the dropped boxes the same way multiplied petals are drawn
+    # (epic light puts its three dots on triangle points): one box stays
+    # in the middle, several boxes spread around a ring so they never
+    # stack on top of each other.
+    drop_count = len(drops)
+    ring_radius = PICKUP_SIZE + 22
     for drop_index, (petal, petal_rarity) in enumerate(drops):
 
-        grid_x = drop_index % grid_columns
-        grid_y = drop_index // grid_columns
+        if drop_count == 1:
 
-        offset_x = (
-            grid_x - (grid_columns - 1) * 0.5
-        ) * box_spacing
-        offset_y = (
-            grid_y - (grid_rows - 1) * 0.5
-        ) * box_spacing
+            offset_x = 0
+            offset_y = 0
+
+        else:
+
+            drop_angle = math.radians(
+                drop_index * (360.0 / drop_count)
+            )
+
+            offset_x = math.cos(drop_angle) * ring_radius
+            offset_y = math.sin(drop_angle) * ring_radius
 
         spawn_pickup(
             enemy.x + offset_x,
