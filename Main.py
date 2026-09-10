@@ -6158,7 +6158,7 @@ def drop_mob_loot(enemy):
     # in the middle, several boxes spread around a ring so they never
     # stack on top of each other.
     drop_count = len(drops)
-    ring_radius = PICKUP_SIZE + 22
+    ring_radius = PICKUP_SIZE + 12
     for drop_index, (petal, petal_rarity) in enumerate(drops):
 
         if drop_count == 1:
