@@ -6026,21 +6026,28 @@ def apply_enemy_rarity_stats(enemy):
 
 def spawn_random_mob():
 
-    enemy_classes = [
-        Ladybug,
-        Bee,
-        Spider,
-        Rock,
-        Hornet,
-        BabyAnt,
-        SoldierAnt#,
-        #WorkerAnt,
-        #QueenAnt,
+    # The space bar spawn cheat is only for the developer, and it only
+    # spawns the mobs that have a working petal drop table.
+    if acc_name_text != "DevGuard":
+        return
+
+    drop_mobs = [
+        (Ladybug, "Ladybug"),
+        (Bee, "Bee"),
     ]
 
-    enemy = random.choice(enemy_classes)()
+    enemy_class, drop_mob_name = random.choice(drop_mobs)
 
-    enemy.rarity = random.choice(ENEMY_RARITIES)
+    table_rarities = [
+        rarity
+        for (mob_name, rarity), drop_table in MOB_DROP_INFO.items()
+        if mob_name == drop_mob_name and drop_table
+    ]
+    if not table_rarities:
+        return
+
+    enemy = enemy_class()
+    enemy.rarity = random.choice(table_rarities)
 
     # Update HP after changing rarity
     apply_enemy_rarity_stats(enemy)
@@ -6053,21 +6060,6 @@ def spawn_random_mob():
 
     elif isinstance(enemy, Bee):
         bees.append(enemy)
-
-    elif isinstance(enemy, Spider):
-        spiders.append(enemy)
-
-    elif isinstance(enemy, Rock):
-        rocks.append(enemy)
-
-    elif isinstance(enemy, Hornet):
-        hornets.append(enemy)
-
-    elif isinstance(enemy, BabyAnt):
-        baby_ants.append(enemy)
-
-    elif isinstance(enemy, SoldierAnt):
-        soldier_ants.append(enemy)
 
     if enemy.rarity in ("Celestial", "Omnient"):
         show_spawn_message(
