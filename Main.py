@@ -6327,6 +6327,7 @@ MOB_DROP_INFO = {
         ("Stinger", "Common", 22),
         ("Stinger", "Unusual", 5),
         ("Pollen", "Common", 37),
+        ("Pollen", "Unusual", 10),
     ],
 }
 
