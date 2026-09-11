@@ -6133,20 +6133,18 @@ def drop_mob_loot(enemy):
         mob_name = "Soldier Ant"
 
     drop_table = MOB_DROP_INFO.get((mob_name, enemy.rarity))
-    if not drop_table and enemy.rarity != "Common":
-        # Mobs above Common rarity fall back to the mob's Common table so
-        # they still drop petals (tables are only coded for a few
-        # rarities).
-        drop_table = MOB_DROP_INFO.get((mob_name, "Common"))
     if not drop_table:
         return
 
     # Check the drop table row by row: every petal makes one row, and the
     # rarity columns inside that row are rolled together before moving to
-    # the next row.  If every row fails and the kill would drop nothing,
-    # the rows are checked again so a kill never gives zero petals.
+    # the next row.  For rarities above Common (which the dev codes by
+    # hand) a kill always drops at least one petal, so if every row fails
+    # the rows are checked again.
+    guaranteed_drop = enemy.rarity != "Common"
+
     drops = []
-    for attempt in range(50):
+    for attempt in range(50 if guaranteed_drop else 1):
 
         drops = []
 
