@@ -6023,12 +6023,26 @@ def spawn_random_mob():
     if acc_name_text != "DevGuard":
         return
 
-    drop_mobs = [
-        (Ladybug, "Ladybug"),
-        (Bee, "Bee"),
-    ]
+    enemy_classes = {
+        "Ladybug": (Ladybug, ladybugs),
+        "Bee": (Bee, bees),
+        "Spider": (Spider, spiders),
+        "Rock": (Rock, rocks),
+        "Hornet": (Hornet, hornets),
+        "Baby Ant": (BabyAnt, baby_ants),
+        "Soldier Ant": (SoldierAnt, soldier_ants)
+    }
 
-    enemy_class, drop_mob_name = random.choice(drop_mobs)
+    drop_mob_names = sorted({
+        mob_name
+        for (mob_name, rarity), drop_table in MOB_DROP_INFO.items()
+        if drop_table and mob_name in enemy_classes
+    })
+    if not drop_mob_names:
+        return
+
+    drop_mob_name = random.choice(drop_mob_names)
+    enemy_class, enemy_list = enemy_classes[drop_mob_name]
 
     table_rarities = [
         rarity
@@ -6047,11 +6061,7 @@ def spawn_random_mob():
     enemy.x = player_x + random.randint(-300, 300)
     enemy.y = player_y + random.randint(-300, 300)
 
-    if isinstance(enemy, Ladybug):
-        ladybugs.append(enemy)
-
-    elif isinstance(enemy, Bee):
-        bees.append(enemy)
+    enemy_list.append(enemy)
 
     if enemy.rarity in ("Celestial", "Omnient"):
         show_spawn_message(
@@ -6349,6 +6359,47 @@ MOB_DROP_INFO = {
         ("Pollen", "Common", 37),
         ("Pollen", "Unusual", 10),
         ("Honey", "Common", 30),
+        ("Honey", "Unusual", 5),
+    ],
+    ("Spider", "Common"): [
+        ("Web", "Common", 35),
+        ("Web", "Unusual", 7),
+        ("Faster", "Common", 30),
+        ("Faster", "Unusual", 7),
+    ],
+    ("Rock", "Common"): [
+        ("Rock", "Common", 30),
+        ("Rock", "Unusual", 9),
+        ("Heavy", "Common", 19),
+        ("Heavy", "Unusual", 4),
+        ("Boubloom", "Common", 0.4),
+        ("Boulder", "Common", 0.06),
+    ],
+    ("Hornet", "Common"): [
+        ("Missile", "Common", 20),
+        ("Missile", "Unusual", 9),
+        ("Antenna", "Common", 21),
+    ],
+    ("Baby Ant", "Common"): [
+        ("Leaf", "Common", 30),
+        ("Leaf", "Unusual", 7),
+        ("Rice", "Common", 25),
+        ("Rice", "Unusual", 10),
+        ("Light", "Common", 32),
+        ("Light", "Unusual", 6),
+        ("Cice", "Common", 0.05)
+    ],
+    ("Soldier Ant", "Common"): [
+        ("Wing", "Common", 30),
+        ("Wing", "Unusual", 10),
+        ("Glass", "Common", 28),
+        ("Glass", "Unusual", 7),
+    ],
+    ("Ladybug", "Unusual"): [
+        ("Light", "Common", 10),
+        ("Light", "Unusual", 41),
+        ("Rose", "Common", 8),
+        ("Rose", "Unusual", 38),
     ],
 }
 
