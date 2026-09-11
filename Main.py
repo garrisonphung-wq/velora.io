@@ -6407,6 +6407,30 @@ MOB_DROP_INFO = {
         ("Rose", "Common", 8),
         ("Rose", "Unusual", 38),
     ],
+    ("Bee", "Unusual"): [
+        ("Stinger", "Common", 9),
+        ("Stinger", "Unusual", 35),
+        ("Pollen", "Common", 8),
+        ("Pollen", "Unusual", 38),
+        ("Honey", "Common", 6),
+        ("Honey", "Unusual", 33),
+    ],
+    ("Spider", "Unusual"): [
+        ("Web", "Common", 9),
+        ("Web", "Unusual", 37),
+        ("Faster", "Common", 7),
+        ("Faster", "Unusual", 32),
+    ],
+    ("Rock", "Unusual"): [
+        ("Rock", "Common", 9),
+        ("Rock", "Unusual", 34),
+        ("Heavy", "Common", 8),
+        ("Heavy", "Unusual", 38),
+        ("Boubloom", "Common", 1),
+        ("Boubloom", "Unusual", 0.1)
+        ("Boulder", "Common", 0.7),
+        ("Boulder", "Unusual", 0.06),
+    ],
 }
 
 gallery_enemy_icon_cache = {}

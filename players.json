@@ -3418,12 +3418,12 @@
             {
                 "petal": "Faster",
                 "rarity": "Unusual",
-                "amount": 1000
+                "amount": 1007
             },
             {
                 "petal": "Glass",
                 "rarity": "Unusual",
-                "amount": 1000
+                "amount": 1006
             },
             {
                 "petal": "Grape",
@@ -3433,17 +3433,17 @@
             {
                 "petal": "Heavy",
                 "rarity": "Unusual",
-                "amount": 1000
+                "amount": 1001
             },
             {
                 "petal": "Honey",
                 "rarity": "Unusual",
-                "amount": 1000
+                "amount": 1013
             },
             {
                 "petal": "Leaf",
                 "rarity": "Unusual",
-                "amount": 1200
+                "amount": 1206
             },
             {
                 "petal": "Lentil",
@@ -3453,7 +3453,7 @@
             {
                 "petal": "Light",
                 "rarity": "Unusual",
-                "amount": 1
+                "amount": 39
             },
             {
                 "petal": "Magnet",
@@ -3463,7 +3463,7 @@
             {
                 "petal": "Missile",
                 "rarity": "Unusual",
-                "amount": 1000
+                "amount": 1011
             },
             {
                 "petal": "Moon",
@@ -3488,17 +3488,22 @@
             {
                 "petal": "Pollen",
                 "rarity": "Unusual",
-                "amount": 1000
+                "amount": 1023
             },
             {
                 "petal": "Rice",
                 "rarity": "Unusual",
-                "amount": 1000
+                "amount": 1005
             },
             {
                 "petal": "Rock",
                 "rarity": "Unusual",
-                "amount": 1000
+                "amount": 1003
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Unusual",
+                "amount": 25
             },
             {
                 "petal": "Sand",
@@ -3528,7 +3533,7 @@
             {
                 "petal": "Stinger",
                 "rarity": "Unusual",
-                "amount": 3
+                "amount": 19
             },
             {
                 "petal": "Third Eye",
@@ -3538,7 +3543,12 @@
             {
                 "petal": "Web",
                 "rarity": "Unusual",
-                "amount": 1000
+                "amount": 1011
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Unusual",
+                "amount": 7
             },
             {
                 "petal": "Ant Egg",
@@ -3548,7 +3558,7 @@
             {
                 "petal": "Antenna",
                 "rarity": "Common",
-                "amount": 1000
+                "amount": 1014
             },
             {
                 "petal": "Beetle Egg",
@@ -3593,12 +3603,12 @@
             {
                 "petal": "Faster",
                 "rarity": "Common",
-                "amount": 1000
+                "amount": 1017
             },
             {
                 "petal": "Glass",
                 "rarity": "Common",
-                "amount": 1000
+                "amount": 1010
             },
             {
                 "petal": "Grape",
@@ -3608,17 +3618,17 @@
             {
                 "petal": "Heavy",
                 "rarity": "Common",
-                "amount": 1000
+                "amount": 1013
             },
             {
                 "petal": "Honey",
                 "rarity": "Common",
-                "amount": 1000
+                "amount": 1064
             },
             {
                 "petal": "Leaf",
                 "rarity": "Common",
-                "amount": 1
+                "amount": 18
             },
             {
                 "petal": "Lentil",
@@ -3628,7 +3638,7 @@
             {
                 "petal": "Light",
                 "rarity": "Common",
-                "amount": 1000
+                "amount": 1120
             },
             {
                 "petal": "Magnet",
@@ -3638,7 +3648,7 @@
             {
                 "petal": "Missile",
                 "rarity": "Common",
-                "amount": 1000
+                "amount": 1012
             },
             {
                 "petal": "Moon",
@@ -3663,17 +3673,22 @@
             {
                 "petal": "Pollen",
                 "rarity": "Common",
-                "amount": 1000
+                "amount": 1085
             },
             {
                 "petal": "Rice",
                 "rarity": "Common",
-                "amount": 1000
+                "amount": 1018
             },
             {
                 "petal": "Rock",
                 "rarity": "Common",
-                "amount": 1000
+                "amount": 1018
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Common",
+                "amount": 77
             },
             {
                 "petal": "Sand",
@@ -3703,7 +3718,7 @@
             {
                 "petal": "Stinger",
                 "rarity": "Common",
-                "amount": 1
+                "amount": 64
             },
             {
                 "petal": "Third Eye",
@@ -3713,7 +3728,12 @@
             {
                 "petal": "Web",
                 "rarity": "Common",
-                "amount": 1000
+                "amount": 1018
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Common",
+                "amount": 12
             }
         ],
         "craft_slots": [
@@ -3798,73 +3818,73 @@
         "hp_level": 0,
         "hp_upgrade_cost": 100000000000000,
         "mob_gallery_unlocks": {
-            "Rock|Common": 115,
-            "Soldier Ant|Common": 155,
-            "Baby Ant|Common": 118,
-            "Ladybug|Common": 117,
-            "Spider|Common": 154,
-            "Bee|Common": 102,
-            "Hornet|Common": 115,
-            "Ladybug|Ultra": 20,
+            "Rock|Common": 198,
+            "Soldier Ant|Common": 244,
+            "Baby Ant|Common": 190,
+            "Ladybug|Common": 377,
+            "Spider|Common": 240,
+            "Bee|Common": 393,
+            "Hornet|Common": 187,
+            "Ladybug|Ultra": 23,
             "Baby Ant|Unique": 8,
             "Ladybug|Omega": 10,
-            "Rock|Legendary": 26,
+            "Rock|Legendary": 29,
             "Baby Ant|Jeddiful": 4,
-            "Baby Ant|Unusual": 44,
-            "Soldier Ant|Mythic": 29,
+            "Baby Ant|Unusual": 50,
+            "Soldier Ant|Mythic": 35,
             "Bee|Omega": 7,
-            "Baby Ant|Rare": 17,
+            "Baby Ant|Rare": 20,
             "Bee|Legendary": 20,
-            "Hornet|Legendary": 24,
-            "Soldier Ant|Rare": 22,
-            "Soldier Ant|Legendary": 19,
+            "Hornet|Legendary": 26,
+            "Soldier Ant|Rare": 23,
+            "Soldier Ant|Legendary": 21,
             "Hornet|Eternal": 4,
             "Bee|Cosmo": 2,
             "Rock|Jeddiful": 2,
-            "Hornet|Mythic": 33,
+            "Hornet|Mythic": 39,
             "Hornet|Unique": 4,
             "Rock|Cosmo": 3,
             "Spider|Super": 7,
-            "Baby Ant|Mythic": 34,
-            "Hornet|Rare": 21,
+            "Baby Ant|Mythic": 37,
+            "Hornet|Rare": 22,
             "Bee|Eternal": 5,
-            "Baby Ant|Legendary": 22,
+            "Baby Ant|Legendary": 24,
             "Rock|Omega": 7,
             "Soldier Ant|Super": 5,
-            "Spider|Unusual": 59,
+            "Spider|Unusual": 75,
             "Ladybug|Jeddiful": 2,
             "Bee|Unique": 2,
             "Soldier Ant|Cosmo": 4,
             "Soldier Ant|Eternal": 5,
             "Rock|Eternal": 4,
-            "Bee|Rare": 15,
-            "Hornet|Unusual": 41,
-            "Bee|Unusual": 38,
-            "Ladybug|Unusual": 52,
-            "Soldier Ant|Unusual": 38,
-            "Rock|Unusual": 41,
-            "Ladybug|Rare": 19,
-            "Spider|Rare": 30,
-            "Spider|Mythic": 39,
-            "Ladybug|Epic": 29,
-            "Rock|Mythic": 30,
-            "Ladybug|Legendary": 20,
-            "Spider|Legendary": 27,
-            "Baby Ant|Epic": 36,
-            "Soldier Ant|Epic": 28,
-            "Bee|Ultra": 23,
-            "Baby Ant|Ultra": 39,
-            "Rock|Ultra": 23,
+            "Bee|Rare": 17,
+            "Hornet|Unusual": 65,
+            "Bee|Unusual": 56,
+            "Ladybug|Unusual": 82,
+            "Soldier Ant|Unusual": 52,
+            "Rock|Unusual": 51,
+            "Ladybug|Rare": 21,
+            "Spider|Rare": 32,
+            "Spider|Mythic": 43,
+            "Ladybug|Epic": 34,
+            "Rock|Mythic": 35,
+            "Ladybug|Legendary": 21,
+            "Spider|Legendary": 31,
+            "Baby Ant|Epic": 40,
+            "Soldier Ant|Epic": 33,
+            "Bee|Ultra": 25,
+            "Baby Ant|Ultra": 50,
+            "Rock|Ultra": 24,
             "Bee|Mythic": 23,
-            "Spider|Ultra": 30,
-            "Soldier Ant|Ultra": 24,
-            "Ladybug|Mythic": 27,
-            "Baby Ant|Super": 226,
-            "Hornet|Epic": 38,
-            "Rock|Epic": 43,
-            "Bee|Epic": 34,
-            "Spider|Epic": 40,
-            "Rock|Rare": 10,
+            "Spider|Ultra": 36,
+            "Soldier Ant|Ultra": 32,
+            "Ladybug|Mythic": 28,
+            "Baby Ant|Super": 265,
+            "Hornet|Epic": 42,
+            "Rock|Epic": 48,
+            "Bee|Epic": 36,
+            "Spider|Epic": 45,
+            "Rock|Rare": 12,
             "Hornet|Super": 8,
             "Ladybug|Cosmo": 2,
             "Hornet|Cosmo": 5,
@@ -3899,7 +3919,7 @@
             "Hornet|Omega": 4,
             "Bee|Super": 8,
             "Soldier Ant|Omega": 5,
-            "Hornet|Ultra": 18,
+            "Hornet|Ultra": 19,
             "Spider|Cosmo": 5,
             "Spider|Unique": 1,
             "Rock|Unique": 3,
@@ -3947,7 +3967,51 @@
         "upgrade_points": 9
     },
     "Jej": {
-        "inventory": [],
+        "inventory": [
+            {
+                "petal": "Missile",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Common",
+                "amount": 1
+            }
+        ],
+        "craft_slots": [],
+        "equipped_reserved": [
+            {
+                "petal": "Faster",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Infino",
+                "amount": 1
+            }
+        ],
         "petals": [
             {
                 "filled": true,
@@ -3974,7 +4038,16 @@
                 "petal": "Faster",
                 "rarity": "Infino"
             }
-        ]
+        ],
+        "flower_level": 1,
+        "flower_xp": 30,
+        "upgrade_points": 0,
+        "hp_level": 1,
+        "hp_upgrade_cost": 1,
+        "mob_gallery_unlocks": {
+            "Hornet|Common": 2,
+            "Bee|Common": 1
+        }
     },
     "": {
         "inventory": [],
@@ -4253,7 +4326,138 @@
         "hp_upgrade_cost": 3
     },
     "l": {
-        "inventory": [],
+        "inventory": [
+            {
+                "petal": "Light",
+                "rarity": "Rare",
+                "amount": 1
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Unusual",
+                "amount": 2
+            },
+            {
+                "petal": "Light",
+                "rarity": "Unusual",
+                "amount": 3
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Unusual",
+                "amount": 2
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Unusual",
+                "amount": 4
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Web",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Common",
+                "amount": 3
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Common",
+                "amount": 6
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Common",
+                "amount": 6
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Common",
+                "amount": 4
+            },
+            {
+                "petal": "Light",
+                "rarity": "Common",
+                "amount": 9
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Common",
+                "amount": 7
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Common",
+                "amount": 7
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Common",
+                "amount": 3
+            },
+            {
+                "petal": "Web",
+                "rarity": "Common",
+                "amount": 4
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Common",
+                "amount": 4
+            }
+        ],
         "craft_slots": [],
         "equipped_reserved": [
             {
@@ -4309,19 +4513,21 @@
                 "rarity": "Common"
             }
         ],
-        "flower_level": 3,
-        "flower_xp": 130,
-        "upgrade_points": 1,
-        "hp_level": 1,
-        "hp_upgrade_cost": 2,
+        "flower_level": 7,
+        "flower_xp": 880,
+        "upgrade_points": 8,
+        "hp_level": 2,
+        "hp_upgrade_cost": 3,
         "mob_gallery_unlocks": {
-            "Ladybug|Common": 5,
-            "Soldier Ant|Common": 14,
-            "Spider|Common": 10,
-            "Hornet|Common": 3,
-            "Rock|Common": 2,
-            "Baby Ant|Common": 4,
-            "Bee|Common": 1
+            "Ladybug|Common": 47,
+            "Soldier Ant|Common": 53,
+            "Spider|Common": 48,
+            "Hornet|Common": 41,
+            "Rock|Common": 17,
+            "Baby Ant|Common": 44,
+            "Bee|Common": 36,
+            "Hornet|Unusual": 1,
+            "Hornet|Rare": 1
         }
     }
 }
