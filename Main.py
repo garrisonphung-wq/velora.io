@@ -6140,9 +6140,9 @@ def drop_mob_loot(enemy):
 
     if enemy.rarity != "Common":
         # For non-Common mobs, each petal type picks one row (Common or
-        # the mob's rarity) and rolls it once, so exactly 1 petal drops
-        # per petal type.  This prevents unusual mobs from dropping every
-        # rarity petal from the same row.
+        # the mob's rarity) and retries until it drops 1 petal.
+        # This prevents unusual mobs from dropping every rarity petal
+        # from the same row (e.g., both Light Common and Light Unusual).
         petal_rows = {}
         for petal, petal_rarity, drop_chance in drop_table:
             petal_rows.setdefault(petal, []).append(
