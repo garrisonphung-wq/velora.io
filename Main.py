@@ -99,7 +99,7 @@ active_input = None
 WIDTH = 1500
 HEIGHT = 845
 FPS = 60
-MAP_SIZE = 5000
+MAP_SIZE = 15000
 MINIMAP_SIZE = 200
 MINIMAP_MARGIN = 20
 
@@ -381,7 +381,7 @@ PETAL_SLOT_GAP = 5
 PETAL_BAR_Y = HEIGHT - 130
 # ---------------- WORLD ----------------
 
-WORLD_SIZE = 5000
+WORLD_SIZE = 15000
 
 # ---------------- WINDOW ----------------
 
@@ -4798,13 +4798,13 @@ def create_map():
     super_BabyAnt_zone = []
 
     X = 0
-    Y = 3810
+    Y = 11430
     NEW_X = X
-    NEW_Y = Y - 2410
-    NEW_WIDTH = 1600
-    NEW_HEIGHT = 2500
-    LONG_WIDTH = WORLD_SIZE - NEW_X - 200
-    BOTTOM_Y = WORLD_SIZE - 100
+    NEW_Y = Y - 7230
+    NEW_WIDTH = 4800
+    NEW_HEIGHT = 7500
+    LONG_WIDTH = WORLD_SIZE - NEW_X - 600
+    BOTTOM_Y = WORLD_SIZE - 300
 
     # -------- 1# --------
 
@@ -11116,7 +11116,7 @@ for i in range(random.randint(1, 30)):
 
     ladybug.x, ladybug.y, zone = random_world_position(
         ("common", common_zone, WORLD_SIZE - 100),
-        ("epic", epic_zone, 3810),
+        ("epic", epic_zone, WORLD_SIZE - 100),
         ("unusual", unusual_zone, WORLD_SIZE - 100),
         ("mythic", mythic_zone, WORLD_SIZE - 100),
         ("ultra", ultra_zone, WORLD_SIZE - 100)
@@ -11151,7 +11151,7 @@ for i in range(random.randint(1, 30)):
 
     bee.x, bee.y, zone = random_world_position(
         ("common", common_zone, WORLD_SIZE - 100),
-        ("epic", epic_zone, 3810),
+        ("epic", epic_zone, WORLD_SIZE - 100),
         ("unusual", unusual_zone, WORLD_SIZE - 100),
         ("mythic", mythic_zone, WORLD_SIZE - 100),
         ("ultra", ultra_zone, WORLD_SIZE - 100)
@@ -11187,7 +11187,7 @@ for i in range(random.randint(1, 30)):
 
     spider.x, spider.y, zone = random_world_position(
         ("common", common_zone, WORLD_SIZE - 100),
-        ("epic", epic_zone, 3810),
+        ("epic", epic_zone, WORLD_SIZE - 100),
         ("unusual", unusual_zone, WORLD_SIZE - 100),
         ("mythic", mythic_zone, WORLD_SIZE - 100),
         ("ultra", ultra_zone, WORLD_SIZE - 100)
@@ -11223,7 +11223,7 @@ for i in range(random.randint(1, 30)):
 
     rock.x, rock.y, zone = random_world_position(
         ("common", common_zone, WORLD_SIZE - 100),
-        ("epic", epic_zone, 3810),
+        ("epic", epic_zone, WORLD_SIZE - 100),
         ("unusual", unusual_zone, WORLD_SIZE - 100),
         ("mythic", mythic_zone, WORLD_SIZE - 100),
         ("ultra", ultra_zone, WORLD_SIZE - 100)
@@ -11259,7 +11259,7 @@ for i in range(random.randint(1, 30)):
 
     hornet.x, hornet.y, zone = random_world_position(
         ("common", common_zone, WORLD_SIZE - 100),
-        ("epic", epic_zone, 3810),
+        ("epic", epic_zone, WORLD_SIZE - 100),
         ("unusual", unusual_zone, WORLD_SIZE - 100),
         ("mythic", mythic_zone, WORLD_SIZE - 100),
         ("ultra", ultra_zone, WORLD_SIZE - 100)
@@ -11297,7 +11297,7 @@ for i in range(random.randint(1, 30)):
 
     ant.x, ant.y, zone = random_world_position(
         ("common", common_zone, WORLD_SIZE - 100),
-        ("epic", epic_zone, 3810),
+        ("epic", epic_zone, WORLD_SIZE - 100),
         ("unusual", unusual_zone, WORLD_SIZE - 100),
         ("mythic", mythic_zone, WORLD_SIZE - 100),
         ("ultra", ultra_zone, WORLD_SIZE - 100)
@@ -11347,7 +11347,7 @@ for i in range(random.randint(1, 30)):
 
     soldier_ant.x, soldier_ant.y, zone = random_world_position(
         ("common", common_zone, WORLD_SIZE - 100),
-        ("epic", epic_zone, 3810),
+        ("epic", epic_zone, WORLD_SIZE - 100),
         ("unusual", unusual_zone, WORLD_SIZE - 100),
         ("mythic", mythic_zone, WORLD_SIZE - 100),
         ("ultra", ultra_zone, WORLD_SIZE - 100)
