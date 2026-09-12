@@ -6139,19 +6139,30 @@ def drop_mob_loot(enemy):
     drops = []
 
     if enemy.rarity != "Common":
-        # Group rows by petal name, keeping only the row that matches
-        # the mob's rarity.  Each petal type then retries until it
-        # drops exactly 1 petal.
+        # For non-Common mobs, each petal type picks one row (Common or
+        # the mob's rarity) and rolls it once, so exactly 1 petal drops
+        # per petal type.  This prevents unusual mobs from dropping every
+        # rarity petal from the same row.
         petal_rows = {}
         for petal, petal_rarity, drop_chance in drop_table:
-            if petal_rarity == enemy.rarity:
-                petal_rows.setdefault(petal, (petal_rarity, drop_chance))
+            petal_rows.setdefault(petal, []).append(
+                (petal_rarity, drop_chance)
+            )
 
-        for petal, (petal_rarity, drop_chance) in petal_rows.items():
-            for _ in range(10):
+        for petal, rows in petal_rows.items():
+            # Pick one row at random from the available rows for this petal
+            # (Common or the mob's rarity) and retry it until it drops 1 petal
+            chosen = random.choice(rows)
+            petal_rarity, drop_chance = chosen
+            # Decimal-chance rows (e.g., 0.06%) roll once without retry
+            if drop_chance != int(drop_chance):
                 if random.random() * 100 < drop_chance:
                     drops.append((petal, petal_rarity))
-                    break
+            else:
+                for _ in range(10):
+                    if random.random() * 100 < drop_chance:
+                        drops.append((petal, petal_rarity))
+                        break
     else:
         # For Common mobs, single roll per row (or none)
         for petal, petal_rarity, drop_chance in drop_table:
