@@ -6137,12 +6137,17 @@ def drop_mob_loot(enemy):
         return
 
     drops = []
-    
+
     if enemy.rarity != "Common":
-        # For non-Common mobs, ensure each row drops at least one petal
-        # by retrying each row until it produces a drop
+        # Group rows by petal name, keeping only the row that matches
+        # the mob's rarity.  Each petal type then retries until it
+        # drops exactly 1 petal.
+        petal_rows = {}
         for petal, petal_rarity, drop_chance in drop_table:
-            # Retry this row until it drops 1 petal
+            if petal_rarity == enemy.rarity:
+                petal_rows.setdefault(petal, (petal_rarity, drop_chance))
+
+        for petal, (petal_rarity, drop_chance) in petal_rows.items():
             for _ in range(10):
                 if random.random() * 100 < drop_chance:
                     drops.append((petal, petal_rarity))
