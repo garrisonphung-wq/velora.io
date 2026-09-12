@@ -6136,26 +6136,22 @@ def drop_mob_loot(enemy):
     if not drop_table:
         return
 
-    # Check the drop table row by row: every petal makes one row, and the
-    # rarity columns inside that row are rolled together before moving to
-    # the next row.  For rarities above Common (which the dev codes by
-    # hand) a kill always drops at least one petal, so if every row fails
-    # the rows are checked again.
-    guaranteed_drop = enemy.rarity != "Common"
-
     drops = []
-    for attempt in range(50 if guaranteed_drop else 1):
-
-        drops = []
-
+    
+    if enemy.rarity != "Common":
+        # For non-Common mobs, ensure each row drops at least one petal
+        # by retrying each row until it produces a drop
         for petal, petal_rarity, drop_chance in drop_table:
-
+            # Retry this row until it drops 1 petal
+            for _ in range(10):
+                if random.random() * 100 < drop_chance:
+                    drops.append((petal, petal_rarity))
+                    break
+    else:
+        # For Common mobs, single roll per row (or none)
+        for petal, petal_rarity, drop_chance in drop_table:
             if random.random() * 100 < drop_chance:
-
                 drops.append((petal, petal_rarity))
-
-        if drops:
-            break
 
     if not drops:
         return
@@ -6427,7 +6423,7 @@ MOB_DROP_INFO = {
         ("Heavy", "Common", 8),
         ("Heavy", "Unusual", 38),
         ("Boubloom", "Common", 1),
-        ("Boubloom", "Unusual", 0.1)
+        ("Boubloom", "Unusual", 0.1),
         ("Boulder", "Common", 0.7),
         ("Boulder", "Unusual", 0.06),
     ],
