@@ -10465,6 +10465,15 @@ create_map()
 player_x, player_y = 7500, 7500
 # ---------------- GAME LOOP ----------------
 
+# Initialize enemy lists (no enemies spawned - all spawning code removed)
+ladybugs = []
+bees = []
+spiders = []
+rocks = []
+hornets = []
+baby_ants = []
+soldier_ants = []
+
 def draw_login_screen():
 
     screen.fill((20,20,30))
