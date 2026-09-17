@@ -13127,16 +13127,8 @@ while running:
         vw = min(WIDTH, WORLD_SIZE - vx0)
         vh = min(HEIGHT, WORLD_SIZE - vy0)
 
-        if vw > 0 and vh > 0:
-
-            screen.blit(
-                wall_visual_surface,
-                (vx0 - camera_x, vy0 - camera_y),
-                area=pygame.Rect(vx0, vy0, vw, vh)
-            )
-
         for wall in walls:
-            wall.draw_map()
+            wall.draw()
 
             # Draw petals
 
@@ -16878,7 +16870,7 @@ while running:
                 # screen and start expanding the hole back out again
                 game_state = "game"
                 welcome_transition_phase = "open"
-                welcome_transition_progress = 0.0
+                welcome_transition_progress = 1.0
 
         else:  # "open"
 
