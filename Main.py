@@ -15224,28 +15224,8 @@ while running:
                         mob_gallery_names[hover_row]
                     )
                     if hover_description:
-                        # The description's first letter sits alone in
-                        # the top right corner of the rectangle.
-                        hover_letter_surface = (
-                            gallery_hover_name_font.render(
-                                hover_description[0],
-                                True,
-                                (255, 255, 255)
-                            )
-                        )
-                        hover_box_surface.blit(
-                            hover_letter_surface,
-                            (
-                                hover_box_surface.get_width()
-                                - hover_letter_surface.get_width()
-                                - 6,
-                                4
-                            )
-                        )
-                        # The rest wraps onto new lines below the stat
-                        # texts.  Every line starts from the same left
-                        # edge, so a long mob hp value can never overlap
-                        # the description.
+                        # The description wraps onto new lines below the stat
+                        # texts. Every line starts from the same left edge.
                         desc_y = (
                             4
                             + hover_name_surface.get_height()
@@ -15256,7 +15236,7 @@ while running:
                             hover_box_surface.get_width() - 12
                         )
                         current_line = ""
-                        for word in hover_description[1:].split():
+                        for word in hover_description.split():
                             test_line = (
                                 current_line + " " + word
                                 if current_line
