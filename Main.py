@@ -6731,21 +6731,8 @@ def draw_petal(name, x, y, rarity, size_scale=1.0, flash_timer=0):
 
     elif name == "Light":
 
-        count = get_petal_count(
-            name,
-            rarity
-        )
-
-        if count == 1:
-            r = PETAL_RADIUS * 0.55
-        elif count <= 3:
-            r = PETAL_RADIUS * 0.48
-        elif count <= 5:
-            r = PETAL_RADIUS * 0.42
-        elif count <= 7:
-            r = PETAL_RADIUS * 0.37
-        else:
-            r = PETAL_RADIUS * 0.33
+        # Always use Common Light size regardless of rarity/count
+        r = PETAL_RADIUS * 0.55
 
         light_color = (255, 255, 255)
         light_outline = (190, 190, 190)
@@ -13419,6 +13406,8 @@ while running:
                     petal_angle + element_index * angle_increment
                 )
 
+                slot_start_index = element_index
+
                 petal_size_scale = (
                     4.0
                     if petal_slots[i]["petal"] == "Moon"
@@ -13557,7 +13546,7 @@ while running:
                             )
 
                             if petal_slots[i]["petal"] == "Wing":
-                                petal_range = int(60 * petal_size_scale)
+                                petal_range = int(PETAL_RADIUS * 1.5 * petal_size_scale)
 
                             if d < petal_range + enemy.radius:
 
@@ -13611,7 +13600,10 @@ while running:
                                 hit = True
 
                         if hit:
-                            petal_cooldowns[i] = 0
+                            if petal_type == "Wing":
+                                petal_cooldowns[i] = PETAL_RELOAD["Wing"]
+                            else:
+                                petal_cooldowns[i] = 0
 
                     element_index += 1
 
@@ -13630,7 +13622,7 @@ while running:
                                 bar_orbit += 40
                                 bar_petal_r = int(PETAL_RADIUS * 4)
                             light_angle = math.radians(
-                                petal_angle + li * (360 / light_count)
+                                petal_angle + (slot_start_index + li) * angle_increment
                             )
                             bar_x = int(
                                 WIDTH//2 +
