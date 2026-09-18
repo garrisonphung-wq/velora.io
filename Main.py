@@ -13617,6 +13617,43 @@ while running:
 
                 # ---------------- PETAL HP BAR ----------------
 
+                if petal_type == "Light":
+                    # Draw individual HP bars for each light element
+                    for li in range(light_count):
+                        if light_hp[i][li] < petal_max_hp[i]:
+                            bar_width = 20
+                            bar_height = 4
+                            hp_percent = light_hp[i][li] / petal_max_hp[i]
+                            bar_orbit = petal_distance
+                            bar_petal_r = PETAL_RADIUS
+                            if petal_slots[i]["petal"] == "Moon":
+                                bar_orbit += 40
+                                bar_petal_r = int(PETAL_RADIUS * 4)
+                            light_angle = math.radians(
+                                petal_angle + li * (360 / light_count)
+                            )
+                            bar_x = int(
+                                WIDTH//2 +
+                                math.cos(light_angle) * bar_orbit -
+                                bar_width/2
+                            )
+                            bar_y = int(
+                                HEIGHT//2 +
+                                math.sin(light_angle) * bar_orbit -
+                                bar_petal_r -
+                                12
+                            )
+                            pygame.draw.rect(
+                                screen,
+                                (80,80,80),
+                                (bar_x, bar_y, bar_width, bar_height)
+                            )
+                            pygame.draw.rect(
+                                screen,
+                                (0,255,0),
+                                (bar_x, bar_y, int(bar_width * hp_percent), bar_height)
+                            )
+
                 if petal_hp[i] < petal_max_hp[i]:
 
                     bar_width = 35
