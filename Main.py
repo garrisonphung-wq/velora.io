@@ -578,6 +578,11 @@ for i in range(5):
         PETAL_HP_MULTIPLIER[petal_slots[i]["rarity"]]
     )
 
+    if petal_type == "Light":
+        light_count = get_petal_count(petal_type, petal_slots[i]["rarity"])
+        if light_count > 0:
+            hp /= light_count
+
     petal_max_hp.append(hp)
     petal_hp.append(hp)
 
@@ -4750,6 +4755,10 @@ def load_player():
                 PETAL_HP_MULTIPLIER[slot["rarity"]]
             )
 
+            if slot["petal"] == "Light":
+                light_count = get_petal_count("Light", slot["rarity"])
+                if light_count > 0:
+                    hp /= light_count
 
             petal_max_hp.append(
                 hp
@@ -5386,6 +5395,9 @@ def get_petal_damage(petal_name, rarity):
         * rarity_multiplier
         * petal_count
     )
+
+    if petal_name == "Light":
+        damage /= petal_count
 
     return damage
 
@@ -6731,7 +6743,7 @@ def draw_petal(name, x, y, rarity, size_scale=1.0, flash_timer=0):
         # Multiple Lights
         else:
 
-            distance = PETAL_RADIUS * 0.55
+            distance = PETAL_RADIUS * 1.8
 
             for i in range(count):
 
