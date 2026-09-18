@@ -511,11 +511,11 @@ PETAL_HP = {
 
     "Glass": 0.6,
 
-    "Antenna": 1000,
+    "Antenna": 3000,
 
     "Pollen": 0.01,
 
-    "Soil": 10,
+    "Soil": 30,
 
     "Ant Egg": 1,
 
@@ -531,7 +531,7 @@ PETAL_HP = {
 
     "Third Eye": 30,
 
-    "Cice": 70,
+    "Cice": 210,
 
     "Boubloom": 20,
 
@@ -839,7 +839,7 @@ PETAL_DAMAGE = {
     "Stick": 25* 2,
     "Clover": 2* 2,
     "Glass": 40* 2,
-    "Antenna": 1* 2,
+    "Antenna": 3* 2,
     "Pollen": 30* 2,
     "Soil": 2* 2,
     "Ant Egg": 0.1* 2,
@@ -861,83 +861,83 @@ PETAL_DAMAGE = {
 
 PETAL_RELOAD = {
 
-    "Basic": 20,
+    "Basic": 60,
 
-    "Light": 12,
+    "Light": 36,
 
-    "Stinger": 25,
+    "Stinger": 75,
 
-    "Heavy": 15,
+    "Heavy": 45,
 
-    "Rose": 10,
+    "Rose": 30,
 
-    "Wing": 15,
+    "Wing": 45,
 
-    "Cactus": 40,
+    "Cactus": 120,
 
-    "Leaf": 22,
+    "Leaf": 66,
 
-    "Pea": 18,
+    "Pea": 54,
 
-    "Missile": 50,
+    "Missile": 150,
 
-    "Bone": 30,
+    "Bone": 90,
 
-    "Web": 60,
+    "Web": 180,
 
-    "Rock": 55,
+    "Rock": 165,
 
-    "Faster": 10,
+    "Faster": 30,
 
-    "Magnet": 25,
+    "Magnet": 75,
 
-    "Bubble": 5,
+    "Bubble": 15,
 
-    "Honey": 35,
+    "Honey": 105,
 
-    "Poison": 30,
+    "Poison": 90,
 
-    "Shark": 70,
+    "Shark": 210,
 
-    "Rice": 1,
+    "Rice": 3,
 
-    "Corn": 80,
+    "Corn": 240,
 
-    "Stick": 20,
+    "Stick": 60,
 
-    "Clover": 14,
+    "Clover": 42,
 
-    "Glass": 30,
+    "Glass": 90,
 
-    "Antenna": 1,
+    "Antenna": 3,
 
-    "Pollen": 15,
+    "Pollen": 45,
 
-    "Soil": 10,
+    "Soil": 30,
 
-    "Ant Egg": 150,
+    "Ant Egg": 450,
 
-    "Sand": 10,
+    "Sand": 30,
 
-    "Lentil": 5,
+    "Lentil": 15,
 
-    "Pincer": 10,
+    "Pincer": 30,
 
-    "Shell": 10,
+    "Shell": 30,
 
-    "Beetle Egg": 60,
+    "Beetle Egg": 180,
 
-    "Third Eye": 10,
+    "Third Eye": 30,
 
-    "Cice": 7,
+    "Cice": 21,
 
-    "Boubloom": 25,
+    "Boubloom": 75,
 
-    "Boulder": 150,
+    "Boulder": 450,
 
-    "Moon": 125,
+    "Moon": 375,
 
-    "Grape": 18
+    "Grape": 54
 }
 
 # ---------------- ENEMY RARITY MULTIPLIER ----------------
@@ -1030,8 +1030,11 @@ welcome_petal_reload = 40
 
 # Currently highlighted biome on the welcome screen (None until one is
 # pressed, then one of "garden", "desert", "ocean", "eagle", "farm").
-
 welcome_selected_biome = None
+# Set to True when the player clicks the green Play button
+welcome_play_pressed = False
+# Chat text visibility flag
+chat_text_visible = True
 
 # Set once per mouse click on the welcome screen so biome buttons only fire
 # on the exact frame the button is pressed, not every frame the mouse is held.
@@ -1116,6 +1119,41 @@ def draw_iris_wipe(radius):
         pygame.draw.circle(wipe, (0, 0, 0, 0), (WIDTH // 2, HEIGHT // 2), radius)
     screen.blit(wipe, (0, 0))
 
+def draw_light_preview(x, y, rarity):
+
+    count = get_petal_count("Light", rarity)
+
+    light_color = (255, 255, 255)
+    light_outline = (190, 190, 190)
+    r = PETAL_RADIUS * 0.55
+
+    for i in range(count):
+
+        if count == 1:
+            draw_x = x
+            draw_y = y
+            scale = 1.0
+        else:
+            angle_rad = math.radians(i * (360 / count))
+            distance = PETAL_RADIUS * 0.55
+            draw_x = x + math.cos(angle_rad) * distance
+            draw_y = y + math.sin(angle_rad) * distance
+            scale = 0.8
+
+        pygame.draw.circle(
+            screen,
+            light_outline,
+            (int(draw_x), int(draw_y)),
+            int(r * scale + 2)
+        )
+
+        pygame.draw.circle(
+            screen,
+            light_color,
+            (int(draw_x), int(draw_y)),
+            int(r * scale)
+        )
+
 def make_petal_surface(name, x, y, rarity, size_scale=1.0):
 
     # renders one of the game's real petal pictures into an offscreen
@@ -1133,13 +1171,16 @@ def make_petal_surface(name, x, y, rarity, size_scale=1.0):
     try:
         petal_angle = 0
         screen = surf
-        draw_petal(
-            name,
-            pad,
-            pad,
-            rarity,
-            size_scale=size_scale
-        )
+        if name == "Light":
+            draw_light_preview(pad, pad, rarity)
+        else:
+            draw_petal(
+                name,
+                pad,
+                pad,
+                rarity,
+                size_scale=size_scale
+            )
     finally:
         screen = old_screen
         petal_angle = old_angle
@@ -5621,10 +5662,11 @@ def drop_mob_loot(enemy):
     drops = []
 
     if enemy.rarity != "Common":
-        # For non-Common mobs, each petal type picks one row (Common or
-        # the mob's rarity) and retries until it drops 1 petal.
-        # This prevents unusual mobs from dropping every rarity petal
-        # from the same row (e.g., both Light Common and Light Unusual).
+        # For non-Common mobs, drop exactly 1 of each petal type.
+        # For each petal type, pick the best rarity (mob's first, then Common).
+        # Petals with < 5% drop chance: single roll only.
+        # Petals with >= 5%: retry up to 10 times.
+        # Works correctly for decimal percentages (e.g. 0.06%).
         petal_rows = {}
         for petal, petal_rarity, drop_chance in drop_table:
             petal_rows.setdefault(petal, []).append(
@@ -5632,18 +5674,32 @@ def drop_mob_loot(enemy):
             )
 
         for petal, rows in petal_rows.items():
-            # Pick one row at random from the available rows for this petal
-            # (Common or the mob's rarity) and retry it until it drops 1 petal
-            chosen = random.choice(rows)
-            petal_rarity, drop_chance = chosen
-            # Decimal-chance rows (e.g., 0.06%) roll once without retry
-            if drop_chance != int(drop_chance):
-                if random.random() * 100 < drop_chance:
-                    drops.append((petal, petal_rarity))
+            # Pick best rarity: mob's rarity first, then Common
+            chosen_rarity = None
+            chosen_chance = None
+            for petal_rarity, drop_chance in rows:
+                if petal_rarity == enemy.rarity:
+                    chosen_rarity = petal_rarity
+                    chosen_chance = drop_chance
+                    break
+            if chosen_rarity is None:
+                for petal_rarity, drop_chance in rows:
+                    if petal_rarity == "Common":
+                        chosen_rarity = petal_rarity
+                        chosen_chance = drop_chance
+                        break
+            if chosen_rarity is None:
+                chosen_rarity, chosen_chance = rows[0]
+
+            if chosen_chance < 5:
+                # Rare drop: single roll
+                if random.random() * 100 < chosen_chance:
+                    drops.append((petal, chosen_rarity))
             else:
+                # Normal drop: retry up to 10 times
                 for _ in range(10):
-                    if random.random() * 100 < drop_chance:
-                        drops.append((petal, petal_rarity))
+                    if random.random() * 100 < chosen_chance:
+                        drops.append((petal, chosen_rarity))
                         break
     else:
         # For Common mobs, single roll per row (or none)
@@ -6130,6 +6186,49 @@ def enemy_attack(amount, petal_index=None):
                 petal_respawn_timer[petal_index] = 3
             else:
                 petal_respawn_timer[petal_index] = 300
+
+def load_settings():
+
+    global settings_switch_on, settings_switch2_on, settings_switch3_on
+    global settings_hp_bar_scale, settings_hp_bar_knob_progress
+
+    defaults = {
+        "auto_squad": False,
+        "equip_collected": False,
+        "show_hitbox": False,
+        "hp_bar_scale": 1.0,
+    }
+
+    try:
+        with open("settings.json", "r") as file:
+            data = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        data = defaults
+    else:
+        for key, default_val in defaults.items():
+            data.setdefault(key, default_val)
+
+    settings_switch_on = data["auto_squad"]
+    settings_switch2_on = data["equip_collected"]
+    settings_switch3_on = data["show_hitbox"]
+    settings_hp_bar_scale = data["hp_bar_scale"]
+    settings_hp_bar_knob_progress = (
+        (settings_hp_bar_scale - 1) / 2
+    )
+
+def save_settings():
+
+    data = {
+        "auto_squad": settings_switch_on,
+        "equip_collected": settings_switch2_on,
+        "show_hitbox": settings_switch3_on,
+        "hp_bar_scale": settings_hp_bar_scale,
+    }
+
+    with open("settings.json", "w") as file:
+        json.dump(data, file, indent=4)
+
+load_settings()
 
 def sort_inventory():
 
@@ -6731,7 +6830,7 @@ def draw_petal(name, x, y, rarity, size_scale=1.0, flash_timer=0):
 
     elif name == "Light":
 
-        # Always use Common Light size regardless of rarity/count
+        # Single light dot (used for orbitting lights in game)
         r = PETAL_RADIUS * 0.55
 
         light_color = (255, 255, 255)
@@ -10706,6 +10805,41 @@ while running:
 
                 welcome_click_pending = True
 
+            # Chat box click handling
+            if game_state == "game" and welcome_play_pressed:
+                if chat_text_visible:
+                    chat_box_w = 260
+                    chat_box_h = 120
+                    chat_margin = 20
+                    inner_padding = 10
+                    inner_height = 30
+                    chat_box_x = WIDTH - chat_margin - chat_box_w
+                    chat_box_y = HEIGHT - chat_margin - chat_box_h
+                    inner_rect_x = chat_box_x + inner_padding
+                    inner_rect_y = chat_box_y + chat_box_h - inner_height - inner_padding
+                    inner_rect_w = chat_box_w - 2 * inner_padding
+                    inner_rect = pygame.Rect(
+                        inner_rect_x, inner_rect_y, inner_rect_w, inner_height
+                    )
+                    if inner_rect.collidepoint(mouse_x, mouse_y):
+                        chat_text_visible = False
+                else:
+                    chat_box_w = 260
+                    chat_box_h = 120
+                    chat_margin = 20
+                    inner_padding = 10
+                    inner_height = 30
+                    chat_box_x = WIDTH - chat_margin - chat_box_w
+                    chat_box_y = HEIGHT - chat_margin - chat_box_h
+                    inner_rect_x = chat_box_x + inner_padding
+                    inner_rect_y = chat_box_y + chat_box_h - inner_height - inner_padding
+                    inner_rect_w = chat_box_w - 2 * inner_padding
+                    inner_rect = pygame.Rect(
+                        inner_rect_x, inner_rect_y, inner_rect_w, inner_height
+                    )
+                    if not inner_rect.collidepoint(mouse_x, mouse_y):
+                        chat_text_visible = True
+
             if game_state == "login":
 
                 if password_box.collidepoint(event.pos):
@@ -10913,6 +11047,7 @@ while running:
                 ).collidepoint(event.pos)
             ):
                 settings_switch_on = not settings_switch_on
+                save_settings()
 
             # Clicking the second switch toggles it on or off.
             if (
@@ -10923,6 +11058,7 @@ while running:
                 ).collidepoint(event.pos)
             ):
                 settings_switch2_on = not settings_switch2_on
+                save_settings()
 
             # Clicking the third switch toggles it on or off.
             if (
@@ -10933,6 +11069,7 @@ while running:
                 ).collidepoint(event.pos)
             ):
                 settings_switch3_on = not settings_switch3_on
+                save_settings()
 
             if new_button_panel_open and event.button == 1:
                 if mob_gallery_scrollbar_rect.collidepoint(event.pos):
@@ -11373,6 +11510,7 @@ while running:
             settings_hp_bar_scale = (
                 1 + settings_hp_bar_knob_progress * 2
             )
+            save_settings()
 
         if event.type == pygame.MOUSEMOTION and craft_dragging:
             craft_visible_rows = max(
@@ -11925,7 +12063,7 @@ while running:
                     else:
                         welcome_selected_biome = biome_name
 
-            # start the iris wipe when the (green) play button is clicked:
+                # start the iris wipe when the (green) play button is clicked:
             # only works once a biome has been selected, and never restarts
             # a wipe that is already running
             if (
@@ -11936,6 +12074,7 @@ while running:
                 welcome_transition_active = True
                 welcome_transition_phase = "close"
                 welcome_transition_progress = 0.0
+                welcome_play_pressed = True
 
         # draw a white glow overlay on the currently selected biome button
         if welcome_selected_biome is not None:
@@ -13448,7 +13587,7 @@ while running:
                         light_alive[i].append(True)
 
                     damage = get_petal_damage(petal_type, rarity) / light_count
-                    petal_range = int(PETAL_RADIUS * 0.35)
+                    petal_range = int(PETAL_RADIUS * 0.55)
 
                     all_enemies = (
                         ladybugs +
@@ -13546,7 +13685,7 @@ while running:
                             )
 
                             if petal_slots[i]["petal"] == "Wing":
-                                petal_range = int(PETAL_RADIUS * 1.5 * petal_size_scale)
+                                petal_range = int(PETAL_RADIUS)
 
                             if d < petal_range + enemy.radius:
 
@@ -13980,7 +14119,7 @@ while running:
 
                 if petal_type == "Light":
                     light_count = get_petal_count("Light", rarity)
-                    petal_range_draw = int(PETAL_RADIUS * 0.35)
+                    petal_range_draw = int(PETAL_RADIUS * 0.55)
 
                     for li in range(light_count):
                         angle = math.radians(
@@ -14029,7 +14168,7 @@ while running:
                     )
 
                     if petal_type == "Wing":
-                        petal_range_draw = int(60 * petal_size_scale)
+                        petal_range_draw = int(PETAL_RADIUS)
 
                     pygame.draw.circle(
                         screen,
@@ -17071,6 +17210,62 @@ while running:
             if welcome_transition_progress >= WELCOME_TRANSITION_LENGTH:
 
                 welcome_transition_active = False
+
+    # ---------------- CHAT BOX ----------------
+    # Only visible during gameplay after clicking the green Play button.
+    if (
+        welcome_play_pressed
+        and not settings_panel_open
+        and not craft_open
+        and not inventory_open
+        and not new_button_panel_open
+    ):
+        chat_box_w = 260
+        chat_box_h = 120
+        chat_margin = 20
+        border_radius = 12
+
+        box_x = WIDTH - chat_margin - chat_box_w
+        box_y = HEIGHT - chat_margin - chat_box_h
+
+        chat_surf = pygame.Surface(
+            (WIDTH, HEIGHT),
+            pygame.SRCALPHA
+        )
+
+        pygame.draw.rect(
+            chat_surf,
+            (30, 30, 30, 200),
+            (box_x, box_y, chat_box_w, chat_box_h),
+            border_radius=border_radius
+        )
+
+        # Inner rectangle near the bottom
+        inner_padding = 10
+        inner_height = 30
+        inner_rect_x = box_x + inner_padding
+        inner_rect_y = box_y + chat_box_h - inner_height - inner_padding
+        inner_rect_w = chat_box_w - 2 * inner_padding
+        
+        pygame.draw.rect(
+            chat_surf,
+            (40, 40, 40, 180),  # Slightly lighter and more transparent
+            (inner_rect_x, inner_rect_y, inner_rect_w, inner_height),
+            border_radius=8
+        )
+
+        # Text in the center of the inner rectangle
+        if chat_text_visible:
+            font = pygame.font.SysFont("arial", 16)
+            text = "Press Enter or Click on Me to Chat"
+            text_surf = font.render(text, True, (200, 200, 200))  # Light gray
+            # Make text 80% transparent (20% opacity)
+            text_surf.set_alpha(51)
+            text_rect = text_surf.get_rect()
+            text_rect.center = (inner_rect_x + inner_rect_w // 2, inner_rect_y + inner_height // 2)
+            chat_surf.blit(text_surf, text_rect)
+
+        screen.blit(chat_surf, (0, 0))
 
     pygame.display.flip()
 
