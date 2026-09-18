@@ -6743,25 +6743,25 @@ def draw_petal(name, x, y, rarity, size_scale=1.0, flash_timer=0):
         # Multiple Lights
         else:
 
-            distance = PETAL_RADIUS * 0.8
+            orbit_distance = petal_distance
 
-            for i in range(count):
+            for li in range(count):
 
-                angle = (
+                base_angle = (
                     petal_angle
-                    + i * (360 / count)
+                    + li * (360 / count)
                 )
 
-                angle_rad = math.radians(angle)
+                angle_rad = math.radians(base_angle)
 
                 light_x = (
                     x
-                    + math.cos(angle_rad) * distance
+                    + math.cos(angle_rad) * orbit_distance
                 )
 
                 light_y = (
                     y
-                    + math.sin(angle_rad) * distance
+                    + math.sin(angle_rad) * orbit_distance
                 )
 
                 pygame.draw.circle(
@@ -13853,7 +13853,7 @@ while running:
                             hitbox_width
                         )
                     else:
-                        light_dist = PETAL_RADIUS * 0.8
+                        light_dist = petal_distance
                         for li in range(light_count):
                             l_angle = math.radians(
                                 petal_angle + i * 72 + li * (360 / light_count)
