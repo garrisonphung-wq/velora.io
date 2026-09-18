@@ -6750,73 +6750,19 @@ def draw_petal(name, x, y, rarity, size_scale=1.0, flash_timer=0):
         light_color = (255, 255, 255)
         light_outline = (190, 190, 190)
 
-        # One Light
-        if count == 1:
+        pygame.draw.circle(
+            screen,
+            light_outline,
+            (int(x), int(y)),
+            int(r + 2)
+        )
 
-            pygame.draw.circle(
-                screen,
-                light_outline,
-                (int(x), int(y)),
-                int(r + 2)
-            )
-
-            pygame.draw.circle(
-                screen,
-                light_color,
-                (int(x), int(y)),
-                int(r)
-            )
-
-        # Multiple Lights
-        else:
-
-            orbit_distance = petal_distance
-
-            center_x = (
-                x - math.cos(math.radians(petal_angle)) * orbit_distance
-            )
-            center_y = (
-                y - math.sin(math.radians(petal_angle)) * orbit_distance
-            )
-
-            for li in range(count):
-
-                base_angle = (
-                    petal_angle
-                    + li * (360 / count)
-                )
-
-                angle_rad = math.radians(base_angle)
-
-                light_x = (
-                    center_x
-                    + math.cos(angle_rad) * orbit_distance
-                )
-
-                light_y = (
-                    center_y
-                    + math.sin(angle_rad) * orbit_distance
-                )
-
-                pygame.draw.circle(
-                    screen,
-                    light_outline,
-                    (
-                        int(light_x),
-                        int(light_y)
-                    ),
-                    int(r + 2)
-                )
-
-                pygame.draw.circle(
-                    screen,
-                    light_color,
-                    (
-                        int(light_x),
-                        int(light_y)
-                    ),
-                    int(r)
-                )
+        pygame.draw.circle(
+            screen,
+            light_color,
+            (int(x), int(y)),
+            int(r)
+        )
 
     elif name == "Heavy":
 
@@ -13311,46 +13257,98 @@ while running:
                     )
 
 
+        # Compute total visual elements so all petals and lights
+        # form one even polygon around the flower.
+        total_elements = 0
         for i in range(PETAL_SLOTS):
+            if not petal_alive[i]:
+                continue
+            if petal_slots[i]["petal"] == "Light":
+                total_elements += get_petal_count(
+                    "Light",
+                    petal_slots[i]["rarity"]
+                )
+            else:
+                total_elements += 1
 
+        angle_increment = 360 / total_elements if total_elements > 0 else 72
+        element_index = 0
+
+        for i in range(PETAL_SLOTS):
             if not petal_alive[i]:
                 continue
 
-            angle = math.radians(petal_angle + i * 72)
+            petal_type = petal_slots[i]["petal"]
+            rarity = petal_slots[i]["rarity"]
 
-            # The giant moon orbits a little farther out so it
-            # doesn't crowd the flower.
-            moon_extra_orbit = (
-                40
-                if petal_slots[i]["petal"] == "Moon"
-                else 0
-            )
-            x = (
-                WIDTH // 2
-                + math.cos(angle)
-                * (petal_distance + moon_extra_orbit)
-            )
-            y = (
-                HEIGHT // 2
-                + math.sin(angle)
-                * (petal_distance + moon_extra_orbit)
-            )
+            if petal_type == "Light":
+                light_count = get_petal_count("Light", rarity)
+                # Draw each light as a separate element
+                for li in range(light_count):
+                    angle = math.radians(
+                        petal_angle + element_index * angle_increment
+                    )
+                    x = (
+                        WIDTH // 2
+                        + math.cos(angle) * petal_distance
+                    )
+                    y = (
+                        HEIGHT // 2
+                        + math.sin(angle) * petal_distance
+                    )
 
-            orbit_angle = petal_angle
-            petal_angle = petal_self_spin_angle
-            draw_petal(
-                petal_slots[i]["petal"],
-                x,
-                y,
-                petal_slots[i]["rarity"],
-                size_scale=(
-                    4.0
-                    if petal_slots[i]["petal"] == "Moon"
-                    else 1.0
-                ),
-                flash_timer=petal_flash_timers[i]
-            )
-            petal_angle = orbit_angle
+                    orbit_angle = petal_angle
+                    petal_angle = petal_self_spin_angle
+                    draw_petal(
+                        "Light",
+                        x,
+                        y,
+                        rarity,
+                        flash_timer=petal_flash_timers[i]
+                    )
+                    petal_angle = orbit_angle
+
+                    element_index += 1
+            else:
+                # Draw normal petal as single element
+                # The giant moon orbits a little farther out so it
+                # doesn't crowd the flower.
+                moon_extra_orbit = (
+                    40
+                    if petal_type == "Moon"
+                    else 0
+                )
+                angle = math.radians(
+                    petal_angle + element_index * angle_increment
+                )
+                x = (
+                    WIDTH // 2
+                    + math.cos(angle)
+                    * (petal_distance + moon_extra_orbit)
+                )
+                y = (
+                    HEIGHT // 2
+                    + math.sin(angle)
+                    * (petal_distance + moon_extra_orbit)
+                )
+
+                orbit_angle = petal_angle
+                petal_angle = petal_self_spin_angle
+                draw_petal(
+                    petal_type,
+                    x,
+                    y,
+                    rarity,
+                    size_scale=(
+                        4.0
+                        if petal_type == "Moon"
+                        else 1.0
+                    ),
+                    flash_timer=petal_flash_timers[i]
+                )
+                petal_angle = orbit_angle
+
+                element_index += 1
 
 
             # ---------------- UPGRADE MENU DRAW ----------------
@@ -13395,6 +13393,21 @@ while running:
 
 # ---------------- PETAL ATTACK ----------------
 
+            # Calculate total elements and increment for attack positions
+            total_elements = 0
+            for i in range(PETAL_SLOTS):
+                if not petal_alive[i]:
+                    continue
+                if petal_slots[i]["petal"] == "Light":
+                    total_elements += get_petal_count(
+                        "Light",
+                        petal_slots[i]["rarity"]
+                    )
+                else:
+                    total_elements += 1
+            angle_increment = 360 / total_elements if total_elements > 0 else 72
+            element_index = 0
+
             for i in range(PETAL_SLOTS):
 
                 # skip dead petals
@@ -13403,7 +13416,7 @@ while running:
 
 
                 angle = math.radians(
-                    petal_angle + i * 72
+                    petal_angle + element_index * angle_increment
                 )
 
                 petal_size_scale = (
@@ -13472,7 +13485,7 @@ while running:
                             continue
 
                         # Calculate light position
-                        light_angle = petal_angle + i * 72 + li * (360 / light_count)
+                        light_angle = petal_angle + element_index * angle_increment
                         light_x = player_x + math.cos(math.radians(light_angle)) * petal_distance
                         light_y = player_y + math.sin(math.radians(light_angle)) * petal_distance
 
@@ -13493,6 +13506,8 @@ while running:
 
                                     enemy.take_damage(damage)
                                     hit = True
+
+                        element_index += 1
 
                     # Check if all lights dead
                     if not any(light_alive[i]):
@@ -13598,7 +13613,7 @@ while running:
                         if hit:
                             petal_cooldowns[i] = 0
 
-
+                    element_index += 1
 
                 # ---------------- PETAL HP BAR ----------------
 
@@ -13910,71 +13925,83 @@ while running:
                 hitbox_width
             )
 
+            # Compute total visual elements (same as drawing loop)
+            total_elements = 0
+            for i in range(PETAL_SLOTS):
+                if not petal_alive[i]:
+                    continue
+                if petal_slots[i]["petal"] == "Light":
+                    total_elements += get_petal_count(
+                        "Light",
+                        petal_slots[i]["rarity"]
+                    )
+                else:
+                    total_elements += 1
+
+            angle_increment = 360 / total_elements if total_elements > 0 else 72
+            element_index = 0
+
             # Petal hitboxes
             for i in range(PETAL_SLOTS):
                 if not petal_alive[i]:
                     continue
-                angle = math.radians(petal_angle + i * 72)
-                petal_size_scale = (
-                    4.0
-                    if petal_slots[i]["petal"] == "Moon"
-                    else 1.0
-                )
-                moon_extra_orbit = (
-                    40
-                    if petal_slots[i]["petal"] == "Moon"
-                    else 0
-                )
-                hp_x = int(
-                    player_center_x
-                    + math.cos(angle)
-                    * (petal_distance + moon_extra_orbit)
-                )
-                hp_y = int(
-                    player_center_y
-                    + math.sin(angle)
-                    * (petal_distance + moon_extra_orbit)
-                )
-                petal_range_draw = (
-                    int(PETAL_RADIUS * petal_size_scale)
-                )
 
-                if petal_slots[i]["petal"] == "Wing":
-                    petal_range_draw = int(60 * petal_size_scale)
+                petal_type = petal_slots[i]["petal"]
+                rarity = petal_slots[i]["rarity"]
 
-                if petal_slots[i]["petal"] == "Light":
-                    light_count = get_petal_count(
-                        "Light",
-                        petal_slots[i]["rarity"]
-                    )
-                    if light_count == 1:
+                if petal_type == "Light":
+                    light_count = get_petal_count("Light", rarity)
+                    petal_range_draw = int(PETAL_RADIUS * 0.35)
+
+                    for li in range(light_count):
+                        angle = math.radians(
+                            petal_angle + element_index * angle_increment
+                        )
+                        l_x = int(
+                            player_center_x + math.cos(angle) * petal_distance
+                        )
+                        l_y = int(
+                            player_center_y + math.sin(angle) * petal_distance
+                        )
                         pygame.draw.circle(
                             screen,
                             hitbox_color,
-                            (hp_x, hp_y),
+                            (l_x, l_y),
                             petal_range_draw,
                             hitbox_width
                         )
-                    else:
-                        light_dist = petal_distance
-                        for li in range(light_count):
-                            l_angle = math.radians(
-                                petal_angle + i * 72 + li * (360 / light_count)
-                            )
-                            l_x = int(
-                                hp_x + math.cos(l_angle) * light_dist
-                            )
-                            l_y = int(
-                                hp_y + math.sin(l_angle) * light_dist
-                            )
-                            pygame.draw.circle(
-                                screen,
-                                hitbox_color,
-                                (l_x, l_y),
-                                int(PETAL_RADIUS * 0.35),
-                                hitbox_width
-                            )
+                        element_index += 1
                 else:
+                    petal_size_scale = (
+                        4.0
+                        if petal_type == "Moon"
+                        else 1.0
+                    )
+                    moon_extra_orbit = (
+                        40
+                        if petal_type == "Moon"
+                        else 0
+                    )
+                    angle = math.radians(
+                        petal_angle + element_index * angle_increment
+                    )
+                    hp_x = int(
+                        player_center_x
+                        + math.cos(angle)
+                        * (petal_distance + moon_extra_orbit)
+                    )
+                    hp_y = int(
+                        player_center_y
+                        + math.sin(angle)
+                        * (petal_distance + moon_extra_orbit)
+                    )
+                    petal_range_draw = (
+                        int(PETAL_RADIUS * petal_size_scale)
+                    )
+
+                    if petal_type == "Wing":
+                        petal_range_draw = int(60 * petal_size_scale)
+
                     pygame.draw.circle(
                         screen,
                         hitbox_color,
@@ -13982,6 +14009,7 @@ while running:
                         petal_range_draw,
                         hitbox_width
                     )
+                    element_index += 1
 
             # Enemy hitboxes
             all_enemy_lists = [
