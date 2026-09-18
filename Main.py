@@ -443,6 +443,22 @@ petal_cooldowns = []
 
 for i in range(5):
     petal_cooldowns.append(0)
+
+# Per-light cooldowns for Light petal (each light has its own cooldown)
+light_cooldowns = []
+for i in range(5):
+    light_cooldowns.append([])
+
+# Per-light HP for Light petal
+light_hp = []
+for i in range(5):
+    light_hp.append([])
+
+# Per-light alive state for Light petal
+light_alive = []
+for i in range(5):
+    light_alive.append([])
+
 # ---------------- PETAL HP ----------------
 
 PETAL_HP = {
@@ -585,6 +601,17 @@ for i in range(5):
 
     petal_max_hp.append(hp)
     petal_hp.append(hp)
+
+    # Initialize per-light state for Light petal
+    if petal_type == "Light":
+        light_count = get_petal_count(petal_type, petal_slots[i]["rarity"])
+        light_hp[i] = [hp] * light_count
+        light_cooldowns[i] = [0] * light_count
+        light_alive[i] = [True] * light_count
+    else:
+        light_hp[i] = []
+        light_cooldowns[i] = []
+        light_alive[i] = []
 
     petal_alive.append(True)
 
@@ -6745,6 +6772,13 @@ def draw_petal(name, x, y, rarity, size_scale=1.0, flash_timer=0):
 
             orbit_distance = petal_distance
 
+            center_x = (
+                x - math.cos(math.radians(petal_angle)) * orbit_distance
+            )
+            center_y = (
+                y - math.sin(math.radians(petal_angle)) * orbit_distance
+            )
+
             for li in range(count):
 
                 base_angle = (
@@ -6755,12 +6789,12 @@ def draw_petal(name, x, y, rarity, size_scale=1.0, flash_timer=0):
                 angle_rad = math.radians(base_angle)
 
                 light_x = (
-                    x
+                    center_x
                     + math.cos(angle_rad) * orbit_distance
                 )
 
                 light_y = (
-                    y
+                    center_y
                     + math.sin(angle_rad) * orbit_distance
                 )
 
@@ -12736,6 +12770,12 @@ while running:
                     petal_alive[i] = True
                     petal_hp[i] = petal_max_hp[i]
 
+                    if petal_slots[i]["petal"] == "Light":
+                        light_count = get_petal_count("Light", petal_slots[i]["rarity"])
+                        light_hp[i] = [petal_max_hp[i]] * light_count
+                        light_cooldowns[i] = [0] * light_count
+                        light_alive[i] = [True] * light_count
+
                     save_player()
 
             if petal_flash_timers[i] > 0:
@@ -12750,8 +12790,13 @@ while running:
 
             if petal_alive[i]:
 
-                if petal_hp[i] < petal_max_hp[i]:
-
+                if petal_slots[i]["petal"] == "Light":
+                    for li in range(len(light_hp[i])):
+                        if light_alive[i][li] and light_hp[i][li] < petal_max_hp[i]:
+                            light_hp[i][li] += 0.05
+                            if light_hp[i][li] > petal_max_hp[i]:
+                                light_hp[i][li] = petal_max_hp[i]
+                elif petal_hp[i] < petal_max_hp[i]:
                     petal_hp[i] += 0.05
 
                     if petal_hp[i] > petal_max_hp[i]:
@@ -13348,7 +13393,7 @@ while running:
             petal_world_x = player_x + math.cos(angle) * petal_distance
             petal_world_y = player_y + math.sin(angle) * petal_distance
 
-    # ---------------- PETAL ATTACK ----------------
+# ---------------- PETAL ATTACK ----------------
 
             for i in range(PETAL_SLOTS):
 
@@ -13384,18 +13429,16 @@ while running:
                 )
 
 
-                # cooldown
-                if petal_cooldowns[i] > 0:
+                petal_type = petal_slots[i]["petal"]
+                rarity = petal_slots[i]["rarity"]
 
-                    petal_cooldowns[i] -= 1
+                if petal_type == "Light":
+                    light_count = get_petal_count(petal_type, rarity)
+                    if light_count == 0:
+                        light_count = 1
 
-
-                # attack only if ready
-                if petal_cooldowns[i] == 0:
-
-
-                    hit = False
-
+                    damage = get_petal_damage(petal_type, rarity) / light_count
+                    petal_range = int(PETAL_RADIUS * 0.35)
 
                     all_enemies = (
                         ladybugs +
@@ -13407,93 +13450,145 @@ while running:
                         soldier_ants
                     )
 
-                    damage = get_petal_damage(
-                        petal_slots[i]["petal"],
-                        petal_slots[i]["rarity"]
-                    )
+                    hit = False
 
-                    for enemy in all_enemies:
+                    for li in range(light_count):
+                        # Handle cooldown and respawn
+                        if light_cooldowns[i][li] > 0:
+                            light_cooldowns[i][li] -= 1
+                            if light_cooldowns[i][li] <= 0:
+                                light_alive[i][li] = True
+                                light_hp[i][li] = petal_max_hp[i]
 
-
-                        if not enemy.alive:
+                        if not light_alive[i][li]:
                             continue
 
+                        # Calculate light position
+                        light_angle = petal_angle + i * 72 + li * (360 / light_count)
+                        light_x = player_x + math.cos(math.radians(light_angle)) * petal_distance
+                        light_y = player_y + math.sin(math.radians(light_angle)) * petal_distance
 
-                        d = distance(
-                            petal_world_x,
-                            petal_world_y,
-                            enemy.x,
-                            enemy.y
+                        if light_cooldowns[i][li] == 0:
+                            for enemy in all_enemies:
+                                if not enemy.alive:
+                                    continue
+
+                                d = distance(light_x, light_y, enemy.x, enemy.y)
+
+                                if d < petal_range + enemy.radius:
+                                    if enemy.attack_cooldown == 0:
+                                        light_hp[i][li] -= enemy.damage
+                                        if light_hp[i][li] <= 0:
+                                            light_alive[i][li] = False
+                                            light_cooldowns[i][li] = PETAL_RELOAD["Light"]
+                                        enemy.attack_cooldown = 2
+
+                                    enemy.take_damage(damage)
+                                    hit = True
+
+                    # Check if all lights dead
+                    if not any(light_alive[i]):
+                        petal_alive[i] = False
+                        petal_respawn_timer[i] = PETAL_RELOAD["Light"]
+
+                else:
+                    # Existing non-Light logic
+                    # cooldown
+                    if petal_cooldowns[i] > 0:
+                        petal_cooldowns[i] -= 1
+
+                    # attack only if ready
+                    if petal_cooldowns[i] == 0:
+
+                        hit = False
+
+                        all_enemies = (
+                            ladybugs +
+                            bees +
+                            spiders +
+                            rocks +
+                            hornets +
+                            baby_ants +
+                            soldier_ants
                         )
 
-
-                        petal_range = (
-                            int(PETAL_RADIUS * petal_size_scale)
+                        damage = get_petal_damage(
+                            petal_type,
+                            rarity
                         )
 
-                        if petal_slots[i]["petal"] == "Wing":
-                            petal_range = int(60 * petal_size_scale)
+                        for enemy in all_enemies:
 
+                            if not enemy.alive:
+                                continue
 
-                        if d < petal_range + enemy.radius:
+                            d = distance(
+                                petal_world_x,
+                                petal_world_y,
+                                enemy.x,
+                                enemy.y
+                            )
 
-                            # enemy damages Moon petal
-                            # enemy damages petal
-                            if enemy.attack_cooldown == 0:
+                            petal_range = (
+                                int(PETAL_RADIUS * petal_size_scale)
+                            )
 
-                                petal_hp[i] -= enemy.damage
-                                petal_flash_timers[i] = 4
+                            if petal_slots[i]["petal"] == "Wing":
+                                petal_range = int(60 * petal_size_scale)
 
-                                if petal_hp[i] <= 0:
+                            if d < petal_range + enemy.radius:
 
-                                    petal_hp[i] = 0
-                                    petal_alive[i] = False
+                                # enemy damages petal
+                                if enemy.attack_cooldown == 0:
 
-                                    petal_respawn_timer[i] = PETAL_RELOAD[
-                                        petal_slots[i]["petal"]
-                                    ]
+                                    petal_hp[i] -= enemy.damage
+                                    petal_flash_timers[i] = 4
 
-                                enemy.attack_cooldown = 2
+                                    if petal_hp[i] <= 0:
 
-                            # petal attacks enemy
-                            enemy.take_damage(damage)
+                                        petal_hp[i] = 0
+                                        petal_alive[i] = False
 
-
-                            if petal_slots[i]["petal"] == "Heavy":
-
-                                dx = enemy.x - player_x
-                                dy = enemy.y - player_y
-
-                                length = math.sqrt(dx * dx + dy * dy)
-
-                                if length != 0:
-
-                                    dx /= length
-                                    dy /= length
-
-                                    knockback = (
-                                        8 *
-                                        HEAVY_KNOCKBACK_MULTIPLIER[
-                                            petal_slots[i]["rarity"]
+                                        petal_respawn_timer[i] = PETAL_RELOAD[
+                                            petal_slots[i]["petal"]
                                         ]
-                                    )
 
-                                    weight = (
-                                        MOB_WEIGHT[type(enemy).__name__] *
-                                        MOB_WEIGHT_MULTIPLIER[enemy.rarity]
-                                    )
+                                    enemy.attack_cooldown = 2
 
-                                    enemy.knockback_x += dx * knockback / weight
-                                    enemy.knockback_y += dy * knockback / weight
+                                # petal attacks enemy
+                                enemy.take_damage(damage)
 
+                                if petal_type == "Heavy":
 
-                            hit = True
+                                    dx = enemy.x - player_x
+                                    dy = enemy.y - player_y
 
+                                    length = math.sqrt(dx * dx + dy * dy)
 
+                                    if length != 0:
 
-                    if hit:
+                                        dx /= length
+                                        dy /= length
 
-                        petal_cooldowns[i] = 0
+                                        knockback = (
+                                            8 *
+                                            HEAVY_KNOCKBACK_MULTIPLIER[
+                                                rarity
+                                            ]
+                                        )
+
+                                        weight = (
+                                            MOB_WEIGHT[type(enemy).__name__] *
+                                            MOB_WEIGHT_MULTIPLIER[enemy.rarity]
+                                        )
+
+                                        enemy.knockback_x += dx * knockback / weight
+                                        enemy.knockback_y += dy * knockback / weight
+
+                                hit = True
+
+                        if hit:
+                            petal_cooldowns[i] = 0
 
 
 
