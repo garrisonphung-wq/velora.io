@@ -13437,6 +13437,14 @@ while running:
                     if light_count == 0:
                         light_count = 1
 
+                    # Ensure per-light arrays have enough capacity
+                    while len(light_cooldowns[i]) < light_count:
+                        light_cooldowns[i].append(0)
+                    while len(light_hp[i]) < light_count:
+                        light_hp[i].append(petal_max_hp[i])
+                    while len(light_alive[i]) < light_count:
+                        light_alive[i].append(True)
+
                     damage = get_petal_damage(petal_type, rarity) / light_count
                     petal_range = int(PETAL_RADIUS * 0.35)
 
