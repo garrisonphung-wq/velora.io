@@ -6743,7 +6743,7 @@ def draw_petal(name, x, y, rarity, size_scale=1.0, flash_timer=0):
         # Multiple Lights
         else:
 
-            distance = PETAL_RADIUS * 1.8
+            distance = PETAL_RADIUS * 0.8
 
             for i in range(count):
 
@@ -13838,13 +13838,47 @@ while running:
 
                 if petal_slots[i]["petal"] == "Wing":
                     petal_range_draw = int(60 * petal_size_scale)
-                pygame.draw.circle(
-                    screen,
-                    hitbox_color,
-                    (hp_x, hp_y),
-                    petal_range_draw,
-                    hitbox_width
-                )
+
+                if petal_slots[i]["petal"] == "Light":
+                    light_count = get_petal_count(
+                        "Light",
+                        petal_slots[i]["rarity"]
+                    )
+                    if light_count == 1:
+                        pygame.draw.circle(
+                            screen,
+                            hitbox_color,
+                            (hp_x, hp_y),
+                            petal_range_draw,
+                            hitbox_width
+                        )
+                    else:
+                        light_dist = PETAL_RADIUS * 0.8
+                        for li in range(light_count):
+                            l_angle = math.radians(
+                                petal_angle + i * 72 + li * (360 / light_count)
+                            )
+                            l_x = int(
+                                hp_x + math.cos(l_angle) * light_dist
+                            )
+                            l_y = int(
+                                hp_y + math.sin(l_angle) * light_dist
+                            )
+                            pygame.draw.circle(
+                                screen,
+                                hitbox_color,
+                                (l_x, l_y),
+                                int(PETAL_RADIUS * 0.35),
+                                hitbox_width
+                            )
+                else:
+                    pygame.draw.circle(
+                        screen,
+                        hitbox_color,
+                        (hp_x, hp_y),
+                        petal_range_draw,
+                        hitbox_width
+                    )
 
             # Enemy hitboxes
             all_enemy_lists = [
