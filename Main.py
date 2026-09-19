@@ -17274,13 +17274,16 @@ while running:
         # Display chat messages above the input box
         if chat_messages:
             msg_font = pygame.font.SysFont("arial", 14)
-            msg_y = inner_rect_y - 25
-            # Show last 5 messages
+            # Old comments on top, new comments below
+            msg_y = inner_rect_y - 25 - (len(chat_messages) - 1) * 20
             for username, msg in chat_messages[-5:]:
-                msg_text = f"{username}: {msg}"
-                msg_surf = msg_font.render(msg_text, True, (255, 255, 0))  # Yellow
-                chat_surf.blit(msg_surf, (inner_rect_x + 5, msg_y))
-                msg_y -= 20
+                # Username in yellow
+                username_surf = msg_font.render(f"{username}: ", True, (255, 255, 0))
+                chat_surf.blit(username_surf, (inner_rect_x + 5, msg_y))
+                # Message in white
+                msg_surf = msg_font.render(msg, True, (255, 255, 255))
+                chat_surf.blit(msg_surf, (inner_rect_x + 5 + username_surf.get_width(), msg_y))
+                msg_y += 20
 
         # Text in the center of the inner rectangle
         if chat_text_visible:
