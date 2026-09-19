@@ -1037,6 +1037,10 @@ welcome_play_pressed = False
 chat_text_visible = True
 # Chat input text
 chat_input_text = ""
+# Frame counter for chat cursor blinking
+chat_cursor_frame = 0
+# Chat message history (list of (username, message) tuples)
+chat_messages = []
 
 # Set once per mouse click on the welcome screen so biome buttons only fire
 # on the exact frame the button is pressed, not every frame the mouse is held.
@@ -11396,6 +11400,9 @@ while running:
                 if event.key == pygame.K_BACKSPACE:
                     chat_input_text = chat_input_text[:-1]
                 elif event.key == pygame.K_RETURN:
+                    if chat_input_text:
+                        chat_messages.append((acc_name_text, chat_input_text))
+                    chat_input_text = ""
                     chat_text_visible = True
                 elif event.unicode:
                     chat_input_text += event.unicode
@@ -17264,6 +17271,17 @@ while running:
             border_radius=8
         )
 
+        # Display chat messages above the input box
+        if chat_messages:
+            msg_font = pygame.font.SysFont("arial", 14)
+            msg_y = inner_rect_y - 25
+            # Show last 5 messages
+            for username, msg in chat_messages[-5:]:
+                msg_text = f"{username}: {msg}"
+                msg_surf = msg_font.render(msg_text, True, (255, 255, 0))  # Yellow
+                chat_surf.blit(msg_surf, (inner_rect_x + 5, msg_y))
+                msg_y -= 20
+
         # Text in the center of the inner rectangle
         if chat_text_visible:
             font = pygame.font.SysFont("arial", 16)
@@ -17275,11 +17293,34 @@ while running:
             text_rect.center = (inner_rect_x + inner_rect_w // 2, inner_rect_y + inner_height // 2)
             chat_surf.blit(text_surf, text_rect)
         else:
-            # Blinking white cursor line
-            chat_cursor_frame = getattr(chat_surf, "_cursor_frame", 0)
+            # Render typed text with white outline (per-letter, tight spacing)
+            font = pygame.font.SysFont("arial", 16)
+            outline_color = (255, 255, 255)
+            text_color = (255, 255, 255)
+            start_x = inner_rect_x + 10
+            start_y = inner_rect_y + inner_height // 2 - font.get_height() // 2
+
+            # Render each letter individually with tight spacing
+            for i, ch in enumerate(chat_input_text):
+                # Get character width
+                char_w = font.render(ch, True, text_color).get_width()
+                # Render outline (2 directions, 1px offset - smaller)
+                for dx, dy in [(-1, 0), (1, 0)]:
+                    outline_surf = font.render(ch, True, outline_color)
+                    chat_surf.blit(outline_surf, (start_x + dx, start_y + dy))
+                # Render main text
+                text_surf = font.render(ch, True, text_color)
+                chat_surf.blit(text_surf, (start_x, start_y))
+                # Move to next letter position (tight spacing, 2px gap between outlines)
+                start_x += char_w + 4
+
+            # Update text_rect for cursor position
+            text_rect = pygame.Rect(start_x - 1, start_y, 1, font.get_height())
+
+            # Blinking white cursor line (in front of last letter)
             chat_cursor_frame += 1
             if chat_cursor_frame % 40 < 20:  # Blink every 20 frames
-                cursor_x = inner_rect_x + 5
+                cursor_x = start_x + 2
                 cursor_y = inner_rect_y + 5
                 cursor_h = inner_height - 10
                 pygame.draw.line(
@@ -17289,13 +17330,6 @@ while running:
                     (cursor_x, cursor_y + cursor_h),
                     2
                 )
-
-            # Render typed text next to cursor
-            font = pygame.font.SysFont("arial", 16)
-            text_surf = font.render(chat_input_text, True, (255, 255, 255))
-            text_rect = text_surf.get_rect()
-            text_rect.midleft = (inner_rect_x + 10, inner_rect_y + inner_height // 2)
-            chat_surf.blit(text_surf, text_rect)
 
         screen.blit(chat_surf, (0, 0))
 
