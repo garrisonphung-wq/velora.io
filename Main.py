@@ -1035,6 +1035,8 @@ welcome_selected_biome = None
 welcome_play_pressed = False
 # Chat text visibility flag
 chat_text_visible = True
+# Chat input text
+chat_input_text = ""
 
 # Set once per mouse click on the welcome screen so biome buttons only fire
 # on the exact frame the button is pressed, not every frame the mouse is held.
@@ -11390,6 +11392,14 @@ while running:
                     elif event.key != pygame.K_RETURN:
                         acc_name_text += event.unicode
 
+            if game_state == "game" and not chat_text_visible:
+                if event.key == pygame.K_BACKSPACE:
+                    chat_input_text = chat_input_text[:-1]
+                elif event.key == pygame.K_RETURN:
+                    chat_text_visible = True
+                elif event.unicode:
+                    chat_input_text += event.unicode
+
             if event.type == pygame.KEYDOWN:
 
                 if event.key == pygame.K_d:
@@ -17263,6 +17273,28 @@ while running:
             text_surf.set_alpha(51)
             text_rect = text_surf.get_rect()
             text_rect.center = (inner_rect_x + inner_rect_w // 2, inner_rect_y + inner_height // 2)
+            chat_surf.blit(text_surf, text_rect)
+        else:
+            # Blinking white cursor line
+            chat_cursor_frame = getattr(chat_surf, "_cursor_frame", 0)
+            chat_cursor_frame += 1
+            if chat_cursor_frame % 40 < 20:  # Blink every 20 frames
+                cursor_x = inner_rect_x + 5
+                cursor_y = inner_rect_y + 5
+                cursor_h = inner_height - 10
+                pygame.draw.line(
+                    chat_surf,
+                    (255, 255, 255),
+                    (cursor_x, cursor_y),
+                    (cursor_x, cursor_y + cursor_h),
+                    2
+                )
+
+            # Render typed text next to cursor
+            font = pygame.font.SysFont("arial", 16)
+            text_surf = font.render(chat_input_text, True, (255, 255, 255))
+            text_rect = text_surf.get_rect()
+            text_rect.midleft = (inner_rect_x + 10, inner_rect_y + inner_height // 2)
             chat_surf.blit(text_surf, text_rect)
 
         screen.blit(chat_surf, (0, 0))
