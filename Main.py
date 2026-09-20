@@ -17344,17 +17344,17 @@ while running:
                 running_y -= h
                 positions.append((i, running_y))
                 running_y -= 5  # gap between messages
-            chat_surf.set_clip(pygame.Rect(box_x, box_y, chat_box_w, chat_box_h))
+            chat_box_surf = chat_surf.subsurface(pygame.Rect(box_x, box_y, chat_box_w, chat_box_h))
+            chat_box_surf.set_clip(pygame.Rect(0, 0, chat_box_w, chat_box_h))
             for i, msg_y in positions:
                 username_surf, lines, _ = wrapped_data[i]
-                chat_surf.blit(username_surf, (inner_rect_x + 5, msg_y))
+                chat_box_surf.blit(username_surf, (inner_rect_x + 5 - box_x, msg_y - box_y))
                 for j, line in enumerate(lines):
                     line_surf = msg_font.render(line, True, (255, 255, 255))
-                    chat_surf.blit(
+                    chat_box_surf.blit(
                         line_surf,
-                        (inner_rect_x + 5 + username_surf.get_width(), msg_y + j * line_height)
+                        (inner_rect_x + 5 + username_surf.get_width() - box_x, msg_y + j * line_height - box_y)
                     )
-            chat_surf.set_clip(None)
 
         # Text in the center of the inner rectangle
         if chat_text_visible:
