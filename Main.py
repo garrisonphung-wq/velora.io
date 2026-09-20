@@ -10889,19 +10889,19 @@ while running:
                         chat_text_visible = True
 
                 # Arrow square click handling
-                small_square_size = 40
-                square_x = chat_box_x - small_square_size - 5
-                square_y = chat_box_y
-                square_rect = pygame.Rect(square_x, square_y, small_square_size, small_square_size)
-                if square_rect.collidepoint(mouse_x, mouse_y):
-                    chat_arrow_up = not chat_arrow_up
+                chat_arrow_up = not chat_arrow_up
 
                 # Chat scrollbar drag handling
                 if len(chat_messages) > 4:
-                    vertical_rect_x = chat_box_x - small_square_size - 5
+                    if chat_arrow_up:
+                        vertical_rect_x = chat_box_x
+                        vertical_rect_w = small_square_size + 10
+                    else:
+                        vertical_rect_x = chat_box_x - small_square_size - 5
+                        vertical_rect_w = small_square_size
                     vertical_rect_y = chat_box_y + small_square_size + 5
                     vertical_rect = pygame.Rect(
-                        vertical_rect_x, vertical_rect_y, small_square_size, chat_box_h - small_square_size - 5
+                        vertical_rect_x, vertical_rect_y, vertical_rect_w, chat_box_h - small_square_size - 5
                     )
                     if vertical_rect.collidepoint(mouse_x, mouse_y):
                         chat_dragging = True
@@ -17473,12 +17473,16 @@ while running:
         if len(chat_messages) > 4 and 'total_msg_height' in locals() and 'visible_area_height' in locals() and total_msg_height > visible_area_height:
             vertical_rect_y = small_square_bottom + gap
             vertical_rect_h = chat_box_h - small_square_size - gap
+            if chat_arrow_up:
+                scrollbar_x = box_x + 2
+            else:
+                scrollbar_x = box_x - small_square_size - 5 + 2
             thumb_height = max(20, int(vertical_rect_h * visible_area_height / total_msg_height))
             usable_track = max(1, vertical_rect_h - thumb_height)
             scroll_fraction = chat_scroll_position / chat_max_scroll if chat_max_scroll > 0 else 0
             thumb_y = vertical_rect_y + int(usable_track * scroll_fraction)
             chat_scrollbar_rect = pygame.Rect(
-                box_x - small_square_size - 5 + 2, thumb_y,
+                scrollbar_x, thumb_y,
                 small_square_size - 4, thumb_height
             )
             pygame.draw.rect(
