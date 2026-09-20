@@ -10869,7 +10869,10 @@ while running:
             # Chat box click handling
             if game_state == "game" and welcome_play_pressed:
                 chat_box_w = 260
-                chat_box_h = 120
+                if chat_arrow_up:
+                    chat_box_h = 150
+                else:
+                    chat_box_h = 120
                 chat_margin = 20
                 inner_padding = 10
                 inner_height = 30
@@ -11643,7 +11646,10 @@ while running:
         if event.type == pygame.MOUSEMOTION and chat_dragging:
             if len(chat_messages) > 4:
                 chat_box_w = 260
-                chat_box_h = 120
+                if chat_arrow_up:
+                    chat_box_h = 150
+                else:
+                    chat_box_h = 120
                 chat_margin = 20
                 small_square_size = 40
                 gap = 5
@@ -17338,8 +17344,11 @@ while running:
     # ---------------- CHAT BOX ----------------
     # Only visible during gameplay after clicking the green Play button.
     if welcome_play_pressed:
-        chat_box_w = 300 if chat_arrow_up else 260
-        chat_box_h = 120
+        chat_box_w = 260
+        if chat_arrow_up:
+            chat_box_h = 150
+        else:
+            chat_box_h = 120
         chat_margin = 20
         border_radius = 12
 
@@ -17390,16 +17399,10 @@ while running:
         # Vertical rectangle below the arrow square
         small_square_bottom = box_y + small_square_size
         gap = 5
-        if chat_arrow_up:
-            rect_x = box_x
-            rect_w = small_square_size + 10
-        else:
-            rect_x = box_x - small_square_size - 5
-            rect_w = small_square_size
         pygame.draw.rect(
             chat_surf,
             (30, 30, 30, 204),  # 80% transparent
-            (rect_x, small_square_bottom + gap, rect_w, chat_box_h - small_square_size - gap),
+            (box_x - small_square_size - 5, small_square_bottom + gap, small_square_size, chat_box_h - small_square_size - gap),
             border_radius=6
         )
 
@@ -17471,18 +17474,14 @@ while running:
 
         # Chat scrollbar (drawn after message computation so variables are available)
         if len(chat_messages) > 4 and 'total_msg_height' in locals() and 'visible_area_height' in locals() and total_msg_height > visible_area_height:
-            vertical_rect_y = small_square_bottom + gap
-            vertical_rect_h = chat_box_h - small_square_size - gap
-            if chat_arrow_up:
-                scrollbar_x = box_x + 2
-            else:
-                scrollbar_x = box_x - small_square_size - 5 + 2
+            vertical_rect_y = rect_y
+            vertical_rect_h = rect_h
             thumb_height = max(20, int(vertical_rect_h * visible_area_height / total_msg_height))
             usable_track = max(1, vertical_rect_h - thumb_height)
             scroll_fraction = chat_scroll_position / chat_max_scroll if chat_max_scroll > 0 else 0
             thumb_y = vertical_rect_y + int(usable_track * scroll_fraction)
             chat_scrollbar_rect = pygame.Rect(
-                scrollbar_x, thumb_y,
+                box_x - small_square_size - 5 + 2, thumb_y,
                 small_square_size - 4, thumb_height
             )
             pygame.draw.rect(
