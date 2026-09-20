@@ -17454,10 +17454,13 @@ while running:
                     chat_box_surf.blit(time_surf, (inner_rect_x + 5 + name_surf.get_width() - box_x, msg_y - box_y))
                     msg_x = inner_rect_x + 5 + name_surf.get_width() + time_surf.get_width() - box_x
                     for j, line in enumerate(lines):
+                        line_y = msg_y + j * line_height
+                        if line_y >= inner_rect_y - 5:
+                            continue
                         line_surf = msg_font.render(line, True, (255, 255, 255))
                         chat_box_surf.blit(
                             line_surf,
-                            (msg_x, msg_y + j * line_height - box_y)
+                            (msg_x, line_y - box_y)
                         )
 
         # Chat scrollbar (drawn after message computation so variables are available)
