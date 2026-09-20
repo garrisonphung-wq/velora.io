@@ -17349,7 +17349,7 @@ while running:
             for username, msg, ts in displayed:
                 name_surf = msg_font.render(f"[{username}]", True, (255, 255, 0))
                 elapsed = format_elapsed(time.time() - ts)
-                time_surf = msg_font.render(f" [{elapsed}]: ", True, (180, 180, 180))
+                time_surf = msg_font.render(f" [{elapsed}]: ", True, (0, 255, 0))
                 prefix_w = name_surf.get_width() + time_surf.get_width()
                 max_msg_width = inner_rect_w - 10 - prefix_w
                 lines = wrap_text(msg_font, msg, max_msg_width)
