@@ -4,6 +4,7 @@ import math
 import random
 import json
 import os
+import time
 
 player_accounts = {}
 
@@ -1158,6 +1159,20 @@ def wrap_text(font, text, max_width):
             if current:
                 final_lines.append(current)
     return final_lines if final_lines else [""]
+
+def format_elapsed(seconds):
+    """Format elapsed time as a compact readable string."""
+    seconds = int(max(0, seconds))
+    if seconds < 60:
+        return f"{seconds}s"
+    minutes, secs = divmod(seconds, 60)
+    if minutes < 60:
+        return f"{minutes}m {secs}s"
+    hours, mins = divmod(minutes, 60)
+    if hours < 24:
+        return f"{hours}h {mins}m"
+    days, hours = divmod(hours, 24)
+    return f"{days}d {hours}h"
 
 def draw_light_preview(x, y, rarity):
 
@@ -11433,7 +11448,7 @@ while running:
                     else:
                         # Pressing Enter while typing sends the message
                         if chat_input_text:
-                            chat_messages.append((acc_name_text, chat_input_text))
+                            chat_messages.append((acc_name_text, chat_input_text, time.time()))
                         chat_input_text = ""
                         chat_text_visible = True
                 elif event.key == pygame.K_BACKSPACE and not chat_text_visible:
@@ -17331,29 +17346,34 @@ while running:
             line_height = 16
             # Pre-calculate wrapped lines and heights for each message
             wrapped_data = []
-            for username, msg in displayed:
-                username_surf = msg_font.render(f"[{username}]: ", True, (255, 255, 0))
-                max_msg_width = inner_rect_w - 10 - username_surf.get_width()
+            for username, msg, ts in displayed:
+                name_surf = msg_font.render(f"[{username}]", True, (255, 255, 0))
+                elapsed = format_elapsed(time.time() - ts)
+                time_surf = msg_font.render(f" [{elapsed}]: ", True, (180, 180, 180))
+                prefix_w = name_surf.get_width() + time_surf.get_width()
+                max_msg_width = inner_rect_w - 10 - prefix_w
                 lines = wrap_text(msg_font, msg, max_msg_width)
-                wrapped_data.append((username_surf, lines, len(lines) * line_height))
+                wrapped_data.append((name_surf, time_surf, lines, len(lines) * line_height))
             # Position messages from bottom to top, newest at bottom
             running_y = inner_rect_y - 5
             positions = []
             for i in range(len(wrapped_data)):
-                h = wrapped_data[i][2]
+                h = wrapped_data[i][3]
                 running_y -= h
                 positions.append((i, running_y))
                 running_y -= 5  # gap between messages
             chat_box_surf = chat_surf.subsurface(pygame.Rect(box_x, box_y, chat_box_w, chat_box_h))
             chat_box_surf.set_clip(pygame.Rect(0, 0, chat_box_w, chat_box_h))
             for i, msg_y in positions:
-                username_surf, lines, _ = wrapped_data[i]
-                chat_box_surf.blit(username_surf, (inner_rect_x + 5 - box_x, msg_y - box_y))
+                name_surf, time_surf, lines, _ = wrapped_data[i]
+                chat_box_surf.blit(name_surf, (inner_rect_x + 5 - box_x, msg_y - box_y))
+                chat_box_surf.blit(time_surf, (inner_rect_x + 5 + name_surf.get_width() - box_x, msg_y - box_y))
+                msg_x = inner_rect_x + 5 + name_surf.get_width() + time_surf.get_width() - box_x
                 for j, line in enumerate(lines):
                     line_surf = msg_font.render(line, True, (255, 255, 255))
                     chat_box_surf.blit(
                         line_surf,
-                        (inner_rect_x + 5 + username_surf.get_width() - box_x, msg_y + j * line_height - box_y)
+                        (msg_x, msg_y + j * line_height - box_y)
                     )
 
         # Text in the center of the inner rectangle
