@@ -11526,7 +11526,7 @@ while running:
                 )
             # Chat scrollbar wheel support
             if not craft_open:
-                chat_scroll_target = max(0, min(max(0, len(chat_messages) - 4), chat_scroll_target - event.y))
+                chat_scroll_target = max(0, chat_scroll_target - event.y)
 
             if new_button_panel_open:
                 gallery_visible_rows = max(
@@ -11650,6 +11650,20 @@ while running:
                 gap = 5
                 chat_box_x = WIDTH - chat_margin - chat_box_w
                 chat_box_y = HEIGHT - chat_margin - chat_box_h
+                inner_padding = 10
+                inner_height = 30
+                line_height = 16
+                msg_font = pygame.font.SysFont("arial", 14, bold=True)
+                total_msg_h = 0
+                for u, m, t in chat_messages:
+                    name_w = msg_font.render(f"[{u}]", True, (255, 255, 0)).get_width()
+                    time_w = msg_font.render(f" [0m 0s]: ", True, (0, 255, 0)).get_width()
+                    mw = inner_rect_w - 10 - name_w - time_w
+                    lines = wrap_text(msg_font, m, mw)
+                    total_msg_h += len(lines) * line_height
+                total_msg_h += (len(chat_messages) - 1) * 5
+                visible_h = chat_box_h - inner_height - inner_padding - 5
+                chat_max_scroll_val = max(0, total_msg_h - visible_h)
                 vertical_rect_x = chat_box_x - small_square_size - 5
                 vertical_rect_y = chat_box_y + small_square_size + gap
                 vertical_rect_h = chat_box_h - small_square_size - gap
@@ -11660,7 +11674,7 @@ while running:
                 chat_scroll_target = int(
                     max(0, min(usable_track, scroll_position))
                     / usable_track
-                    * max(0, len(chat_messages) - 4)
+                    * max(0, chat_max_scroll_val)
                 )
 
         if event.type == pygame.MOUSEMOTION and mob_gallery_dragging:
@@ -17379,31 +17393,6 @@ while running:
             border_radius=6
         )
 
-        # Chat scrollbar
-        if len(chat_messages) > 4:
-            vertical_rect_y = small_square_bottom + gap
-            vertical_rect_h = chat_box_h - small_square_size - gap
-            thumb_height = max(20, int(vertical_rect_h * 4 / len(chat_messages)))
-            usable_track = max(1, vertical_rect_h - thumb_height)
-            max_scroll = max(0, len(chat_messages) - 4)
-            scroll_fraction = chat_scroll_position / max_scroll if max_scroll else 0
-            thumb_y = vertical_rect_y + int(usable_track * scroll_fraction)
-            chat_scrollbar_rect = pygame.Rect(
-                box_x - small_square_size - 5 + 2, thumb_y,
-                small_square_size - 4, thumb_height
-            )
-            pygame.draw.rect(
-                chat_surf,
-                (150, 150, 150, 180),
-                chat_scrollbar_rect,
-                border_radius=4
-            )
-
-        # Smooth scroll easing for chat
-        chat_max_scroll = max(0, len(chat_messages) - 4)
-        chat_scroll_target = max(0, min(chat_scroll_target, chat_max_scroll))
-        chat_scroll_position += (chat_scroll_target - chat_scroll_position) * 0.22
-
         # Inner rectangle near the bottom
         inner_padding = 10
         inner_height = 30
@@ -17421,17 +17410,10 @@ while running:
         # Display chat messages above the input box
         if chat_messages:
             msg_font = pygame.font.SysFont("arial", 14, bold=True)
-            chat_scroll_int = int(chat_scroll_position)
-            if len(chat_messages) > 4:
-                end_idx = len(chat_messages) - chat_scroll_int
-                start_idx = max(0, end_idx - 4)
-                displayed = chat_messages[start_idx:end_idx][::-1]
-            else:
-                displayed = chat_messages[::-1]
             line_height = 16
-            # Pre-calculate wrapped lines and heights for each message
-            wrapped_data = []
-            for username, msg, ts in displayed:
+            # Pre-calculate wrapped lines and heights for ALL messages for pixel scrolling
+            all_wrapped = []
+            for username, msg, ts in chat_messages:
                 name_surf = msg_font.render(f"[{username}]", True, (255, 255, 0))
                 elapsed = format_elapsed(time.time() - ts)
                 elapsed_sec = time.time() - ts
@@ -17445,28 +17427,57 @@ while running:
                 prefix_w = name_surf.get_width() + time_surf.get_width()
                 max_msg_width = inner_rect_w - 10 - prefix_w
                 lines = wrap_text(msg_font, msg, max_msg_width)
-                wrapped_data.append((name_surf, time_surf, lines, len(lines) * line_height))
-            # Position messages from bottom to top, newest at bottom
-            running_y = inner_rect_y - 5
-            positions = []
-            for i in range(len(wrapped_data)):
-                h = wrapped_data[i][3]
-                running_y -= h
-                positions.append((i, running_y))
-                running_y -= 5  # gap between messages
-            chat_box_surf = chat_surf.subsurface(pygame.Rect(box_x, box_y, chat_box_w, chat_box_h))
-            chat_box_surf.set_clip(pygame.Rect(0, 0, chat_box_w, chat_box_h))
-            for i, msg_y in positions:
-                name_surf, time_surf, lines, _ = wrapped_data[i]
-                chat_box_surf.blit(name_surf, (inner_rect_x + 5 - box_x, msg_y - box_y))
-                chat_box_surf.blit(time_surf, (inner_rect_x + 5 + name_surf.get_width() - box_x, msg_y - box_y))
-                msg_x = inner_rect_x + 5 + name_surf.get_width() + time_surf.get_width() - box_x
-                for j, line in enumerate(lines):
-                    line_surf = msg_font.render(line, True, (255, 255, 255))
-                    chat_box_surf.blit(
-                        line_surf,
-                        (msg_x, msg_y + j * line_height - box_y)
-                    )
+                all_wrapped.append((name_surf, time_surf, lines))
+
+            if all_wrapped:
+                total_msg_height = sum(len(lines) * line_height for _, _, lines in all_wrapped) + (len(all_wrapped) - 1) * 5
+                visible_area_height = inner_rect_y - 5 - box_y
+                chat_max_scroll = max(0, total_msg_height - visible_area_height)
+                chat_scroll_target = max(0, min(chat_max_scroll, chat_scroll_target))
+                chat_scroll_position += (chat_scroll_target - chat_scroll_position) * 0.1
+                scroll_pix = int(chat_scroll_position)
+
+                running_y = inner_rect_y - 5
+                positions = []
+                for msg_data in reversed(all_wrapped):
+                    name_surf, time_surf, lines = msg_data
+                    h = len(lines) * line_height
+                    running_y -= h
+                    positions.append((name_surf, time_surf, lines, running_y - scroll_pix))
+                    running_y -= 5
+                chat_box_surf = chat_surf.subsurface(pygame.Rect(box_x, box_y, chat_box_w, chat_box_h))
+                chat_box_surf.set_clip(pygame.Rect(0, 0, chat_box_w, chat_box_h))
+                for name_surf, time_surf, lines, msg_y in positions:
+                    if msg_y < box_y - 20:
+                        continue
+                    chat_box_surf.blit(name_surf, (inner_rect_x + 5 - box_x, msg_y - box_y))
+                    chat_box_surf.blit(time_surf, (inner_rect_x + 5 + name_surf.get_width() - box_x, msg_y - box_y))
+                    msg_x = inner_rect_x + 5 + name_surf.get_width() + time_surf.get_width() - box_x
+                    for j, line in enumerate(lines):
+                        line_surf = msg_font.render(line, True, (255, 255, 255))
+                        chat_box_surf.blit(
+                            line_surf,
+                            (msg_x, msg_y + j * line_height - box_y)
+                        )
+
+        # Chat scrollbar (drawn after message computation so variables are available)
+        if len(chat_messages) > 4 and 'total_msg_height' in locals() and 'visible_area_height' in locals() and total_msg_height > visible_area_height:
+            vertical_rect_y = small_square_bottom + gap
+            vertical_rect_h = chat_box_h - small_square_size - gap
+            thumb_height = max(20, int(vertical_rect_h * visible_area_height / total_msg_height))
+            usable_track = max(1, vertical_rect_h - thumb_height)
+            scroll_fraction = chat_scroll_position / chat_max_scroll if chat_max_scroll > 0 else 0
+            thumb_y = vertical_rect_y + int(usable_track * scroll_fraction)
+            chat_scrollbar_rect = pygame.Rect(
+                box_x - small_square_size - 5 + 2, thumb_y,
+                small_square_size - 4, thumb_height
+            )
+            pygame.draw.rect(
+                chat_surf,
+                (150, 150, 150, 180),
+                chat_scrollbar_rect,
+                border_radius=4
+            )
 
         # Text in the center of the inner rectangle
         if chat_text_visible:
