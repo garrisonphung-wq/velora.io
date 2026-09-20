@@ -1044,6 +1044,13 @@ chat_cursor_frame = 0
 chat_arrow_up = True
 # Chat message history (list of (username, message) tuples)
 chat_messages = []
+# Chat scroll state
+chat_scroll = 0
+chat_scroll_target = 0
+chat_scroll_position = 0.0
+chat_dragging = False
+chat_drag_offset = 0
+chat_scrollbar_rect = pygame.Rect(0, 0, 12, 30)
 
 # Set once per mouse click on the welcome screen so biome buttons only fire
 # on the exact frame the button is pressed, not every frame the mouse is held.
@@ -10890,6 +10897,17 @@ while running:
                 if square_rect.collidepoint(mouse_x, mouse_y):
                     chat_arrow_up = not chat_arrow_up
 
+                # Chat scrollbar drag handling
+                if len(chat_messages) > 4:
+                    vertical_rect_x = chat_box_x - small_square_size - 5
+                    vertical_rect_y = chat_box_y + small_square_size + 5
+                    vertical_rect = pygame.Rect(
+                        vertical_rect_x, vertical_rect_y, small_square_size, chat_box_h - small_square_size - 5
+                    )
+                    if vertical_rect.collidepoint(mouse_x, mouse_y):
+                        chat_dragging = True
+                        chat_drag_offset = mouse_y - chat_scrollbar_rect.y
+
             if game_state == "login":
 
                 if password_box.collidepoint(event.pos):
@@ -11506,6 +11524,9 @@ while running:
                     0,
                     min(craft_max_scroll, craft_scroll_target - event.y)
                 )
+            # Chat scrollbar wheel support
+            if not craft_open:
+                chat_scroll_target = max(0, min(max(0, len(chat_messages) - 4), chat_scroll_target - event.y))
 
             if new_button_panel_open:
                 gallery_visible_rows = max(
@@ -11556,6 +11577,7 @@ while running:
             mob_gallery_dragging = False
             mob_gallery_x_dragging = False
             settings_hp_bar_dragging = False
+            chat_dragging = False
 
         if event.type == pygame.MOUSEMOTION and settings_hp_bar_dragging:
             settings_hp_bar_knob_progress = min(
@@ -11618,6 +11640,28 @@ while running:
                 / usable_track
                 * craft_max_horizontal_scroll
             )
+
+        if event.type == pygame.MOUSEMOTION and chat_dragging:
+            if len(chat_messages) > 4:
+                chat_box_w = 260
+                chat_box_h = 120
+                chat_margin = 20
+                small_square_size = 40
+                gap = 5
+                chat_box_x = WIDTH - chat_margin - chat_box_w
+                chat_box_y = HEIGHT - chat_margin - chat_box_h
+                vertical_rect_x = chat_box_x - small_square_size - 5
+                vertical_rect_y = chat_box_y + small_square_size + gap
+                vertical_rect_h = chat_box_h - small_square_size - gap
+                track_height = vertical_rect_h
+                thumb_height = chat_scrollbar_rect.height
+                usable_track = max(1, track_height - thumb_height)
+                scroll_position = event.pos[1] - vertical_rect_y - chat_drag_offset
+                chat_scroll_target = int(
+                    max(0, min(usable_track, scroll_position))
+                    / usable_track
+                    * max(0, len(chat_messages) - 4)
+                )
 
         if event.type == pygame.MOUSEMOTION and mob_gallery_dragging:
             gallery_visible_rows = max(
@@ -17335,6 +17379,31 @@ while running:
             border_radius=6
         )
 
+        # Chat scrollbar
+        if len(chat_messages) > 4:
+            vertical_rect_y = small_square_bottom + gap
+            vertical_rect_h = chat_box_h - small_square_size - gap
+            thumb_height = max(20, int(vertical_rect_h * 4 / len(chat_messages)))
+            usable_track = max(1, vertical_rect_h - thumb_height)
+            max_scroll = max(0, len(chat_messages) - 4)
+            scroll_fraction = chat_scroll_position / max_scroll if max_scroll else 0
+            thumb_y = vertical_rect_y + int(usable_track * scroll_fraction)
+            chat_scrollbar_rect = pygame.Rect(
+                box_x - small_square_size - 5 + 2, thumb_y,
+                small_square_size - 4, thumb_height
+            )
+            pygame.draw.rect(
+                chat_surf,
+                (150, 150, 150, 180),
+                chat_scrollbar_rect,
+                border_radius=4
+            )
+
+        # Smooth scroll easing for chat
+        chat_max_scroll = max(0, len(chat_messages) - 4)
+        chat_scroll_target = max(0, min(chat_scroll_target, chat_max_scroll))
+        chat_scroll_position += (chat_scroll_target - chat_scroll_position) * 0.22
+
         # Inner rectangle near the bottom
         inner_padding = 10
         inner_height = 30
@@ -17352,7 +17421,13 @@ while running:
         # Display chat messages above the input box
         if chat_messages:
             msg_font = pygame.font.SysFont("arial", 14, bold=True)
-            displayed = chat_messages[-5:][::-1]
+            chat_scroll_int = int(chat_scroll_position)
+            if len(chat_messages) > 4:
+                end_idx = len(chat_messages) - chat_scroll_int
+                start_idx = max(0, end_idx - 4)
+                displayed = chat_messages[start_idx:end_idx][::-1]
+            else:
+                displayed = chat_messages[::-1]
             line_height = 16
             # Pre-calculate wrapped lines and heights for each message
             wrapped_data = []
