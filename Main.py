@@ -17327,11 +17327,11 @@ while running:
 
         # Vertical rectangle below the arrow square
         small_square_bottom = box_y + small_square_size
-        gap = 5
+        gap = 10
         pygame.draw.rect(
             chat_surf,
             (30, 30, 30, 204),  # 80% transparent
-            (box_x - small_square_size - 5, small_square_bottom, small_square_size, chat_box_h - small_square_size - gap),
+            (box_x - small_square_size - 5, small_square_bottom + 5, small_square_size, chat_box_h - small_square_size - gap),
             border_radius=6
         )
 
