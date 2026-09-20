@@ -17337,7 +17337,7 @@ while running:
                 lines = wrap_text(msg_font, msg, max_msg_width)
                 wrapped_data.append((username_surf, lines, len(lines) * line_height))
             # Position messages from bottom to top, newest at bottom
-            running_y = inner_rect_y - 25
+            running_y = inner_rect_y - 15
             positions = []
             for i in range(len(wrapped_data)):
                 h = wrapped_data[i][2]
