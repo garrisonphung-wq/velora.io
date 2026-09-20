@@ -10876,8 +10876,8 @@ while running:
                 arrow_y = HEIGHT - chat_margin - 120
                 # Chat box bottom stays fixed; grows upward when taller
                 if chat_arrow_up:
-                    chat_box_h = 150
-                    box_y = arrow_y - 30
+                    chat_box_h = 200
+                    box_y = arrow_y - 80
                 else:
                     chat_box_h = 120
                     box_y = arrow_y
@@ -11662,8 +11662,8 @@ while running:
                 arrow_y = HEIGHT - chat_margin - 120
                 # Chat box bottom stays fixed; grows upward when taller
                 if chat_arrow_up:
-                    chat_box_h = 150
-                    box_y = arrow_y - 30
+                    chat_box_h = 200
+                    box_y = arrow_y - 80
                 else:
                     chat_box_h = 120
                     box_y = arrow_y
@@ -17362,8 +17362,8 @@ while running:
         arrow_y = HEIGHT - chat_margin - 120
         # Chat box bottom stays fixed; grows upward when taller
         if chat_arrow_up:
-            chat_box_h = 150
-            box_y = arrow_y - 30
+            chat_box_h = 200
+            box_y = arrow_y - 80
         else:
             chat_box_h = 120
             box_y = arrow_y
