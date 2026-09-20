@@ -1043,7 +1043,6 @@ chat_cursor_frame = 0
 # Arrow smooth rotation state (degrees, 0=up, 180=down)
 chat_arrow_up = True
 chat_arrow_angle = 0.0
-chat_arrow_angular_vel = 0.0
 chat_arrow_target = 0
 # Chat message history (list of (username, message) tuples)
 chat_messages = []
@@ -10903,17 +10902,15 @@ while running:
                     else:
                         chat_arrow_target = 0
 
-                # Arrow smooth rotation with spring-damper acceleration (per-frame)
+                # Arrow smooth rotation with linear interpolation (lerp)
                 arrow_diff = chat_arrow_target - chat_arrow_angle
                 while arrow_diff > 180:
                     arrow_diff -= 360
                 while arrow_diff < -180:
                     arrow_diff += 360
-                chat_arrow_angular_vel = (chat_arrow_angular_vel + arrow_diff * 0.15) * 0.85
-                chat_arrow_angle += chat_arrow_angular_vel
+                chat_arrow_angle += arrow_diff * 0.15
                 if abs(chat_arrow_angle - chat_arrow_target) < 0.5:
                     chat_arrow_angle = float(chat_arrow_target)
-                    chat_arrow_angular_vel = 0.0
 
                 # Chat scrollbar drag handling
                 if len(chat_messages) > 4:
