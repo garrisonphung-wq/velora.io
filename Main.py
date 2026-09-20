@@ -1040,8 +1040,11 @@ chat_text_visible = True
 chat_input_text = ""
 # Frame counter for chat cursor blinking
 chat_cursor_frame = 0
-# Arrow rotation state: True = up, False = down
+# Arrow smooth rotation state (degrees, 0=up, 180=down)
 chat_arrow_up = True
+chat_arrow_angle = 0.0
+chat_arrow_angular_vel = 0.0
+chat_arrow_target = 0
 # Chat message history (list of (username, message) tuples)
 chat_messages = []
 # Chat scroll state
@@ -10895,7 +10898,22 @@ while running:
                 square_y = chat_box_y
                 square_rect = pygame.Rect(square_x, square_y, small_square_size, small_square_size)
                 if square_rect.collidepoint(mouse_x, mouse_y):
-                    chat_arrow_up = not chat_arrow_up
+                    if chat_arrow_target == 0:
+                        chat_arrow_target = 180
+                    else:
+                        chat_arrow_target = 0
+
+                # Arrow smooth rotation with spring-damper acceleration (per-frame)
+                arrow_diff = chat_arrow_target - chat_arrow_angle
+                while arrow_diff > 180:
+                    arrow_diff -= 360
+                while arrow_diff < -180:
+                    arrow_diff += 360
+                chat_arrow_angular_vel = (chat_arrow_angular_vel + arrow_diff * 0.15) * 0.85
+                chat_arrow_angle += chat_arrow_angular_vel
+                if abs(chat_arrow_angle - chat_arrow_target) < 0.5:
+                    chat_arrow_angle = float(chat_arrow_target)
+                    chat_arrow_angular_vel = 0.0
 
                 # Chat scrollbar drag handling
                 if len(chat_messages) > 4:
@@ -11653,6 +11671,7 @@ while running:
                 inner_padding = 10
                 inner_height = 30
                 line_height = 16
+                inner_rect_w = chat_box_w - 2 * inner_padding
                 msg_font = pygame.font.SysFont("arial", 14, bold=True)
                 total_msg_h = 0
                 for u, m, t in chat_messages:
@@ -17366,21 +17385,23 @@ while running:
             (box_x - small_square_size - 5, box_y, small_square_size, small_square_size),
             border_radius=6
         )
-        # White 80% transparent up arrow in the center of the square
+# Smoothly rotating arrow in the center of the square
         triangle_size = 20
         triangle_height = triangle_size * 0.866
         square_x = box_x - small_square_size - 5
         square_y = box_y
         cx = square_x + small_square_size // 2
         cy = square_y + small_square_size // 2
-        points = [
-            (cx - triangle_size // 2, cy + triangle_height // 3),
-            (cx + triangle_size // 2, cy + triangle_height // 3),
-            (cx, cy - triangle_height * 2 // 3)
+        angle_rad = math.radians(chat_arrow_angle)
+        cos_a = math.cos(angle_rad)
+        sin_a = math.sin(angle_rad)
+        half_w = triangle_size / 2
+        base_pts = [
+            (-half_w, triangle_height / 3),
+            (half_w, triangle_height / 3),
+            (0, -triangle_height * 2 / 3),
         ]
-        # Flip triangle if arrow is down
-        if not chat_arrow_up:
-            points[0], points[2] = points[2], points[0]
+        points = [(cx + x * cos_a - y * sin_a, cy + x * sin_a + y * cos_a) for x, y in base_pts]
         pygame.draw.polygon(chat_surf, (255, 255, 255, 204), points)
 
         # Vertical rectangle below the arrow square
@@ -17446,17 +17467,13 @@ while running:
                     positions.append((name_surf, time_surf, lines, running_y + scroll_pix))
                     running_y -= 5
                 chat_box_surf = chat_surf.subsurface(pygame.Rect(box_x, box_y, chat_box_w, chat_box_h))
-                chat_box_surf.set_clip(pygame.Rect(0, 0, chat_box_w, chat_box_h))
+                chat_box_surf.set_clip(pygame.Rect(0, 0, chat_box_w, inner_rect_y - box_y - 5))
                 for name_surf, time_surf, lines, msg_y in positions:
-                    if msg_y < box_y - 20 or msg_y > inner_rect_y - 5:
-                        continue
                     chat_box_surf.blit(name_surf, (inner_rect_x + 5 - box_x, msg_y - box_y))
                     chat_box_surf.blit(time_surf, (inner_rect_x + 5 + name_surf.get_width() - box_x, msg_y - box_y))
                     msg_x = inner_rect_x + 5 + name_surf.get_width() + time_surf.get_width() - box_x
                     for j, line in enumerate(lines):
                         line_y = msg_y + j * line_height
-                        if line_y >= inner_rect_y - 5:
-                            continue
                         line_surf = msg_font.render(line, True, (255, 255, 255))
                         chat_box_surf.blit(
                             line_surf,
