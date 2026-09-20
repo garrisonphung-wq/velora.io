@@ -17331,7 +17331,7 @@ while running:
         pygame.draw.rect(
             chat_surf,
             (30, 30, 30, 204),  # 80% transparent
-            (box_x - small_square_size - 5, small_square_bottom + 5, small_square_size, small_square_size),
+            (box_x - small_square_size - 5, small_square_bottom + 5, small_square_size, chat_box_h - small_square_size - gap),
             border_radius=6
         )
 
