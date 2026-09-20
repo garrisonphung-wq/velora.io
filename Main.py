@@ -17388,6 +17388,7 @@ while running:
         pygame.draw.polygon(chat_surf, (255, 255, 255, 204), points)
 
         # Vertical rectangle below the arrow square
+        small_square_bottom = box_y + small_square_size
         gap = 5
         if chat_arrow_up:
             rect_x = box_x
