@@ -17488,10 +17488,12 @@ while running:
 
         # Chat scrollbar (drawn after message computation so variables are available)
         if len(chat_messages) > 4 and 'total_msg_height' in locals() and 'visible_area_height' in locals() and total_msg_height > visible_area_height:
-            small_square_bottom = box_y + small_square_size
+            # Use arrow_y (fixed) instead of box_y for scroll track position
+            arrow_y = HEIGHT - chat_margin - 120
+            small_square_bottom = arrow_y + small_square_size
             gap = 5
             vertical_rect_y = small_square_bottom + gap
-            vertical_rect_h = chat_box_h - small_square_size - gap
+            vertical_rect_h = 120 - small_square_size - gap
             thumb_height = max(20, int(vertical_rect_h * visible_area_height / total_msg_height))
             usable_track = max(1, vertical_rect_h - thumb_height)
             scroll_fraction = chat_scroll_position / chat_max_scroll if chat_max_scroll > 0 else 0
