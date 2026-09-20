@@ -17443,12 +17443,12 @@ while running:
                     name_surf, time_surf, lines = msg_data
                     h = len(lines) * line_height
                     running_y -= h
-                    positions.append((name_surf, time_surf, lines, running_y - scroll_pix))
+                    positions.append((name_surf, time_surf, lines, running_y + scroll_pix))
                     running_y -= 5
                 chat_box_surf = chat_surf.subsurface(pygame.Rect(box_x, box_y, chat_box_w, chat_box_h))
                 chat_box_surf.set_clip(pygame.Rect(0, 0, chat_box_w, chat_box_h))
                 for name_surf, time_surf, lines, msg_y in positions:
-                    if msg_y < box_y - 20:
+                    if msg_y < box_y - 20 or msg_y > inner_rect_y + line_height * 5:
                         continue
                     chat_box_surf.blit(name_surf, (inner_rect_x + 5 - box_x, msg_y - box_y))
                     chat_box_surf.blit(time_surf, (inner_rect_x + 5 + name_surf.get_width() - box_x, msg_y - box_y))
