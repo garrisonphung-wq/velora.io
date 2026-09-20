@@ -10583,7 +10583,7 @@ def respawn_player():
     killer_name = None
     killer_rarity = None
 
-    player_x, player_y = 7500, 7500
+    player_x, player_y = 25, WORLD_HEIGHT - PLAYER_RADIUS
 
     for i in range(PETAL_SLOTS):
         if petal_slots[i]["filled"]:
@@ -10595,7 +10595,7 @@ def respawn_player():
     save_player()
 
 create_map()
-player_x, player_y = 7500, 7500
+player_x, player_y = 25, WORLD_HEIGHT - PLAYER_RADIUS
 # ---------------- GAME LOOP ----------------
 
 # Initialize enemy lists (no enemies spawned - all spawning code removed)
