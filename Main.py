@@ -10866,20 +10866,25 @@ while running:
 
                 welcome_click_pending = True
 
-            # Chat box click handling
+# Chat box click handling
             if game_state == "game" and welcome_play_pressed:
                 chat_box_w = 260
-                if chat_arrow_up:
-                    chat_box_h = 150
-                else:
-                    chat_box_h = 120
                 chat_margin = 20
                 inner_padding = 10
                 inner_height = 30
+                # Arrow button stays at fixed position
+                arrow_y = HEIGHT - chat_margin - 120
+                # Chat box bottom stays fixed; grows upward when taller
+                if chat_arrow_up:
+                    chat_box_h = 150
+                    box_y = arrow_y - 30
+                else:
+                    chat_box_h = 120
+                    box_y = arrow_y
                 chat_box_x = WIDTH - chat_margin - chat_box_w
-                chat_box_y = HEIGHT - chat_margin - chat_box_h
+                chat_box_y = box_y
                 inner_rect_x = chat_box_x + inner_padding
-                inner_rect_y = chat_box_y + chat_box_h - inner_height - inner_padding
+                inner_rect_y = box_y + chat_box_h - inner_height - inner_padding
                 inner_rect_w = chat_box_w - 2 * inner_padding
                 inner_rect = pygame.Rect(
                     inner_rect_x, inner_rect_y, inner_rect_w, inner_height
@@ -10892,19 +10897,21 @@ while running:
                         chat_text_visible = True
 
                 # Arrow square click handling
-                chat_arrow_up = not chat_arrow_up
+                small_square_size = 40
+                square_x = chat_box_x - small_square_size - 5
+                square_y = arrow_y
+                square_rect = pygame.Rect(square_x, square_y, small_square_size, small_square_size)
+                if square_rect.collidepoint(mouse_x, mouse_y):
+                    chat_arrow_up = not chat_arrow_up
 
                 # Chat scrollbar drag handling
                 if len(chat_messages) > 4:
-                    if chat_arrow_up:
-                        vertical_rect_x = chat_box_x
-                        vertical_rect_w = small_square_size + 10
-                    else:
-                        vertical_rect_x = chat_box_x - small_square_size - 5
-                        vertical_rect_w = small_square_size
-                    vertical_rect_y = chat_box_y + small_square_size + 5
+                    small_square_bottom = arrow_y + small_square_size
+                    gap = 5
+                    vertical_rect_x = chat_box_x - small_square_size - 5
+                    vertical_rect_y = small_square_bottom + gap
                     vertical_rect = pygame.Rect(
-                        vertical_rect_x, vertical_rect_y, vertical_rect_w, chat_box_h - small_square_size - 5
+                        vertical_rect_x, vertical_rect_y, small_square_size, 120 - small_square_size - gap
                     )
                     if vertical_rect.collidepoint(mouse_x, mouse_y):
                         chat_dragging = True
@@ -11646,18 +11653,22 @@ while running:
         if event.type == pygame.MOUSEMOTION and chat_dragging:
             if len(chat_messages) > 4:
                 chat_box_w = 260
-                if chat_arrow_up:
-                    chat_box_h = 150
-                else:
-                    chat_box_h = 120
                 chat_margin = 20
-                small_square_size = 40
-                gap = 5
-                chat_box_x = WIDTH - chat_margin - chat_box_w
-                chat_box_y = HEIGHT - chat_margin - chat_box_h
                 inner_padding = 10
                 inner_height = 30
-                line_height = 16
+                small_square_size = 40
+                gap = 5
+                # Arrow button stays at fixed position
+                arrow_y = HEIGHT - chat_margin - 120
+                # Chat box bottom stays fixed; grows upward when taller
+                if chat_arrow_up:
+                    chat_box_h = 150
+                    box_y = arrow_y - 30
+                else:
+                    chat_box_h = 120
+                    box_y = arrow_y
+                chat_box_x = WIDTH - chat_margin - chat_box_w
+                chat_box_y = box_y
                 inner_rect_w = chat_box_w - 2 * inner_padding
                 msg_font = pygame.font.SysFont("arial", 14, bold=True)
                 total_msg_h = 0
@@ -17341,19 +17352,22 @@ while running:
 
                 welcome_transition_active = False
 
-    # ---------------- CHAT BOX ----------------
+# ---------------- CHAT BOX ----------------
     # Only visible during gameplay after clicking the green Play button.
     if welcome_play_pressed:
         chat_box_w = 260
-        if chat_arrow_up:
-            chat_box_h = 150
-        else:
-            chat_box_h = 120
         chat_margin = 20
         border_radius = 12
-
+        # Arrow button and vertical rectangle stay at fixed positions
+        arrow_y = HEIGHT - chat_margin - 120
+        # Chat box bottom stays fixed; grows upward when taller
+        if chat_arrow_up:
+            chat_box_h = 150
+            box_y = arrow_y - 30
+        else:
+            chat_box_h = 120
+            box_y = arrow_y
         box_x = WIDTH - chat_margin - chat_box_w
-        box_y = HEIGHT - chat_margin - chat_box_h
 
         chat_surf = pygame.Surface(
             (WIDTH, HEIGHT),
@@ -17367,19 +17381,19 @@ while running:
             border_radius=border_radius
         )
 
-        # Smaller 80% transparent square on the left of the big rect
+        # Smaller 80% transparent square on the left of the big rect (fixed position)
         small_square_size = 40
         pygame.draw.rect(
             chat_surf,
             (30, 30, 30, 204),  # 80% transparent
-            (box_x - small_square_size - 5, box_y, small_square_size, small_square_size),
+            (box_x - small_square_size - 5, arrow_y, small_square_size, small_square_size),
             border_radius=6
         )
-# White 80% transparent arrow in the center of the square
+        # White 80% transparent arrow in the center of the square
         triangle_size = 20
         triangle_height = triangle_size * 0.866
         square_x = box_x - small_square_size - 5
-        square_y = box_y
+        square_y = arrow_y
         cx = square_x + small_square_size // 2
         cy = square_y + small_square_size // 2
         if chat_arrow_up:
@@ -17396,13 +17410,13 @@ while running:
             ]
         pygame.draw.polygon(chat_surf, (255, 255, 255, 204), points)
 
-        # Vertical rectangle below the arrow square
-        small_square_bottom = box_y + small_square_size
+        # Vertical rectangle below the arrow square (fixed position)
+        small_square_bottom = arrow_y + small_square_size
         gap = 5
         pygame.draw.rect(
             chat_surf,
             (30, 30, 30, 204),  # 80% transparent
-            (box_x - small_square_size - 5, small_square_bottom + gap, small_square_size, chat_box_h - small_square_size - gap),
+            (box_x - small_square_size - 5, small_square_bottom + gap, small_square_size, 120 - small_square_size - gap),
             border_radius=6
         )
 
