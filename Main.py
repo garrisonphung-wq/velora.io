@@ -17325,6 +17325,16 @@ while running:
             points[0], points[2] = points[2], points[0]
         pygame.draw.polygon(chat_surf, (255, 255, 255, 204), points)
 
+        # Vertical rectangle below the arrow square
+        small_square_bottom = box_y + small_square_size
+        gap = 5
+        pygame.draw.rect(
+            chat_surf,
+            (30, 30, 30, 204),  # 80% transparent
+            (box_x - small_square_size - 5, small_square_bottom, small_square_size, chat_box_h - small_square_size - gap),
+            border_radius=6
+        )
+
         # Inner rectangle near the bottom
         inner_padding = 10
         inner_height = 30
