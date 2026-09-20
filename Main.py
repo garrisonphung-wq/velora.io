@@ -1040,10 +1040,7 @@ chat_text_visible = True
 chat_input_text = ""
 # Frame counter for chat cursor blinking
 chat_cursor_frame = 0
-# Arrow smooth rotation state (degrees, 0=up, 180=down)
 chat_arrow_up = True
-chat_arrow_angle = 0.0
-chat_arrow_target = 0
 # Chat message history (list of (username, message) tuples)
 chat_messages = []
 # Chat scroll state
@@ -10897,20 +10894,7 @@ while running:
                 square_y = chat_box_y
                 square_rect = pygame.Rect(square_x, square_y, small_square_size, small_square_size)
                 if square_rect.collidepoint(mouse_x, mouse_y):
-                    if chat_arrow_target == 0:
-                        chat_arrow_target = 180
-                    else:
-                        chat_arrow_target = 0
-
-                # Arrow smooth rotation with linear interpolation (lerp)
-                arrow_diff = chat_arrow_target - chat_arrow_angle
-                while arrow_diff > 180:
-                    arrow_diff -= 360
-                while arrow_diff < -180:
-                    arrow_diff += 360
-                chat_arrow_angle += arrow_diff * 0.15
-                if abs(chat_arrow_angle - chat_arrow_target) < 0.5:
-                    chat_arrow_angle = float(chat_arrow_target)
+                    chat_arrow_up = not chat_arrow_up
 
                 # Chat scrollbar drag handling
                 if len(chat_messages) > 4:
@@ -17382,23 +17366,25 @@ while running:
             (box_x - small_square_size - 5, box_y, small_square_size, small_square_size),
             border_radius=6
         )
-# Smoothly rotating arrow in the center of the square
+# White 80% transparent arrow in the center of the square
         triangle_size = 20
         triangle_height = triangle_size * 0.866
         square_x = box_x - small_square_size - 5
         square_y = box_y
         cx = square_x + small_square_size // 2
         cy = square_y + small_square_size // 2
-        angle_rad = math.radians(chat_arrow_angle)
-        cos_a = math.cos(angle_rad)
-        sin_a = math.sin(angle_rad)
-        half_w = triangle_size / 2
-        base_pts = [
-            (-half_w, triangle_height / 3),
-            (half_w, triangle_height / 3),
-            (0, -triangle_height * 2 / 3),
-        ]
-        points = [(cx + x * cos_a - y * sin_a, cy + x * sin_a + y * cos_a) for x, y in base_pts]
+        if chat_arrow_up:
+            points = [
+                (cx - triangle_size // 2, cy + triangle_height // 3),
+                (cx + triangle_size // 2, cy + triangle_height // 3),
+                (cx, cy - triangle_height * 2 // 3)
+            ]
+        else:
+            points = [
+                (cx - triangle_size // 2, cy - triangle_height // 3),
+                (cx + triangle_size // 2, cy - triangle_height // 3),
+                (cx, cy + triangle_height * 2 // 3)
+            ]
         pygame.draw.polygon(chat_surf, (255, 255, 255, 204), points)
 
         # Vertical rectangle below the arrow square
