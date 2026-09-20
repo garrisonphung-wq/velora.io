@@ -17354,7 +17354,7 @@ while running:
                         line_surf,
                         (inner_rect_x + 5 + username_surf.get_width(), msg_y + j * line_height)
                     )
-                chat_surf.set_clip(None)
+            chat_surf.set_clip(None)
 
         # Text in the center of the inner rectangle
         if chat_text_visible:
