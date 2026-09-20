@@ -17344,9 +17344,8 @@ while running:
                 running_y -= h
                 positions.append((i, running_y))
                 running_y -= 5  # gap between messages
+            chat_surf.set_clip(pygame.Rect(box_x, box_y, chat_box_w, chat_box_h))
             for i, msg_y in positions:
-                if msg_y < box_y:
-                    continue
                 username_surf, lines, _ = wrapped_data[i]
                 chat_surf.blit(username_surf, (inner_rect_x + 5, msg_y))
                 for j, line in enumerate(lines):
@@ -17355,6 +17354,7 @@ while running:
                         line_surf,
                         (inner_rect_x + 5 + username_surf.get_width(), msg_y + j * line_height)
                     )
+                chat_surf.set_clip(None)
 
         # Text in the center of the inner rectangle
         if chat_text_visible:
