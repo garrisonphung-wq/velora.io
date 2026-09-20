@@ -1039,6 +1039,8 @@ chat_text_visible = True
 chat_input_text = ""
 # Frame counter for chat cursor blinking
 chat_cursor_frame = 0
+# Arrow rotation state: True = up, False = down
+chat_arrow_up = True
 # Chat message history (list of (username, message) tuples)
 chat_messages = []
 
@@ -1124,6 +1126,38 @@ def draw_iris_wipe(radius):
     if radius > 0:
         pygame.draw.circle(wipe, (0, 0, 0, 0), (WIDTH // 2, HEIGHT // 2), radius)
     screen.blit(wipe, (0, 0))
+
+def wrap_text(font, text, max_width):
+    """Split text into lines that fit within max_width pixels."""
+    lines = []
+    for word in text.split():
+        if not lines:
+            lines.append(word)
+        else:
+            test_line = f"{lines[-1]} {word}"
+            if font.size(test_line)[0] <= max_width:
+                lines[-1] = test_line
+            else:
+                lines.append(word)
+    # Handle words that are too long to fit on a line (break at character level)
+    final_lines = []
+    for line in lines:
+        if font.size(line)[0] <= max_width:
+            final_lines.append(line)
+        else:
+            # Break the long word/line character by character
+            current = ""
+            for char in line:
+                test = current + char
+                if font.size(test)[0] <= max_width:
+                    current = test
+                else:
+                    if current:
+                        final_lines.append(current)
+                    current = char
+            if current:
+                final_lines.append(current)
+    return final_lines if final_lines else [""]
 
 def draw_light_preview(x, y, rarity):
 
@@ -10813,38 +10847,33 @@ while running:
 
             # Chat box click handling
             if game_state == "game" and welcome_play_pressed:
+                chat_box_w = 260
+                chat_box_h = 120
+                chat_margin = 20
+                inner_padding = 10
+                inner_height = 30
+                chat_box_x = WIDTH - chat_margin - chat_box_w
+                chat_box_y = HEIGHT - chat_margin - chat_box_h
+                inner_rect_x = chat_box_x + inner_padding
+                inner_rect_y = chat_box_y + chat_box_h - inner_height - inner_padding
+                inner_rect_w = chat_box_w - 2 * inner_padding
+                inner_rect = pygame.Rect(
+                    inner_rect_x, inner_rect_y, inner_rect_w, inner_height
+                )
                 if chat_text_visible:
-                    chat_box_w = 260
-                    chat_box_h = 120
-                    chat_margin = 20
-                    inner_padding = 10
-                    inner_height = 30
-                    chat_box_x = WIDTH - chat_margin - chat_box_w
-                    chat_box_y = HEIGHT - chat_margin - chat_box_h
-                    inner_rect_x = chat_box_x + inner_padding
-                    inner_rect_y = chat_box_y + chat_box_h - inner_height - inner_padding
-                    inner_rect_w = chat_box_w - 2 * inner_padding
-                    inner_rect = pygame.Rect(
-                        inner_rect_x, inner_rect_y, inner_rect_w, inner_height
-                    )
                     if inner_rect.collidepoint(mouse_x, mouse_y):
                         chat_text_visible = False
                 else:
-                    chat_box_w = 260
-                    chat_box_h = 120
-                    chat_margin = 20
-                    inner_padding = 10
-                    inner_height = 30
-                    chat_box_x = WIDTH - chat_margin - chat_box_w
-                    chat_box_y = HEIGHT - chat_margin - chat_box_h
-                    inner_rect_x = chat_box_x + inner_padding
-                    inner_rect_y = chat_box_y + chat_box_h - inner_height - inner_padding
-                    inner_rect_w = chat_box_w - 2 * inner_padding
-                    inner_rect = pygame.Rect(
-                        inner_rect_x, inner_rect_y, inner_rect_w, inner_height
-                    )
                     if not inner_rect.collidepoint(mouse_x, mouse_y):
                         chat_text_visible = True
+
+                # Arrow square click handling
+                small_square_size = 40
+                square_x = chat_box_x - small_square_size - 5
+                square_y = chat_box_y
+                square_rect = pygame.Rect(square_x, square_y, small_square_size, small_square_size)
+                if square_rect.collidepoint(mouse_x, mouse_y):
+                    chat_arrow_up = not chat_arrow_up
 
             if game_state == "login":
 
@@ -11396,15 +11425,20 @@ while running:
                     elif event.key != pygame.K_RETURN:
                         acc_name_text += event.unicode
 
-            if game_state == "game" and not chat_text_visible:
-                if event.key == pygame.K_BACKSPACE:
+            if game_state == "game":
+                if event.key == pygame.K_RETURN:
+                    if chat_text_visible:
+                        # Pressing Enter while prompt is shown opens the chat box for typing
+                        chat_text_visible = False
+                    else:
+                        # Pressing Enter while typing sends the message
+                        if chat_input_text:
+                            chat_messages.append((acc_name_text, chat_input_text))
+                        chat_input_text = ""
+                        chat_text_visible = True
+                elif event.key == pygame.K_BACKSPACE and not chat_text_visible:
                     chat_input_text = chat_input_text[:-1]
-                elif event.key == pygame.K_RETURN:
-                    if chat_input_text:
-                        chat_messages.append((acc_name_text, chat_input_text))
-                    chat_input_text = ""
-                    chat_text_visible = True
-                elif event.unicode:
+                elif event.unicode and not chat_text_visible:
                     chat_input_text += event.unicode
 
             if event.type == pygame.KEYDOWN:
@@ -17230,13 +17264,7 @@ while running:
 
     # ---------------- CHAT BOX ----------------
     # Only visible during gameplay after clicking the green Play button.
-    if (
-        welcome_play_pressed
-        and not settings_panel_open
-        and not craft_open
-        and not inventory_open
-        and not new_button_panel_open
-    ):
+    if welcome_play_pressed:
         chat_box_w = 260
         chat_box_h = 120
         chat_margin = 20
@@ -17257,6 +17285,31 @@ while running:
             border_radius=border_radius
         )
 
+        # Smaller 80% transparent square on the left of the big rect
+        small_square_size = 40
+        pygame.draw.rect(
+            chat_surf,
+            (30, 30, 30, 204),  # 80% transparent
+            (box_x - small_square_size - 5, box_y, small_square_size, small_square_size),
+            border_radius=6
+        )
+        # White 80% transparent up arrow in the center of the square
+        triangle_size = 20
+        triangle_height = triangle_size * 0.866
+        square_x = box_x - small_square_size - 5
+        square_y = box_y
+        cx = square_x + small_square_size // 2
+        cy = square_y + small_square_size // 2
+        points = [
+            (cx - triangle_size // 2, cy + triangle_height // 3),
+            (cx + triangle_size // 2, cy + triangle_height // 3),
+            (cx, cy - triangle_height * 2 // 3)
+        ]
+        # Flip triangle if arrow is down
+        if not chat_arrow_up:
+            points[0], points[2] = points[2], points[0]
+        pygame.draw.polygon(chat_surf, (255, 255, 255, 204), points)
+
         # Inner rectangle near the bottom
         inner_padding = 10
         inner_height = 30
@@ -17273,17 +17326,35 @@ while running:
 
         # Display chat messages above the input box
         if chat_messages:
-            msg_font = pygame.font.SysFont("arial", 14)
-            # Old comments on top, new comments below
-            msg_y = inner_rect_y - 25 - (len(chat_messages) - 1) * 20
-            for username, msg in chat_messages[-5:]:
-                # Username in yellow
-                username_surf = msg_font.render(f"{username}: ", True, (255, 255, 0))
+            msg_font = pygame.font.SysFont("arial", 14, bold=True)
+            displayed = chat_messages[-5:][::-1]
+            line_height = 16
+            # Pre-calculate wrapped lines and heights for each message
+            wrapped_data = []
+            for username, msg in displayed:
+                username_surf = msg_font.render(f"[{username}]: ", True, (255, 255, 0))
+                max_msg_width = inner_rect_w - 10 - username_surf.get_width()
+                lines = wrap_text(msg_font, msg, max_msg_width)
+                wrapped_data.append((username_surf, lines, len(lines) * line_height))
+            # Position messages from bottom to top, newest at bottom
+            running_y = inner_rect_y - 25
+            positions = []
+            for i in range(len(wrapped_data)):
+                h = wrapped_data[i][2]
+                running_y -= h
+                positions.append((i, running_y))
+                running_y -= 5  # gap between messages
+            for i, msg_y in positions:
+                if msg_y < box_y:
+                    continue
+                username_surf, lines, _ = wrapped_data[i]
                 chat_surf.blit(username_surf, (inner_rect_x + 5, msg_y))
-                # Message in white
-                msg_surf = msg_font.render(msg, True, (255, 255, 255))
-                chat_surf.blit(msg_surf, (inner_rect_x + 5 + username_surf.get_width(), msg_y))
-                msg_y += 20
+                for j, line in enumerate(lines):
+                    line_surf = msg_font.render(line, True, (255, 255, 255))
+                    chat_surf.blit(
+                        line_surf,
+                        (inner_rect_x + 5 + username_surf.get_width(), msg_y + j * line_height)
+                    )
 
         # Text in the center of the inner rectangle
         if chat_text_visible:
@@ -17300,39 +17371,82 @@ while running:
             font = pygame.font.SysFont("arial", 16)
             outline_color = (255, 255, 255)
             text_color = (255, 255, 255)
-            start_x = inner_rect_x + 10
-            start_y = inner_rect_y + inner_height // 2 - font.get_height() // 2
-
-            # Render each letter individually with tight spacing
-            for i, ch in enumerate(chat_input_text):
-                # Get character width
-                char_w = font.render(ch, True, text_color).get_width()
-                # Render outline (2 directions, 1px offset - smaller)
-                for dx, dy in [(-1, 0), (1, 0)]:
-                    outline_surf = font.render(ch, True, outline_color)
-                    chat_surf.blit(outline_surf, (start_x + dx, start_y + dy))
-                # Render main text
-                text_surf = font.render(ch, True, text_color)
-                chat_surf.blit(text_surf, (start_x, start_y))
-                # Move to next letter position (tight spacing, 2px gap between outlines)
-                start_x += char_w + 4
-
-            # Update text_rect for cursor position
-            text_rect = pygame.Rect(start_x - 1, start_y, 1, font.get_height())
+            
+            # Text wrapping parameters
+            padding_x = 10
+            spacing = 4
+            max_width = inner_rect_w - padding_x * 2
+            line_height = 15
+            max_visible_lines = 1  # Show only current line
+            
+            # Split text into lines that fit the width (account for per-character spacing)
+            lines = []
+            current_line = ""
+            
+            for char in chat_input_text:
+                test_line = current_line + char
+                test_width = font.render(test_line, True, text_color).get_width() + len(test_line) * spacing
+                
+                if test_width <= max_width:
+                    current_line = test_line
+                else:
+                    if current_line:  # Add the current line if it's not empty
+                        lines.append(current_line)
+                    current_line = char
+            
+            # Add the last line
+            if current_line:
+                lines.append(current_line)
+            
+            # Show only the last N lines so the cursor is always visible (scroll up)
+            if len(lines) > max_visible_lines:
+                visible_lines = lines[-max_visible_lines:]
+            else:
+                visible_lines = lines
+            
+            # Render visible lines, aligned to top of inner rectangle
+            for line_idx, line in enumerate(visible_lines):
+                line_y = inner_rect_y + 4 + line_idx * line_height
+                start_x = inner_rect_x + padding_x
+                char_x = start_x
+                
+                for ch in line:
+                    # Get character width
+                    char_w = font.render(ch, True, text_color).get_width()
+                    # Render outline (2 directions, 1px offset - smaller)
+                    for dx, dy in [(-1, 0), (1, 0)]:
+                        outline_surf = font.render(ch, True, outline_color)
+                        chat_surf.blit(outline_surf, (char_x + dx, line_y + dy))
+                    # Render main text
+                    text_surf = font.render(ch, True, text_color)
+                    chat_surf.blit(text_surf, (char_x, line_y))
+                    # Move to next letter position (tight spacing, 2px gap between outlines)
+                    char_x += char_w + 4
+                
+                # Update cursor position for this line
+                if line_idx == len(visible_lines) - 1:
+                    cursor_x = char_x + 2
+                    cursor_y = line_y
+                    cursor_h = line_height - 2
 
             # Blinking white cursor line (in front of last letter)
             chat_cursor_frame += 1
             if chat_cursor_frame % 40 < 20:  # Blink every 20 frames
-                cursor_x = start_x + 2
-                cursor_y = inner_rect_y + 5
-                cursor_h = inner_height - 10
-                pygame.draw.line(
-                    chat_surf,
-                    (255, 255, 255),
-                    (cursor_x, cursor_y),
-                    (cursor_x, cursor_y + cursor_h),
-                    2
-                )
+                # Only show cursor if we have at least one line or are typing
+                if len(lines) > 0 or len(chat_input_text) > 0:
+                    # Ensure cursor variables are set (from the rendering loop above)
+                    # If no lines were rendered (empty string), position at start
+                    if len(visible_lines) == 0:
+                        cursor_x = inner_rect_x + padding_x + 2
+                        cursor_y = inner_rect_y + 4
+                        cursor_h = line_height - 2
+                    pygame.draw.line(
+                        chat_surf,
+                        (255, 255, 255),
+                        (cursor_x, cursor_y),
+                        (cursor_x, cursor_y + cursor_h),
+                        2
+                    )
 
         screen.blit(chat_surf, (0, 0))
 
