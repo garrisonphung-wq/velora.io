@@ -17338,7 +17338,7 @@ while running:
     # ---------------- CHAT BOX ----------------
     # Only visible during gameplay after clicking the green Play button.
     if welcome_play_pressed:
-        chat_box_w = 260
+        chat_box_w = 300 if chat_arrow_up else 260
         chat_box_h = 120
         chat_margin = 20
         border_radius = 12
@@ -17388,12 +17388,17 @@ while running:
         pygame.draw.polygon(chat_surf, (255, 255, 255, 204), points)
 
         # Vertical rectangle below the arrow square
-        small_square_bottom = box_y + small_square_size
         gap = 5
+        if chat_arrow_up:
+            rect_x = box_x
+            rect_w = small_square_size + 10
+        else:
+            rect_x = box_x - small_square_size - 5
+            rect_w = small_square_size
         pygame.draw.rect(
             chat_surf,
             (30, 30, 30, 204),  # 80% transparent
-            (box_x - small_square_size - 5, small_square_bottom + gap, small_square_size, chat_box_h - small_square_size - gap),
+            (rect_x, small_square_bottom + gap, rect_w, chat_box_h - small_square_size - gap),
             border_radius=6
         )
 
