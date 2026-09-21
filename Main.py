@@ -11479,7 +11479,7 @@ while running:
                             chat_messages.append((acc_name_text, chat_input_text, time.time()))
                         chat_input_text = ""
                         chat_text_visible = False
-                        chat_scroll_target = chat_max_scroll if chat_max_scroll > 0 else 0
+                        chat_scroll_target = 0
                 elif event.key == pygame.K_BACKSPACE and not chat_text_visible:
                     chat_input_text = chat_input_text[:-1]
                 elif event.unicode and not chat_text_visible:
