@@ -17496,9 +17496,9 @@ while running:
             gap = 5
             vertical_rect_y = small_square_bottom + gap
             vertical_rect_h = 120 - small_square_size - gap
-            thumb_padding = 3
-            thumb_width = small_square_size - 16
-            thumb_height = max(12, int(vertical_rect_h * visible_area_height / total_msg_height))
+            thumb_padding = 2
+            thumb_width = small_square_size - 12
+            thumb_height = max(15, int(vertical_rect_h * visible_area_height / total_msg_height))
             usable_track = max(1, vertical_rect_h - 2 * thumb_padding - thumb_height)
             scroll_fraction = min(1.0, max(0.0, chat_scroll_position / chat_max_scroll)) if chat_max_scroll > 0 else 0
             thumb_y = vertical_rect_y + thumb_padding + int(usable_track * scroll_fraction)
