@@ -11478,7 +11478,8 @@ while running:
                         if chat_input_text:
                             chat_messages.append((acc_name_text, chat_input_text, time.time()))
                         chat_input_text = ""
-                        chat_text_visible = True
+                        chat_text_visible = False
+                        chat_scroll_target = chat_max_scroll if chat_max_scroll > 0 else 0
                 elif event.key == pygame.K_BACKSPACE and not chat_text_visible:
                     chat_input_text = chat_input_text[:-1]
                 elif event.unicode and not chat_text_visible:
@@ -11536,7 +11537,7 @@ while running:
                     min(craft_max_scroll, craft_scroll_target - event.y)
                 )
             # Chat scrollbar wheel support
-            if not craft_open:
+            if not craft_open and chat_max_scroll > 0:
                 chat_scroll_target = max(0, chat_scroll_target - event.y)
 
             if new_button_panel_open:
@@ -11653,7 +11654,7 @@ while running:
             )
 
         if event.type == pygame.MOUSEMOTION and chat_dragging:
-            if len(chat_messages) > 4:
+            if len(chat_messages) > 4 and chat_max_scroll > 0:
                 chat_box_w = 260
                 chat_margin = 20
                 inner_padding = 10
