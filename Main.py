@@ -385,6 +385,12 @@ def get_petal_slots(level):
 PETAL_SLOTS = get_petal_slots(flower_level)
 
 petal_slots = []
+for _ in range(PETAL_SLOTS):
+    petal_slots.append({
+        "filled": False,
+        "petal": "Basic",
+        "rarity": "Common"
+    })
 
 # ---------------- PETAL INVENTORY ----------------
 
@@ -455,22 +461,22 @@ hp_upgrade_cost = 1
 
 petal_cooldowns = []
 
-for i in range(5):
+for i in range(PETAL_SLOTS):
     petal_cooldowns.append(0)
 
 # Per-light cooldowns for Light petal (each light has its own cooldown)
 light_cooldowns = []
-for i in range(5):
+for i in range(PETAL_SLOTS):
     light_cooldowns.append([])
 
 # Per-light HP for Light petal
 light_hp = []
-for i in range(5):
+for i in range(PETAL_SLOTS):
     light_hp.append([])
 
 # Per-light alive state for Light petal
 light_alive = []
-for i in range(5):
+for i in range(PETAL_SLOTS):
     light_alive.append([])
 
 # ---------------- PETAL HP ----------------
@@ -586,16 +592,71 @@ petal_hp = []
 petal_alive = []
 petal_max_hp = []
 petal_flash_timers = []
-
 petal_respawn_timer = []
 
-for i in range(5):
+petal_respawn_text_timer = []
+
+def resize_petal_lists():
+    while len(petal_hp) < PETAL_SLOTS:
+        petal_hp.append(1)
+    while len(petal_hp) > PETAL_SLOTS:
+        petal_hp.pop()
+    while len(petal_alive) < PETAL_SLOTS:
+        petal_alive.append(True)
+    while len(petal_alive) > PETAL_SLOTS:
+        petal_alive.pop()
+    while len(petal_max_hp) < PETAL_SLOTS:
+        petal_max_hp.append(1)
+    while len(petal_max_hp) > PETAL_SLOTS:
+        petal_max_hp.pop()
+    while len(petal_flash_timers) < PETAL_SLOTS:
+        petal_flash_timers.append(0)
+    while len(petal_flash_timers) > PETAL_SLOTS:
+        petal_flash_timers.pop()
+    while len(petal_cooldowns) < PETAL_SLOTS:
+        petal_cooldowns.append(0)
+    while len(petal_cooldowns) > PETAL_SLOTS:
+        petal_cooldowns.pop()
+    while len(petal_respawn_timer) < PETAL_SLOTS:
+        petal_respawn_timer.append(0)
+    while len(petal_respawn_timer) > PETAL_SLOTS:
+        petal_respawn_timer.pop()
+    while len(petal_respawn_text_timer) < PETAL_SLOTS:
+        petal_respawn_text_timer.append(0)
+    while len(petal_respawn_text_timer) > PETAL_SLOTS:
+        petal_respawn_text_timer.pop()
+    while len(light_cooldowns) < PETAL_SLOTS:
+        light_cooldowns.append([])
+    while len(light_cooldowns) > PETAL_SLOTS:
+        light_cooldowns.pop()
+    while len(light_hp) < PETAL_SLOTS:
+        light_hp.append([])
+    while len(light_hp) > PETAL_SLOTS:
+        light_hp.pop()
+    while len(light_alive) < PETAL_SLOTS:
+        light_alive.append([])
+    while len(light_alive) > PETAL_SLOTS:
+        light_alive.pop()
+
+
+def pad_petal_slots():
+    while len(petal_slots) < PETAL_SLOTS:
+        petal_slots.append({
+            "filled": False,
+            "petal": "Basic",
+            "rarity": "Common"
+        })
+
+for i in range(PETAL_SLOTS):
     petal_respawn_timer.append(0)
     petal_flash_timers.append(0)
-for i in range(5):
+for i in range(PETAL_SLOTS):
     petal_respawn_text_timer.append(0)
 
-for i in range(5):
+# Initialize petal lists based on PETAL_SLOTS
+resize_petal_lists()
+
+for i in range(PETAL_SLOTS):
 
     if i >= len(petal_slots):
         continue
@@ -613,8 +674,8 @@ for i in range(5):
         if light_count > 0:
             hp /= light_count
 
-    petal_max_hp.append(hp)
-    petal_hp.append(hp)
+    petal_max_hp[i] = hp
+    petal_hp[i] = hp
 
     # Initialize per-light state for Light petal
     if petal_type == "Light":
@@ -627,7 +688,7 @@ for i in range(5):
         light_cooldowns[i] = []
         light_alive[i] = []
 
-    petal_alive.append(True)
+    petal_alive[i] = True
 
 # ---------------- PETAL RARITY SYSTEM ----------------
 
@@ -4841,6 +4902,8 @@ def load_player():
         1
     )
     PETAL_SLOTS = get_petal_slots(flower_level)
+    pad_petal_slots()
+    resize_petal_lists()
 
     flower_xp = data.get(
         "flower_xp",
@@ -4917,6 +4980,18 @@ def load_player():
                 True
             )
 
+            petal_flash_timers.append(
+                0
+            )
+
+            petal_cooldowns.append(
+                0
+            )
+
+            light_cooldowns.append([])
+            light_hp.append([])
+            light_alive.append([])
+
 
         else:
 
@@ -4931,6 +5006,21 @@ def load_player():
             petal_alive.append(
                 False
             )
+
+            petal_flash_timers.append(
+                0
+            )
+
+            petal_cooldowns.append(
+                0
+            )
+
+            light_cooldowns.append([])
+            light_hp.append([])
+            light_alive.append([])
+
+    # Ensure all petal lists match PETAL_SLOTS
+    resize_petal_lists()
 
 def create_map():
 
@@ -5590,7 +5680,7 @@ def format_number(number):
 
 def damage_petal(amount):
 
-    for i in range(5):
+    for i in range(PETAL_SLOTS):
 
         if petal_alive[i]:
 
@@ -10287,6 +10377,8 @@ def give_xp(amount):
 
         # Update petal slots based on level
         PETAL_SLOTS = get_petal_slots(flower_level)
+        pad_petal_slots()
+        resize_petal_lists()
 
 
         # ---------------- REWARD ----------------
@@ -10316,6 +10408,8 @@ def give_xp(amount):
 
             flower_level = 250
             PETAL_SLOTS = get_petal_slots(flower_level)
+            pad_petal_slots()
+            resize_petal_lists()
             flower_xp = 0
             flower_xp_needed = calculate_xp_needed(250)
 
@@ -10496,6 +10590,7 @@ def create_account():
         petal_max_hp.append(hp)
         petal_hp.append(hp)
         petal_alive.append(True)
+        petal_flash_timers.append(0)
 
 
     game_state = "welcome"
@@ -11000,6 +11095,8 @@ while running:
 
                         flower_level = 250
                         PETAL_SLOTS = get_petal_slots(flower_level)
+                        pad_petal_slots()
+                        resize_petal_lists()
                         flower_xp = 0
                         upgrade_points = 0
                         PLAYER_MAX_HP = 100000000000000
@@ -12373,7 +12470,7 @@ while running:
 
                     if petal_alive[i]:
 
-                        if petal_slots[i]["petal"] == "Rose":
+                        if i < len(petal_slots) and petal_slots[i]["petal"] == "Rose":
 
                             player_hp += 10
 
@@ -12391,7 +12488,7 @@ while running:
 
                 if petal_alive[i]:
 
-                    if petal_slots[i]["petal"] == "Leaf":
+                    if i < len(petal_slots) and petal_slots[i]["petal"] == "Leaf":
 
                         rarity = petal_slots[i]["rarity"]
 
@@ -12755,7 +12852,7 @@ while running:
 
         for i in range(PETAL_SLOTS):
 
-            if petal_slots[i]["petal"] == "Faster":
+            if i < len(petal_slots) and petal_slots[i]["petal"] == "Faster":
 
                 rarity = petal_slots[i]["rarity"]
 
@@ -13006,7 +13103,7 @@ while running:
                     petal_alive[i] = True
                     petal_hp[i] = petal_max_hp[i]
 
-                    if petal_slots[i]["petal"] == "Light":
+                    if i < len(petal_slots) and petal_slots[i]["petal"] == "Light":
                         light_count = get_petal_count("Light", petal_slots[i]["rarity"])
                         light_hp[i] = [petal_max_hp[i]] * light_count
                         light_cooldowns[i] = [0] * light_count
@@ -13026,7 +13123,7 @@ while running:
 
             if petal_alive[i]:
 
-                if petal_slots[i]["petal"] == "Light":
+                if i < len(petal_slots) and petal_slots[i]["petal"] == "Light":
                     for li in range(len(light_hp[i])):
                         if light_alive[i][li] and light_hp[i][li] < petal_max_hp[i]:
                             light_hp[i][li] += 0.05
@@ -13426,6 +13523,14 @@ while running:
             # Draw petals
 
         # ---------------- DRAW PETAL SLOTS ----------------
+
+        # Ensure petal_slots matches PETAL_SLOTS (defensive)
+        while len(petal_slots) < PETAL_SLOTS:
+            petal_slots.append({
+                "filled": False,
+                "petal": "Basic",
+                "rarity": "Common"
+            })
 
         slots_per_row = 5
 
