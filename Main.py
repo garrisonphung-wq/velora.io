@@ -369,7 +369,20 @@ MOB_XP_MULTIPLIER = {
 
 # ---------------- PETAL SLOTS ----------------
 
-PETAL_SLOTS = 5
+def get_petal_slots(level):
+    if level >= 75:
+        return 10
+    if level >= 55:
+        return 9
+    if level >= 35:
+        return 8
+    if level >= 15:
+        return 7
+    if level >= 5:
+        return 6
+    return 5
+
+PETAL_SLOTS = get_petal_slots(flower_level)
 
 petal_slots = []
 
@@ -4701,6 +4714,8 @@ def load_player():
     global craft_post_result_items
     global mob_gallery_unlocks
 
+    global PETAL_SLOTS
+
     global flower_level
     global flower_xp
     global flower_xp_needed
@@ -4825,7 +4840,7 @@ def load_player():
         "flower_level",
         1
     )
-
+    PETAL_SLOTS = get_petal_slots(flower_level)
 
     flower_xp = data.get(
         "flower_xp",
@@ -10270,6 +10285,9 @@ def give_xp(amount):
 
         flower_level += 1
 
+        # Update petal slots based on level
+        PETAL_SLOTS = get_petal_slots(flower_level)
+
 
         # ---------------- REWARD ----------------
 
@@ -10297,6 +10315,7 @@ def give_xp(amount):
         if flower_level >= 250:
 
             flower_level = 250
+            PETAL_SLOTS = get_petal_slots(flower_level)
             flower_xp = 0
             flower_xp_needed = calculate_xp_needed(250)
 
@@ -10980,6 +10999,7 @@ while running:
                         inventory = []
 
                         flower_level = 250
+                        PETAL_SLOTS = get_petal_slots(flower_level)
                         flower_xp = 0
                         upgrade_points = 0
                         PLAYER_MAX_HP = 100000000000000
