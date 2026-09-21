@@ -11481,7 +11481,8 @@ while running:
                 elif event.key == pygame.K_BACKSPACE and not chat_text_visible:
                     chat_input_text = chat_input_text[:-1]
                 elif event.unicode and not chat_text_visible:
-                    chat_input_text += event.unicode
+                    if len(chat_input_text) < 200:
+                        chat_input_text += event.unicode
 
             if event.type == pygame.KEYDOWN:
 
