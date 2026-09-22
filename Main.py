@@ -640,7 +640,7 @@ def resize_petal_lists():
 
 
 def pad_petal_slots():
-    while len(petal_slots) < PETAL_SLOTS:
+    while len(petal_slots) < PETAL_SLOTS * 2:
         petal_slots.append({
             "filled": False,
             "petal": "Basic",
@@ -10562,7 +10562,7 @@ def create_account():
 
     petal_slots = []
 
-    for i in range(PETAL_SLOTS):
+    for i in range(PETAL_SLOTS * 2):
 
         petal_slots.append({
             "filled": True,
@@ -13525,7 +13525,7 @@ while running:
         # ---------------- DRAW PETAL SLOTS ----------------
 
         # Ensure petal_slots matches PETAL_SLOTS (defensive)
-        while len(petal_slots) < PETAL_SLOTS:
+        while len(petal_slots) < PETAL_SLOTS * 2:
             petal_slots.append({
                 "filled": False,
                 "petal": "Basic",
