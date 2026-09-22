@@ -385,8 +385,17 @@ def get_petal_slots(level):
 PETAL_SLOTS = get_petal_slots(flower_level)
 
 petal_slots = []
-for _ in range(PETAL_SLOTS * 2):
+for _ in range(PETAL_SLOTS):
     petal_slots.append({
+        "filled": False,
+        "petal": "Basic",
+        "rarity": "Common"
+    })
+
+# Swap petal slots (second set of PETAL_SLOTS slots)
+swap_petal_slots = []
+for _ in range(PETAL_SLOTS):
+    swap_petal_slots.append({
         "filled": False,
         "petal": "Basic",
         "rarity": "Common"
@@ -640,8 +649,16 @@ def resize_petal_lists():
 
 
 def pad_petal_slots():
-    while len(petal_slots) < PETAL_SLOTS * 2:
+    while len(petal_slots) < PETAL_SLOTS:
         petal_slots.append({
+            "filled": False,
+            "petal": "Basic",
+            "rarity": "Common"
+        })
+
+def pad_swap_petal_slots():
+    while len(swap_petal_slots) < PETAL_SLOTS:
+        swap_petal_slots.append({
             "filled": False,
             "petal": "Basic",
             "rarity": "Common"
@@ -4740,6 +4757,7 @@ def save_player():
             if slot.get("filled")
         ],
         "petals": petal_slots,
+        "swap_petals": swap_petal_slots,
         "flower_level": flower_level,
         "flower_xp": flower_xp,
         "upgrade_points": upgrade_points,
@@ -4760,6 +4778,7 @@ def save_player():
 def load_player():
 
     global petal_slots
+    global swap_petal_slots
     global petal_hp
     global petal_max_hp
     global petal_alive
@@ -4803,9 +4822,21 @@ def load_player():
     # Older saves may contain fewer than PETAL_SLOTS entries.  Keep the
     # runtime arrays the same length as the game expects.
     saved_petals = data.get("petals", [])
-    petal_slots = list(saved_petals[:PETAL_SLOTS * 2])
-    while len(petal_slots) < PETAL_SLOTS * 2:
+    # Older saves stored all slots in one list.  Split into main and swap.
+    saved_main = saved_petals[:PETAL_SLOTS]
+    saved_swap = saved_petals[PETAL_SLOTS:]
+    petal_slots = list(saved_main[:PETAL_SLOTS])
+    while len(petal_slots) < PETAL_SLOTS:
         petal_slots.append({
+            "filled": False,
+            "petal": "Basic",
+            "rarity": "Common"
+        })
+
+    # Load swap petals (older saves stored them in the same list)
+    swap_petal_slots = list(saved_swap[:PETAL_SLOTS])
+    while len(swap_petal_slots) < PETAL_SLOTS:
+        swap_petal_slots.append({
             "filled": False,
             "petal": "Basic",
             "rarity": "Common"
@@ -4903,6 +4934,7 @@ def load_player():
     )
     PETAL_SLOTS = get_petal_slots(flower_level)
     pad_petal_slots()
+    pad_swap_petal_slots()
     resize_petal_lists()
 
     flower_xp = data.get(
@@ -10378,6 +10410,7 @@ def give_xp(amount):
         # Update petal slots based on level
         PETAL_SLOTS = get_petal_slots(flower_level)
         pad_petal_slots()
+        pad_swap_petal_slots()
         resize_petal_lists()
 
 
@@ -10409,6 +10442,7 @@ def give_xp(amount):
             flower_level = 250
             PETAL_SLOTS = get_petal_slots(flower_level)
             pad_petal_slots()
+            pad_swap_petal_slots()
             resize_petal_lists()
             flower_xp = 0
             flower_xp_needed = calculate_xp_needed(250)
@@ -10552,6 +10586,7 @@ def draw_minimap():
 def create_account():
 
     global petal_slots
+    global swap_petal_slots
     global petal_hp
     global inventory
     global petal_max_hp
@@ -10562,10 +10597,19 @@ def create_account():
 
     petal_slots = []
 
-    for i in range(PETAL_SLOTS * 2):
+    for i in range(PETAL_SLOTS):
 
         petal_slots.append({
             "filled": True,
+            "petal": "Basic",
+            "rarity": "Common"
+        })
+
+    # Initialize swap slots as empty
+    swap_petal_slots = []
+    for i in range(PETAL_SLOTS):
+        swap_petal_slots.append({
+            "filled": False,
             "petal": "Basic",
             "rarity": "Common"
         })
@@ -11096,6 +11140,7 @@ while running:
                         flower_level = 250
                         PETAL_SLOTS = get_petal_slots(flower_level)
                         pad_petal_slots()
+                        pad_swap_petal_slots()
                         resize_petal_lists()
                         flower_xp = 0
                         upgrade_points = 0
@@ -13525,8 +13570,16 @@ while running:
         # ---------------- DRAW PETAL SLOTS ----------------
 
         # Ensure petal_slots matches PETAL_SLOTS (defensive)
-        while len(petal_slots) < PETAL_SLOTS * 2:
+        while len(petal_slots) < PETAL_SLOTS:
             petal_slots.append({
+                "filled": False,
+                "petal": "Basic",
+                "rarity": "Common"
+            })
+
+        # Ensure swap_petal_slots matches PETAL_SLOTS (defensive)
+        while len(swap_petal_slots) < PETAL_SLOTS:
+            swap_petal_slots.append({
                 "filled": False,
                 "petal": "Basic",
                 "rarity": "Common"
@@ -13556,7 +13609,7 @@ while running:
                 swap_idx = i - PETAL_SLOTS
                 row = (swap_idx // 5) + (PETAL_SLOTS + 4) // 5 + 1
                 col = swap_idx % 5
-                slot = petal_slots[i]
+                slot = swap_petal_slots[swap_idx]
 
             if row < 0 or row >= 5:
                 continue
