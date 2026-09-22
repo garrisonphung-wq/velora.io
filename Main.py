@@ -13585,7 +13585,7 @@ while running:
                 "rarity": "Common"
             })
 
-        slots_per_row = 5
+        slots_per_row = PETAL_SLOTS
 
         total_width = (
             slots_per_row * PETAL_SLOT_SIZE +
@@ -13601,17 +13601,17 @@ while running:
             # Swap slots: indices PETAL_SLOTS to PETAL_SLOTS*2-1
             if i < PETAL_SLOTS:
                 # Main equip slot
-                row = i // 5
-                col = i % 5
+                row = i // slots_per_row
+                col = i % slots_per_row
                 slot = petal_slots[i]
             else:
                 # Swap slot
                 swap_idx = i - PETAL_SLOTS
-                row = (swap_idx // 5) + (PETAL_SLOTS + 4) // 5 + 1
-                col = swap_idx % 5
+                row = (swap_idx // slots_per_row) + 1
+                col = swap_idx % slots_per_row
                 slot = swap_petal_slots[swap_idx]
 
-            if row < 0 or row >= 5:
+            if row < 0 or row >= 2:
                 continue
 
             x = start_x + col * (PETAL_SLOT_SIZE + PETAL_SLOT_GAP)
@@ -13638,17 +13638,18 @@ while running:
                     max(slot_color[2] - 40, 0)
                 )
 
-            if slot["filled"]:
+            # Draw slot background - main slots get rarity box, swap slots get gray box
 
+            if i < PETAL_SLOTS:
+                # Main equip slots: always show rarity box
                 draw_rarity_slot(
                     x,
                     y,
                     PETAL_SLOT_SIZE,
-                    slot["rarity"]
+                    slot.get("rarity", "Common")
                 )
-
             else:
-
+                # Swap slots: just gray box
                 pygame.draw.rect(
                     screen,
                     (90,90,90),
@@ -13661,17 +13662,18 @@ while running:
                     border_radius=8
                 )
 
-            # ---------------- HP UPGRADE BUTTON --------------
+            # Draw basic petal image only for main slots
 
-            # Draw equipped basic petal
+            if i < PETAL_SLOTS:
 
-            if slot["filled"]:
+                petal_type = slot.get("petal", "Basic")
+                rarity = slot.get("rarity", "Common")
 
                 slot_sprite = make_petal_surface(
-                    slot["petal"],
+                    petal_type,
                     0,
                     0,
-                    slot["rarity"],
+                    rarity,
                     size_scale=1.4
                 )
                 sprite_rect = slot_sprite.get_bounding_rect()
@@ -13686,6 +13688,8 @@ while running:
                         cy - slot_sprite.get_height() // 2
                     )
                 )
+
+            # ---------------- HP UPGRADE BUTTON --------------
 
             # Respawn timer number above slot
 
