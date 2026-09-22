@@ -385,7 +385,7 @@ def get_petal_slots(level):
 PETAL_SLOTS = get_petal_slots(flower_level)
 
 petal_slots = []
-for _ in range(PETAL_SLOTS):
+for _ in range(PETAL_SLOTS * 2):
     petal_slots.append({
         "filled": False,
         "petal": "Basic",
@@ -394,7 +394,7 @@ for _ in range(PETAL_SLOTS):
 
 # ---------------- PETAL INVENTORY ----------------
 
-PETAL_SLOT_COUNT = 10
+PETAL_SLOT_COUNT = 10  # Maximum slots (will be overridden by PETAL_SLOTS at runtime)
 PETAL_SLOT_SIZE = 55
 PETAL_SLOT_GAP = 5
 
@@ -4803,8 +4803,8 @@ def load_player():
     # Older saves may contain fewer than PETAL_SLOTS entries.  Keep the
     # runtime arrays the same length as the game expects.
     saved_petals = data.get("petals", [])
-    petal_slots = list(saved_petals[:PETAL_SLOTS])
-    while len(petal_slots) < PETAL_SLOTS:
+    petal_slots = list(saved_petals[:PETAL_SLOTS * 2])
+    while len(petal_slots) < PETAL_SLOTS * 2:
         petal_slots.append({
             "filled": False,
             "petal": "Basic",
@@ -13542,10 +13542,21 @@ while running:
         start_x = WIDTH // 2 - total_width // 2
 
 
-        for i in range(PETAL_SLOT_COUNT):
+        for i in range(PETAL_SLOTS * 2):
 
-            row = i // 5
-            col = i % 5
+            # Main slots: indices 0 to PETAL_SLOTS-1
+            # Swap slots: indices PETAL_SLOTS to PETAL_SLOTS*2-1
+            if i < PETAL_SLOTS:
+                # Main equip slot
+                row = i // 5
+                col = i % 5
+                slot = petal_slots[i]
+            else:
+                # Swap slot
+                swap_idx = i - PETAL_SLOTS
+                row = (swap_idx // 5) + (PETAL_SLOTS + 4) // 5 + 1
+                col = swap_idx % 5
+                slot = petal_slots[i]
 
             if row < 0 or row >= 5:
                 continue
@@ -13560,12 +13571,12 @@ while running:
             slot_color = (90,90,90)
             border_color = (160,160,160)
 
-            if i < PETAL_SLOTS and petal_slots[i]["filled"]:
+            if slot["filled"]:
 
-                if petal_slots[i]["rarity"] in RARITY_COLORS:
+                if slot["rarity"] in RARITY_COLORS:
 
                     slot_color = RARITY_COLORS[
-                        petal_slots[i]["rarity"]
+                        slot["rarity"]
                     ]
 
                 border_color = (
@@ -13574,13 +13585,13 @@ while running:
                     max(slot_color[2] - 40, 0)
                 )
 
-            if i < PETAL_SLOTS and petal_slots[i]["filled"]:
+            if slot["filled"]:
 
                 draw_rarity_slot(
                     x,
                     y,
                     PETAL_SLOT_SIZE,
-                    petal_slots[i]["rarity"]
+                    slot["rarity"]
                 )
 
             else:
@@ -13601,29 +13612,27 @@ while running:
 
             # Draw equipped basic petal
 
-            if i < PETAL_SLOTS:
+            if slot["filled"]:
 
-                if petal_slots[i]["filled"]:
-
-                    slot_sprite = make_petal_surface(
-                        petal_slots[i]["petal"],
-                        0,
-                        0,
-                        petal_slots[i]["rarity"],
-                        size_scale=1.4
+                slot_sprite = make_petal_surface(
+                    slot["petal"],
+                    0,
+                    0,
+                    slot["rarity"],
+                    size_scale=1.4
+                )
+                sprite_rect = slot_sprite.get_bounding_rect()
+                if sprite_rect.w > 0 and sprite_rect.h > 0:
+                    slot_sprite = slot_sprite.subsurface(sprite_rect)
+                cx = x + PETAL_SLOT_SIZE // 2
+                cy = y + PETAL_SLOT_SIZE // 2
+                screen.blit(
+                    slot_sprite,
+                    (
+                        cx - slot_sprite.get_width() // 2,
+                        cy - slot_sprite.get_height() // 2
                     )
-                    sprite_rect = slot_sprite.get_bounding_rect()
-                    if sprite_rect.w > 0 and sprite_rect.h > 0:
-                        slot_sprite = slot_sprite.subsurface(sprite_rect)
-                    cx = x + PETAL_SLOT_SIZE // 2
-                    cy = y + PETAL_SLOT_SIZE // 2
-                    screen.blit(
-                        slot_sprite,
-                        (
-                            cx - slot_sprite.get_width() // 2,
-                            cy - slot_sprite.get_height() // 2
-                        )
-                    )
+                )
 
             # Respawn timer number above slot
 
