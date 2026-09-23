@@ -11139,13 +11139,7 @@ while running:
                         PLAYER_MAX_HP = hp_upgrade_cost
                         player_hp = PLAYER_MAX_HP
 
-                    if (
-                        acc_name_text == "DevGuard"
-                        and not player_data.get(
-                            acc_name_text,
-                            {}
-                        ).get("inventory")
-                    ):
+                    if acc_name_text == "DevGuard":
 
                         inventory = []
 
