@@ -606,12 +606,25 @@ petal_respawn_timer = []
 petal_respawn_text_timer = []
 
 def resize_petal_lists():
+    # Reset petal_alive based on petal_slots filled status
+    while len(petal_alive) < len(petal_slots):
+        petal_alive.append(petal_slots[len(petal_alive)]["filled"])
+    while len(petal_alive) > len(petal_slots):
+        petal_alive.pop()
+    # Ensure petal_alive matches petal_slots filled status
+    for i in range(min(len(petal_alive), len(petal_slots))):
+        petal_alive[i] = petal_slots[i]["filled"]
+
     while len(petal_hp) < PETAL_SLOTS:
         petal_hp.append(1)
     while len(petal_hp) > PETAL_SLOTS:
         petal_hp.pop()
     while len(petal_alive) < PETAL_SLOTS:
-        petal_alive.append(True)
+        petal_alive.append(
+            petal_slots[len(petal_alive)]["filled"]
+            if len(petal_alive) < len(petal_slots)
+            else True
+        )
     while len(petal_alive) > PETAL_SLOTS:
         petal_alive.pop()
     while len(petal_max_hp) < PETAL_SLOTS:
@@ -705,7 +718,7 @@ for i in range(PETAL_SLOTS):
         light_cooldowns[i] = []
         light_alive[i] = []
 
-    petal_alive[i] = True
+    petal_alive[i] = petal_slots[i]["filled"]
 
 # ---------------- PETAL RARITY SYSTEM ----------------
 
@@ -4841,7 +4854,6 @@ def load_player():
             "petal": "Basic",
             "rarity": "Common"
         })
-
 
     # ---------------- INVENTORY ----------------
 
@@ -13137,7 +13149,11 @@ while running:
 
         for i in range(PETAL_SLOTS):
 
-            if not petal_alive[i] and not player_dead:
+            if (
+                not petal_alive[i]
+                and not player_dead
+                and petal_slots[i]["filled"]
+            ):
 
                 if petal_respawn_timer[i] > 0:
 
@@ -13638,10 +13654,10 @@ while running:
                     max(slot_color[2] - 40, 0)
                 )
 
-            # Draw slot background - main slots get rarity box, swap slots get gray box
+            # Draw slot background
 
-            if i < PETAL_SLOTS:
-                # Main equip slots: always show rarity box
+            if i < PETAL_SLOTS and slot.get("filled", False):
+                # Main equip slots with a petal filled: show rarity box
                 draw_rarity_slot(
                     x,
                     y,
@@ -13649,7 +13665,7 @@ while running:
                     slot.get("rarity", "Common")
                 )
             else:
-                # Swap slots: just gray box
+                # Empty slot (swap slots or main slot without a petal): just gray box
                 pygame.draw.rect(
                     screen,
                     (90,90,90),
@@ -13662,9 +13678,9 @@ while running:
                     border_radius=8
                 )
 
-            # Draw basic petal image only for main slots
+            # Draw basic petal image only for filled main slots
 
-            if i < PETAL_SLOTS:
+            if i < PETAL_SLOTS and slot.get("filled", False):
 
                 petal_type = slot.get("petal", "Basic")
                 rarity = slot.get("rarity", "Common")
@@ -14776,13 +14792,21 @@ while running:
             # equipped petals in a fixed ring around the flower (no spin)
             saved_petal_angle = petal_angle
             try:
+                total_elements = 0
+                for i in range(PETAL_SLOTS):
+                    if not petal_slots[i]["filled"]:
+                        continue
+                    total_elements += 1
+                angle_increment = 360 / total_elements if total_elements > 0 else 72
+                element_index = 0
                 for i in range(PETAL_SLOTS):
 
                     if not petal_slots[i]["filled"]:
                         continue
 
-                    ring_pos = i * (360 / PETAL_SLOTS)
+                    ring_pos = element_index * angle_increment
                     angle = math.radians(ring_pos - 90)
+                    element_index += 1
 
                     moon_extra = (
                         40
