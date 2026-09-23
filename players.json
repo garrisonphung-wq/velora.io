@@ -1,1 +1,4781 @@
-{"Jed": {"inventory": [], "craft_slots": [], "equipped_reserved": [{"petal": "Heavy", "rarity": "Infino", "amount": 1}, {"petal": "Heavy", "rarity": "Infino", "amount": 1}, {"petal": "Heavy", "rarity": "Infino", "amount": 1}, {"petal": "Heavy", "rarity": "Infino", "amount": 1}, {"petal": "Heavy", "rarity": "Infino", "amount": 1}], "petals": [{"filled": true, "petal": "Heavy", "rarity": "Infino"}, {"filled": true, "petal": "Heavy", "rarity": "Infino"}, {"filled": true, "petal": "Heavy", "rarity": "Infino"}, {"filled": true, "petal": "Heavy", "rarity": "Infino"}, {"filled": true, "petal": "Heavy", "rarity": "Infino"}], "flower_level": 27, "flower_xp": 2832188, "upgrade_points": 1, "hp_level": 5, "hp_upgrade_cost": 2, "mob_gallery_unlocks": {}}, "DevGuard": {"inventory": [{"petal": "Ant Egg", "rarity": "Infino", "amount": 1000}, {"petal": "Antenna", "rarity": "Infino", "amount": 1000}, {"petal": "Basic", "rarity": "Infino", "amount": 1000}, {"petal": "Beetle Egg", "rarity": "Infino", "amount": 1000}, {"petal": "Bone", "rarity": "Infino", "amount": 1000}, {"petal": "Boubloom", "rarity": "Infino", "amount": 1000}, {"petal": "Boulder", "rarity": "Infino", "amount": 1000}, {"petal": "Bubble", "rarity": "Infino", "amount": 1000}, {"petal": "Cactus", "rarity": "Infino", "amount": 1000}, {"petal": "Cice", "rarity": "Infino", "amount": 1000}, {"petal": "Clover", "rarity": "Infino", "amount": 1000}, {"petal": "Corn", "rarity": "Infino", "amount": 1000}, {"petal": "Faster", "rarity": "Infino", "amount": 1000}, {"petal": "Glass", "rarity": "Infino", "amount": 1000}, {"petal": "Grape", "rarity": "Infino", "amount": 1000}, {"petal": "Heavy", "rarity": "Infino", "amount": 1000}, {"petal": "Honey", "rarity": "Infino", "amount": 1000}, {"petal": "Leaf", "rarity": "Infino", "amount": 1000}, {"petal": "Lentil", "rarity": "Infino", "amount": 1000}, {"petal": "Light", "rarity": "Infino", "amount": 995}, {"petal": "Magnet", "rarity": "Infino", "amount": 1000}, {"petal": "Missile", "rarity": "Infino", "amount": 1000}, {"petal": "Moon", "rarity": "Infino", "amount": 1000}, {"petal": "Pea", "rarity": "Infino", "amount": 1000}, {"petal": "Pincer", "rarity": "Infino", "amount": 1000}, {"petal": "Poison", "rarity": "Infino", "amount": 1000}, {"petal": "Pollen", "rarity": "Infino", "amount": 1000}, {"petal": "Rice", "rarity": "Infino", "amount": 1000}, {"petal": "Rock", "rarity": "Infino", "amount": 1000}, {"petal": "Rose", "rarity": "Infino", "amount": 1001}, {"petal": "Sand", "rarity": "Infino", "amount": 1000}, {"petal": "Shark", "rarity": "Infino", "amount": 1000}, {"petal": "Shell", "rarity": "Infino", "amount": 1000}, {"petal": "Soil", "rarity": "Infino", "amount": 1000}, {"petal": "Stick", "rarity": "Infino", "amount": 1000}, {"petal": "Stinger", "rarity": "Infino", "amount": 1000}, {"petal": "Third Eye", "rarity": "Infino", "amount": 1000}, {"petal": "Web", "rarity": "Infino", "amount": 1000}, {"petal": "Wing", "rarity": "Infino", "amount": 1000}, {"petal": "Ant Egg", "rarity": "Celestial", "amount": 1000}, {"petal": "Antenna", "rarity": "Celestial", "amount": 1000}, {"petal": "Basic", "rarity": "Celestial", "amount": 4}, {"petal": "Beetle Egg", "rarity": "Celestial", "amount": 1000}, {"petal": "Bone", "rarity": "Celestial", "amount": 1000}, {"petal": "Boubloom", "rarity": "Celestial", "amount": 1000}, {"petal": "Boulder", "rarity": "Celestial", "amount": 1000}, {"petal": "Bubble", "rarity": "Celestial", "amount": 1000}, {"petal": "Cactus", "rarity": "Celestial", "amount": 1000}, {"petal": "Cice", "rarity": "Celestial", "amount": 1000}, {"petal": "Clover", "rarity": "Celestial", "amount": 1000}, {"petal": "Corn", "rarity": "Celestial", "amount": 1000}, {"petal": "Faster", "rarity": "Celestial", "amount": 2}, {"petal": "Glass", "rarity": "Celestial", "amount": 1000}, {"petal": "Grape", "rarity": "Celestial", "amount": 4}, {"petal": "Heavy", "rarity": "Celestial", "amount": 1}, {"petal": "Honey", "rarity": "Celestial", "amount": 1000}, {"petal": "Leaf", "rarity": "Celestial", "amount": 2}, {"petal": "Lentil", "rarity": "Celestial", "amount": 1000}, {"petal": "Light", "rarity": "Celestial", "amount": 2}, {"petal": "Magnet", "rarity": "Celestial", "amount": 1000}, {"petal": "Missile", "rarity": "Celestial", "amount": 1000}, {"petal": "Moon", "rarity": "Celestial", "amount": 1000}, {"petal": "Pea", "rarity": "Celestial", "amount": 1000}, {"petal": "Pincer", "rarity": "Celestial", "amount": 1000}, {"petal": "Poison", "rarity": "Celestial", "amount": 1000}, {"petal": "Pollen", "rarity": "Celestial", "amount": 1000}, {"petal": "Rice", "rarity": "Celestial", "amount": 1000}, {"petal": "Rock", "rarity": "Celestial", "amount": 2}, {"petal": "Rose", "rarity": "Celestial", "amount": 1}, {"petal": "Sand", "rarity": "Celestial", "amount": 1000}, {"petal": "Shark", "rarity": "Celestial", "amount": 1000}, {"petal": "Shell", "rarity": "Celestial", "amount": 1000}, {"petal": "Soil", "rarity": "Celestial", "amount": 1000}, {"petal": "Stick", "rarity": "Celestial", "amount": 1000}, {"petal": "Stinger", "rarity": "Celestial", "amount": 4}, {"petal": "Third Eye", "rarity": "Celestial", "amount": 1000}, {"petal": "Web", "rarity": "Celestial", "amount": 3}, {"petal": "Wing", "rarity": "Celestial", "amount": 3}, {"petal": "Ant Egg", "rarity": "Omnient", "amount": 1000}, {"petal": "Antenna", "rarity": "Omnient", "amount": 1000}, {"petal": "Basic", "rarity": "Omnient", "amount": 1000}, {"petal": "Beetle Egg", "rarity": "Omnient", "amount": 1000}, {"petal": "Bone", "rarity": "Omnient", "amount": 1000}, {"petal": "Boubloom", "rarity": "Omnient", "amount": 1000}, {"petal": "Boulder", "rarity": "Omnient", "amount": 1000}, {"petal": "Bubble", "rarity": "Omnient", "amount": 1000}, {"petal": "Cactus", "rarity": "Omnient", "amount": 2}, {"petal": "Cice", "rarity": "Omnient", "amount": 1000}, {"petal": "Clover", "rarity": "Omnient", "amount": 1000}, {"petal": "Corn", "rarity": "Omnient", "amount": 1000}, {"petal": "Faster", "rarity": "Omnient", "amount": 3}, {"petal": "Glass", "rarity": "Omnient", "amount": 1000}, {"petal": "Grape", "rarity": "Omnient", "amount": 1000}, {"petal": "Heavy", "rarity": "Omnient", "amount": 4}, {"petal": "Honey", "rarity": "Omnient", "amount": 1000}, {"petal": "Leaf", "rarity": "Omnient", "amount": 1000}, {"petal": "Lentil", "rarity": "Omnient", "amount": 1000}, {"petal": "Light", "rarity": "Omnient", "amount": 1000}, {"petal": "Magnet", "rarity": "Omnient", "amount": 1000}, {"petal": "Missile", "rarity": "Omnient", "amount": 1000}, {"petal": "Moon", "rarity": "Omnient", "amount": 1000}, {"petal": "Pea", "rarity": "Omnient", "amount": 1000}, {"petal": "Pincer", "rarity": "Omnient", "amount": 1000}, {"petal": "Poison", "rarity": "Omnient", "amount": 1000}, {"petal": "Pollen", "rarity": "Omnient", "amount": 1000}, {"petal": "Rice", "rarity": "Omnient", "amount": 1000}, {"petal": "Rock", "rarity": "Omnient", "amount": 1000}, {"petal": "Rose", "rarity": "Omnient", "amount": 3}, {"petal": "Sand", "rarity": "Omnient", "amount": 1000}, {"petal": "Shark", "rarity": "Omnient", "amount": 1000}, {"petal": "Shell", "rarity": "Omnient", "amount": 1000}, {"petal": "Soil", "rarity": "Omnient", "amount": 1000}, {"petal": "Stick", "rarity": "Omnient", "amount": 1000}, {"petal": "Stinger", "rarity": "Omnient", "amount": 4}, {"petal": "Third Eye", "rarity": "Omnient", "amount": 1000}, {"petal": "Web", "rarity": "Omnient", "amount": 1000}, {"petal": "Wing", "rarity": "Omnient", "amount": 1000}, {"petal": "Ant Egg", "rarity": "Ancient", "amount": 1000}, {"petal": "Antenna", "rarity": "Ancient", "amount": 1000}, {"petal": "Basic", "rarity": "Ancient", "amount": 1000}, {"petal": "Beetle Egg", "rarity": "Ancient", "amount": 1000}, {"petal": "Bone", "rarity": "Ancient", "amount": 1000}, {"petal": "Boubloom", "rarity": "Ancient", "amount": 1000}, {"petal": "Boulder", "rarity": "Ancient", "amount": 1000}, {"petal": "Bubble", "rarity": "Ancient", "amount": 1000}, {"petal": "Cactus", "rarity": "Ancient", "amount": 1000}, {"petal": "Cice", "rarity": "Ancient", "amount": 1000}, {"petal": "Clover", "rarity": "Ancient", "amount": 1000}, {"petal": "Corn", "rarity": "Ancient", "amount": 1000}, {"petal": "Faster", "rarity": "Ancient", "amount": 1000}, {"petal": "Glass", "rarity": "Ancient", "amount": 1000}, {"petal": "Grape", "rarity": "Ancient", "amount": 1000}, {"petal": "Heavy", "rarity": "Ancient", "amount": 1000}, {"petal": "Honey", "rarity": "Ancient", "amount": 1000}, {"petal": "Leaf", "rarity": "Ancient", "amount": 1000}, {"petal": "Lentil", "rarity": "Ancient", "amount": 1000}, {"petal": "Light", "rarity": "Ancient", "amount": 1000}, {"petal": "Magnet", "rarity": "Ancient", "amount": 1000}, {"petal": "Missile", "rarity": "Ancient", "amount": 1000}, {"petal": "Moon", "rarity": "Ancient", "amount": 1000}, {"petal": "Pea", "rarity": "Ancient", "amount": 1000}, {"petal": "Pincer", "rarity": "Ancient", "amount": 1000}, {"petal": "Poison", "rarity": "Ancient", "amount": 1000}, {"petal": "Pollen", "rarity": "Ancient", "amount": 1000}, {"petal": "Rice", "rarity": "Ancient", "amount": 1000}, {"petal": "Rock", "rarity": "Ancient", "amount": 1000}, {"petal": "Rose", "rarity": "Ancient", "amount": 3}, {"petal": "Sand", "rarity": "Ancient", "amount": 1000}, {"petal": "Shark", "rarity": "Ancient", "amount": 1000}, {"petal": "Shell", "rarity": "Ancient", "amount": 1000}, {"petal": "Soil", "rarity": "Ancient", "amount": 1000}, {"petal": "Stick", "rarity": "Ancient", "amount": 1000}, {"petal": "Stinger", "rarity": "Ancient", "amount": 1000}, {"petal": "Third Eye", "rarity": "Ancient", "amount": 1000}, {"petal": "Web", "rarity": "Ancient", "amount": 1000}, {"petal": "Wing", "rarity": "Ancient", "amount": 4}, {"petal": "Ant Egg", "rarity": "Radium", "amount": 1000}, {"petal": "Antenna", "rarity": "Radium", "amount": 1000}, {"petal": "Basic", "rarity": "Radium", "amount": 1000}, {"petal": "Beetle Egg", "rarity": "Radium", "amount": 1000}, {"petal": "Bone", "rarity": "Radium", "amount": 1000}, {"petal": "Boubloom", "rarity": "Radium", "amount": 1000}, {"petal": "Boulder", "rarity": "Radium", "amount": 1000}, {"petal": "Bubble", "rarity": "Radium", "amount": 3}, {"petal": "Cactus", "rarity": "Radium", "amount": 1000}, {"petal": "Cice", "rarity": "Radium", "amount": 1000}, {"petal": "Clover", "rarity": "Radium", "amount": 1000}, {"petal": "Corn", "rarity": "Radium", "amount": 1000}, {"petal": "Faster", "rarity": "Radium", "amount": 1000}, {"petal": "Glass", "rarity": "Radium", "amount": 1000}, {"petal": "Grape", "rarity": "Radium", "amount": 1000}, {"petal": "Heavy", "rarity": "Radium", "amount": 1000}, {"petal": "Honey", "rarity": "Radium", "amount": 1000}, {"petal": "Leaf", "rarity": "Radium", "amount": 3}, {"petal": "Lentil", "rarity": "Radium", "amount": 1000}, {"petal": "Light", "rarity": "Radium", "amount": 1000}, {"petal": "Magnet", "rarity": "Radium", "amount": 1000}, {"petal": "Missile", "rarity": "Radium", "amount": 1000}, {"petal": "Moon", "rarity": "Radium", "amount": 1000}, {"petal": "Pea", "rarity": "Radium", "amount": 1000}, {"petal": "Pincer", "rarity": "Radium", "amount": 1000}, {"petal": "Poison", "rarity": "Radium", "amount": 1000}, {"petal": "Pollen", "rarity": "Radium", "amount": 1000}, {"petal": "Rice", "rarity": "Radium", "amount": 1000}, {"petal": "Rock", "rarity": "Radium", "amount": 1000}, {"petal": "Rose", "rarity": "Radium", "amount": 1000}, {"petal": "Sand", "rarity": "Radium", "amount": 1000}, {"petal": "Shark", "rarity": "Radium", "amount": 1001}, {"petal": "Shell", "rarity": "Radium", "amount": 1000}, {"petal": "Soil", "rarity": "Radium", "amount": 1000}, {"petal": "Stick", "rarity": "Radium", "amount": 1000}, {"petal": "Stinger", "rarity": "Radium", "amount": 1000}, {"petal": "Third Eye", "rarity": "Radium", "amount": 1000}, {"petal": "Web", "rarity": "Radium", "amount": 1000}, {"petal": "Wing", "rarity": "Radium", "amount": 1000}, {"petal": "Ant Egg", "rarity": "Tacnic", "amount": 1000}, {"petal": "Antenna", "rarity": "Tacnic", "amount": 1000}, {"petal": "Basic", "rarity": "Tacnic", "amount": 1}, {"petal": "Beetle Egg", "rarity": "Tacnic", "amount": 1000}, {"petal": "Bone", "rarity": "Tacnic", "amount": 3}, {"petal": "Boubloom", "rarity": "Tacnic", "amount": 1000}, {"petal": "Boulder", "rarity": "Tacnic", "amount": 1000}, {"petal": "Bubble", "rarity": "Tacnic", "amount": 1000}, {"petal": "Cactus", "rarity": "Tacnic", "amount": 4}, {"petal": "Cice", "rarity": "Tacnic", "amount": 1001}, {"petal": "Clover", "rarity": "Tacnic", "amount": 1001}, {"petal": "Corn", "rarity": "Tacnic", "amount": 1000}, {"petal": "Faster", "rarity": "Tacnic", "amount": 1000}, {"petal": "Glass", "rarity": "Tacnic", "amount": 1000}, {"petal": "Grape", "rarity": "Tacnic", "amount": 1000}, {"petal": "Heavy", "rarity": "Tacnic", "amount": 3}, {"petal": "Honey", "rarity": "Tacnic", "amount": 1000}, {"petal": "Leaf", "rarity": "Tacnic", "amount": 3}, {"petal": "Lentil", "rarity": "Tacnic", "amount": 1000}, {"petal": "Light", "rarity": "Tacnic", "amount": 2}, {"petal": "Magnet", "rarity": "Tacnic", "amount": 1001}, {"petal": "Missile", "rarity": "Tacnic", "amount": 1000}, {"petal": "Moon", "rarity": "Tacnic", "amount": 3}, {"petal": "Pea", "rarity": "Tacnic", "amount": 3}, {"petal": "Pincer", "rarity": "Tacnic", "amount": 1000}, {"petal": "Poison", "rarity": "Tacnic", "amount": 5}, {"petal": "Pollen", "rarity": "Tacnic", "amount": 1000}, {"petal": "Rice", "rarity": "Tacnic", "amount": 1000}, {"petal": "Rock", "rarity": "Tacnic", "amount": 1}, {"petal": "Rose", "rarity": "Tacnic", "amount": 1000}, {"petal": "Sand", "rarity": "Tacnic", "amount": 1002}, {"petal": "Shark", "rarity": "Tacnic", "amount": 1}, {"petal": "Shell", "rarity": "Tacnic", "amount": 1000}, {"petal": "Soil", "rarity": "Tacnic", "amount": 1000}, {"petal": "Stick", "rarity": "Tacnic", "amount": 1000}, {"petal": "Stinger", "rarity": "Tacnic", "amount": 3}, {"petal": "Third Eye", "rarity": "Tacnic", "amount": 1000}, {"petal": "Web", "rarity": "Tacnic", "amount": 1000}, {"petal": "Wing", "rarity": "Tacnic", "amount": 1}, {"petal": "Ant Egg", "rarity": "Jeddiful", "amount": 4}, {"petal": "Antenna", "rarity": "Jeddiful", "amount": 3}, {"petal": "Basic", "rarity": "Jeddiful", "amount": 4}, {"petal": "Beetle Egg", "rarity": "Jeddiful", "amount": 3}, {"petal": "Bone", "rarity": "Jeddiful", "amount": 2}, {"petal": "Boubloom", "rarity": "Jeddiful", "amount": 4}, {"petal": "Boulder", "rarity": "Jeddiful", "amount": 5}, {"petal": "Bubble", "rarity": "Jeddiful", "amount": 2}, {"petal": "Cactus", "rarity": "Jeddiful", "amount": 4}, {"petal": "Cice", "rarity": "Jeddiful", "amount": 4}, {"petal": "Clover", "rarity": "Jeddiful", "amount": 3}, {"petal": "Corn", "rarity": "Jeddiful", "amount": 4}, {"petal": "Faster", "rarity": "Jeddiful", "amount": 4}, {"petal": "Glass", "rarity": "Jeddiful", "amount": 2}, {"petal": "Grape", "rarity": "Jeddiful", "amount": 4}, {"petal": "Heavy", "rarity": "Jeddiful", "amount": 3}, {"petal": "Honey", "rarity": "Jeddiful", "amount": 2}, {"petal": "Leaf", "rarity": "Jeddiful", "amount": 3}, {"petal": "Lentil", "rarity": "Jeddiful", "amount": 3}, {"petal": "Light", "rarity": "Jeddiful", "amount": 1000}, {"petal": "Magnet", "rarity": "Jeddiful", "amount": 4}, {"petal": "Missile", "rarity": "Jeddiful", "amount": 2}, {"petal": "Moon", "rarity": "Jeddiful", "amount": 3}, {"petal": "Pea", "rarity": "Jeddiful", "amount": 4}, {"petal": "Pincer", "rarity": "Jeddiful", "amount": 5}, {"petal": "Poison", "rarity": "Jeddiful", "amount": 3}, {"petal": "Pollen", "rarity": "Jeddiful", "amount": 1}, {"petal": "Rice", "rarity": "Jeddiful", "amount": 2}, {"petal": "Rock", "rarity": "Jeddiful", "amount": 1}, {"petal": "Rose", "rarity": "Jeddiful", "amount": 4}, {"petal": "Sand", "rarity": "Jeddiful", "amount": 3}, {"petal": "Shark", "rarity": "Jeddiful", "amount": 3}, {"petal": "Shell", "rarity": "Jeddiful", "amount": 2}, {"petal": "Soil", "rarity": "Jeddiful", "amount": 4}, {"petal": "Stick", "rarity": "Jeddiful", "amount": 4}, {"petal": "Stinger", "rarity": "Jeddiful", "amount": 1000}, {"petal": "Third Eye", "rarity": "Jeddiful", "amount": 4}, {"petal": "Web", "rarity": "Jeddiful", "amount": 3}, {"petal": "Wing", "rarity": "Jeddiful", "amount": 3}, {"petal": "Ant Egg", "rarity": "Cosmo", "amount": 4}, {"petal": "Antenna", "rarity": "Cosmo", "amount": 4}, {"petal": "Basic", "rarity": "Cosmo", "amount": 4}, {"petal": "Beetle Egg", "rarity": "Cosmo", "amount": 1}, {"petal": "Bone", "rarity": "Cosmo", "amount": 4}, {"petal": "Boubloom", "rarity": "Cosmo", "amount": 1}, {"petal": "Boulder", "rarity": "Cosmo", "amount": 2}, {"petal": "Bubble", "rarity": "Cosmo", "amount": 4}, {"petal": "Cactus", "rarity": "Cosmo", "amount": 4}, {"petal": "Cice", "rarity": "Cosmo", "amount": 3}, {"petal": "Clover", "rarity": "Cosmo", "amount": 1}, {"petal": "Corn", "rarity": "Cosmo", "amount": 4}, {"petal": "Faster", "rarity": "Cosmo", "amount": 2}, {"petal": "Glass", "rarity": "Cosmo", "amount": 4}, {"petal": "Grape", "rarity": "Cosmo", "amount": 4}, {"petal": "Heavy", "rarity": "Cosmo", "amount": 2}, {"petal": "Honey", "rarity": "Cosmo", "amount": 4}, {"petal": "Leaf", "rarity": "Cosmo", "amount": 6}, {"petal": "Lentil", "rarity": "Cosmo", "amount": 1}, {"petal": "Light", "rarity": "Cosmo", "amount": 4}, {"petal": "Magnet", "rarity": "Cosmo", "amount": 4}, {"petal": "Missile", "rarity": "Cosmo", "amount": 4}, {"petal": "Moon", "rarity": "Cosmo", "amount": 1}, {"petal": "Pea", "rarity": "Cosmo", "amount": 4}, {"petal": "Pincer", "rarity": "Cosmo", "amount": 1}, {"petal": "Poison", "rarity": "Cosmo", "amount": 3}, {"petal": "Pollen", "rarity": "Cosmo", "amount": 4}, {"petal": "Rice", "rarity": "Cosmo", "amount": 3}, {"petal": "Rock", "rarity": "Cosmo", "amount": 4}, {"petal": "Rose", "rarity": "Cosmo", "amount": 4}, {"petal": "Sand", "rarity": "Cosmo", "amount": 4}, {"petal": "Shark", "rarity": "Cosmo", "amount": 2}, {"petal": "Shell", "rarity": "Cosmo", "amount": 1}, {"petal": "Soil", "rarity": "Cosmo", "amount": 4}, {"petal": "Stick", "rarity": "Cosmo", "amount": 3}, {"petal": "Stinger", "rarity": "Cosmo", "amount": 3}, {"petal": "Third Eye", "rarity": "Cosmo", "amount": 4}, {"petal": "Web", "rarity": "Cosmo", "amount": 3}, {"petal": "Wing", "rarity": "Cosmo", "amount": 3}, {"petal": "Ant Egg", "rarity": "Eternal", "amount": 3}, {"petal": "Antenna", "rarity": "Eternal", "amount": 2}, {"petal": "Basic", "rarity": "Eternal", "amount": 2}, {"petal": "Beetle Egg", "rarity": "Eternal", "amount": 4}, {"petal": "Bone", "rarity": "Eternal", "amount": 3}, {"petal": "Boubloom", "rarity": "Eternal", "amount": 1}, {"petal": "Boulder", "rarity": "Eternal", "amount": 1}, {"petal": "Bubble", "rarity": "Eternal", "amount": 2}, {"petal": "Cactus", "rarity": "Eternal", "amount": 4}, {"petal": "Cice", "rarity": "Eternal", "amount": 4}, {"petal": "Clover", "rarity": "Eternal", "amount": 3}, {"petal": "Corn", "rarity": "Eternal", "amount": 1}, {"petal": "Faster", "rarity": "Eternal", "amount": 4}, {"petal": "Glass", "rarity": "Eternal", "amount": 1}, {"petal": "Grape", "rarity": "Eternal", "amount": 2}, {"petal": "Heavy", "rarity": "Eternal", "amount": 4}, {"petal": "Honey", "rarity": "Eternal", "amount": 4}, {"petal": "Leaf", "rarity": "Eternal", "amount": 5}, {"petal": "Lentil", "rarity": "Eternal", "amount": 1000}, {"petal": "Light", "rarity": "Eternal", "amount": 3}, {"petal": "Magnet", "rarity": "Eternal", "amount": 4}, {"petal": "Missile", "rarity": "Eternal", "amount": 3}, {"petal": "Moon", "rarity": "Eternal", "amount": 4}, {"petal": "Pea", "rarity": "Eternal", "amount": 4}, {"petal": "Pincer", "rarity": "Eternal", "amount": 4}, {"petal": "Poison", "rarity": "Eternal", "amount": 3}, {"petal": "Pollen", "rarity": "Eternal", "amount": 3}, {"petal": "Rice", "rarity": "Eternal", "amount": 3}, {"petal": "Rock", "rarity": "Eternal", "amount": 3}, {"petal": "Rose", "rarity": "Eternal", "amount": 3}, {"petal": "Sand", "rarity": "Eternal", "amount": 4}, {"petal": "Shark", "rarity": "Eternal", "amount": 2}, {"petal": "Shell", "rarity": "Eternal", "amount": 3}, {"petal": "Soil", "rarity": "Eternal", "amount": 2}, {"petal": "Stick", "rarity": "Eternal", "amount": 4}, {"petal": "Stinger", "rarity": "Eternal", "amount": 4}, {"petal": "Third Eye", "rarity": "Eternal", "amount": 1}, {"petal": "Web", "rarity": "Eternal", "amount": 1}, {"petal": "Wing", "rarity": "Eternal", "amount": 3}, {"petal": "Ant Egg", "rarity": "Unique", "amount": 1000}, {"petal": "Antenna", "rarity": "Unique", "amount": 1000}, {"petal": "Basic", "rarity": "Unique", "amount": 1000}, {"petal": "Beetle Egg", "rarity": "Unique", "amount": 1000}, {"petal": "Bone", "rarity": "Unique", "amount": 992}, {"petal": "Boubloom", "rarity": "Unique", "amount": 1000}, {"petal": "Boulder", "rarity": "Unique", "amount": 1000}, {"petal": "Bubble", "rarity": "Unique", "amount": 1000}, {"petal": "Cactus", "rarity": "Unique", "amount": 938}, {"petal": "Cice", "rarity": "Unique", "amount": 1000}, {"petal": "Clover", "rarity": "Unique", "amount": 1000}, {"petal": "Corn", "rarity": "Unique", "amount": 1000}, {"petal": "Faster", "rarity": "Unique", "amount": 1000}, {"petal": "Glass", "rarity": "Unique", "amount": 1000}, {"petal": "Grape", "rarity": "Unique", "amount": 1000}, {"petal": "Heavy", "rarity": "Unique", "amount": 4}, {"petal": "Honey", "rarity": "Unique", "amount": 1000}, {"petal": "Leaf", "rarity": "Unique", "amount": 3}, {"petal": "Lentil", "rarity": "Unique", "amount": 1000}, {"petal": "Light", "rarity": "Unique", "amount": 3}, {"petal": "Magnet", "rarity": "Unique", "amount": 1000}, {"petal": "Missile", "rarity": "Unique", "amount": 780}, {"petal": "Moon", "rarity": "Unique", "amount": 1000}, {"petal": "Pea", "rarity": "Unique", "amount": 3}, {"petal": "Pincer", "rarity": "Unique", "amount": 1000}, {"petal": "Poison", "rarity": "Unique", "amount": 1000}, {"petal": "Pollen", "rarity": "Unique", "amount": 1000}, {"petal": "Rice", "rarity": "Unique", "amount": 1000}, {"petal": "Rock", "rarity": "Unique", "amount": 1000}, {"petal": "Rose", "rarity": "Unique", "amount": 2}, {"petal": "Sand", "rarity": "Unique", "amount": 1000}, {"petal": "Shark", "rarity": "Unique", "amount": 1000}, {"petal": "Shell", "rarity": "Unique", "amount": 1000}, {"petal": "Soil", "rarity": "Unique", "amount": 1000}, {"petal": "Stick", "rarity": "Unique", "amount": 1000}, {"petal": "Stinger", "rarity": "Unique", "amount": 2}, {"petal": "Third Eye", "rarity": "Unique", "amount": 1000}, {"petal": "Web", "rarity": "Unique", "amount": 1000}, {"petal": "Wing", "rarity": "Unique", "amount": 4}, {"petal": "Ant Egg", "rarity": "Omega", "amount": 1000}, {"petal": "Antenna", "rarity": "Omega", "amount": 1000}, {"petal": "Basic", "rarity": "Omega", "amount": 1000}, {"petal": "Beetle Egg", "rarity": "Omega", "amount": 1000}, {"petal": "Bone", "rarity": "Omega", "amount": 1000}, {"petal": "Boubloom", "rarity": "Omega", "amount": 1000}, {"petal": "Boulder", "rarity": "Omega", "amount": 1000}, {"petal": "Bubble", "rarity": "Omega", "amount": 1000}, {"petal": "Cactus", "rarity": "Omega", "amount": 943}, {"petal": "Cice", "rarity": "Omega", "amount": 1000}, {"petal": "Clover", "rarity": "Omega", "amount": 1000}, {"petal": "Corn", "rarity": "Omega", "amount": 1000}, {"petal": "Faster", "rarity": "Omega", "amount": 1000}, {"petal": "Glass", "rarity": "Omega", "amount": 1000}, {"petal": "Grape", "rarity": "Omega", "amount": 1000}, {"petal": "Heavy", "rarity": "Omega", "amount": 4}, {"petal": "Honey", "rarity": "Omega", "amount": 1000}, {"petal": "Leaf", "rarity": "Omega", "amount": 1001}, {"petal": "Lentil", "rarity": "Omega", "amount": 1000}, {"petal": "Light", "rarity": "Omega", "amount": 4}, {"petal": "Magnet", "rarity": "Omega", "amount": 1000}, {"petal": "Missile", "rarity": "Omega", "amount": 4}, {"petal": "Moon", "rarity": "Omega", "amount": 1000}, {"petal": "Pea", "rarity": "Omega", "amount": 3}, {"petal": "Pincer", "rarity": "Omega", "amount": 1000}, {"petal": "Poison", "rarity": "Omega", "amount": 1000}, {"petal": "Pollen", "rarity": "Omega", "amount": 1000}, {"petal": "Rice", "rarity": "Omega", "amount": 1000}, {"petal": "Rock", "rarity": "Omega", "amount": 1001}, {"petal": "Rose", "rarity": "Omega", "amount": 2}, {"petal": "Sand", "rarity": "Omega", "amount": 1000}, {"petal": "Shark", "rarity": "Omega", "amount": 1000}, {"petal": "Shell", "rarity": "Omega", "amount": 1000}, {"petal": "Soil", "rarity": "Omega", "amount": 1000}, {"petal": "Stick", "rarity": "Omega", "amount": 1000}, {"petal": "Stinger", "rarity": "Omega", "amount": 2}, {"petal": "Third Eye", "rarity": "Omega", "amount": 1007}, {"petal": "Web", "rarity": "Omega", "amount": 1000}, {"petal": "Wing", "rarity": "Omega", "amount": 4}, {"petal": "Ant Egg", "rarity": "Super", "amount": 1000}, {"petal": "Antenna", "rarity": "Super", "amount": 1000}, {"petal": "Basic", "rarity": "Super", "amount": 1000}, {"petal": "Beetle Egg", "rarity": "Super", "amount": 1000}, {"petal": "Bone", "rarity": "Super", "amount": 1000}, {"petal": "Boubloom", "rarity": "Super", "amount": 1000}, {"petal": "Boulder", "rarity": "Super", "amount": 1000}, {"petal": "Bubble", "rarity": "Super", "amount": 1000}, {"petal": "Cactus", "rarity": "Super", "amount": 1000}, {"petal": "Cice", "rarity": "Super", "amount": 1000}, {"petal": "Clover", "rarity": "Super", "amount": 1000}, {"petal": "Corn", "rarity": "Super", "amount": 1000}, {"petal": "Faster", "rarity": "Super", "amount": 1002}, {"petal": "Glass", "rarity": "Super", "amount": 1000}, {"petal": "Grape", "rarity": "Super", "amount": 1000}, {"petal": "Heavy", "rarity": "Super", "amount": 4}, {"petal": "Honey", "rarity": "Super", "amount": 1000}, {"petal": "Leaf", "rarity": "Super", "amount": 809}, {"petal": "Lentil", "rarity": "Super", "amount": 1000}, {"petal": "Light", "rarity": "Super", "amount": 1}, {"petal": "Magnet", "rarity": "Super", "amount": 1000}, {"petal": "Missile", "rarity": "Super", "amount": 1000}, {"petal": "Moon", "rarity": "Super", "amount": 1000}, {"petal": "Pea", "rarity": "Super", "amount": 952}, {"petal": "Pincer", "rarity": "Super", "amount": 1000}, {"petal": "Poison", "rarity": "Super", "amount": 1000}, {"petal": "Pollen", "rarity": "Super", "amount": 1000}, {"petal": "Rice", "rarity": "Super", "amount": 1000}, {"petal": "Rock", "rarity": "Super", "amount": 914}, {"petal": "Rose", "rarity": "Super", "amount": 3}, {"petal": "Sand", "rarity": "Super", "amount": 1000}, {"petal": "Shark", "rarity": "Super", "amount": 1000}, {"petal": "Shell", "rarity": "Super", "amount": 1000}, {"petal": "Soil", "rarity": "Super", "amount": 1000}, {"petal": "Stick", "rarity": "Super", "amount": 1000}, {"petal": "Stinger", "rarity": "Super", "amount": 1000}, {"petal": "Third Eye", "rarity": "Super", "amount": 1}, {"petal": "Web", "rarity": "Super", "amount": 1000}, {"petal": "Wing", "rarity": "Super", "amount": 2}, {"petal": "Ant Egg", "rarity": "Ultra", "amount": 1000}, {"petal": "Antenna", "rarity": "Ultra", "amount": 1000}, {"petal": "Basic", "rarity": "Ultra", "amount": 1024}, {"petal": "Beetle Egg", "rarity": "Ultra", "amount": 1000}, {"petal": "Bone", "rarity": "Ultra", "amount": 1000}, {"petal": "Boubloom", "rarity": "Ultra", "amount": 1000}, {"petal": "Boulder", "rarity": "Ultra", "amount": 1000}, {"petal": "Bubble", "rarity": "Ultra", "amount": 1000}, {"petal": "Cactus", "rarity": "Ultra", "amount": 1031}, {"petal": "Cice", "rarity": "Ultra", "amount": 1000}, {"petal": "Clover", "rarity": "Ultra", "amount": 1000}, {"petal": "Corn", "rarity": "Ultra", "amount": 1000}, {"petal": "Faster", "rarity": "Ultra", "amount": 1}, {"petal": "Glass", "rarity": "Ultra", "amount": 1000}, {"petal": "Grape", "rarity": "Ultra", "amount": 1000}, {"petal": "Heavy", "rarity": "Ultra", "amount": 2}, {"petal": "Honey", "rarity": "Ultra", "amount": 1000}, {"petal": "Leaf", "rarity": "Ultra", "amount": 987}, {"petal": "Lentil", "rarity": "Ultra", "amount": 1000}, {"petal": "Light", "rarity": "Ultra", "amount": 2}, {"petal": "Magnet", "rarity": "Ultra", "amount": 954}, {"petal": "Missile", "rarity": "Ultra", "amount": 1000}, {"petal": "Moon", "rarity": "Ultra", "amount": 1000}, {"petal": "Pea", "rarity": "Ultra", "amount": 989}, {"petal": "Pincer", "rarity": "Ultra", "amount": 1000}, {"petal": "Poison", "rarity": "Ultra", "amount": 1000}, {"petal": "Pollen", "rarity": "Ultra", "amount": 1000}, {"petal": "Rice", "rarity": "Ultra", "amount": 1000}, {"petal": "Rock", "rarity": "Ultra", "amount": 1000}, {"petal": "Rose", "rarity": "Ultra", "amount": 4}, {"petal": "Sand", "rarity": "Ultra", "amount": 1000}, {"petal": "Shark", "rarity": "Ultra", "amount": 1000}, {"petal": "Shell", "rarity": "Ultra", "amount": 1000}, {"petal": "Soil", "rarity": "Ultra", "amount": 1000}, {"petal": "Stick", "rarity": "Ultra", "amount": 1000}, {"petal": "Stinger", "rarity": "Ultra", "amount": 1}, {"petal": "Third Eye", "rarity": "Ultra", "amount": 1000}, {"petal": "Web", "rarity": "Ultra", "amount": 1000}, {"petal": "Wing", "rarity": "Ultra", "amount": 1}, {"petal": "Ant Egg", "rarity": "Mythic", "amount": 1054}, {"petal": "Antenna", "rarity": "Mythic", "amount": 1000}, {"petal": "Basic", "rarity": "Mythic", "amount": 3}, {"petal": "Beetle Egg", "rarity": "Mythic", "amount": 1000}, {"petal": "Bone", "rarity": "Mythic", "amount": 1057}, {"petal": "Boubloom", "rarity": "Mythic", "amount": 1000}, {"petal": "Boulder", "rarity": "Mythic", "amount": 1000}, {"petal": "Bubble", "rarity": "Mythic", "amount": 1000}, {"petal": "Cactus", "rarity": "Mythic", "amount": 1}, {"petal": "Cice", "rarity": "Mythic", "amount": 1000}, {"petal": "Clover", "rarity": "Mythic", "amount": 1000}, {"petal": "Corn", "rarity": "Mythic", "amount": 1000}, {"petal": "Faster", "rarity": "Mythic", "amount": 936}, {"petal": "Glass", "rarity": "Mythic", "amount": 1000}, {"petal": "Grape", "rarity": "Mythic", "amount": 1000}, {"petal": "Heavy", "rarity": "Mythic", "amount": 1061}, {"petal": "Honey", "rarity": "Mythic", "amount": 1000}, {"petal": "Leaf", "rarity": "Mythic", "amount": 4}, {"petal": "Lentil", "rarity": "Mythic", "amount": 1000}, {"petal": "Light", "rarity": "Mythic", "amount": 4}, {"petal": "Magnet", "rarity": "Mythic", "amount": 1000}, {"petal": "Missile", "rarity": "Mythic", "amount": 1001}, {"petal": "Moon", "rarity": "Mythic", "amount": 1000}, {"petal": "Pea", "rarity": "Mythic", "amount": 1039}, {"petal": "Pincer", "rarity": "Mythic", "amount": 1000}, {"petal": "Poison", "rarity": "Mythic", "amount": 1000}, {"petal": "Pollen", "rarity": "Mythic", "amount": 1000}, {"petal": "Rice", "rarity": "Mythic", "amount": 1000}, {"petal": "Rock", "rarity": "Mythic", "amount": 1000}, {"petal": "Rose", "rarity": "Mythic", "amount": 2}, {"petal": "Sand", "rarity": "Mythic", "amount": 1000}, {"petal": "Shark", "rarity": "Mythic", "amount": 1000}, {"petal": "Shell", "rarity": "Mythic", "amount": 1000}, {"petal": "Soil", "rarity": "Mythic", "amount": 1000}, {"petal": "Stick", "rarity": "Mythic", "amount": 1000}, {"petal": "Stinger", "rarity": "Mythic", "amount": 3}, {"petal": "Third Eye", "rarity": "Mythic", "amount": 1000}, {"petal": "Web", "rarity": "Mythic", "amount": 1000}, {"petal": "Wing", "rarity": "Mythic", "amount": 4}, {"petal": "Ant Egg", "rarity": "Legendary", "amount": 4}, {"petal": "Antenna", "rarity": "Legendary", "amount": 1097}, {"petal": "Basic", "rarity": "Legendary", "amount": 4}, {"petal": "Beetle Egg", "rarity": "Legendary", "amount": 1000}, {"petal": "Bone", "rarity": "Legendary", "amount": 4}, {"petal": "Boubloom", "rarity": "Legendary", "amount": 1000}, {"petal": "Boulder", "rarity": "Legendary", "amount": 1000}, {"petal": "Bubble", "rarity": "Legendary", "amount": 1094}, {"petal": "Cactus", "rarity": "Legendary", "amount": 3}, {"petal": "Cice", "rarity": "Legendary", "amount": 1000}, {"petal": "Clover", "rarity": "Legendary", "amount": 1000}, {"petal": "Corn", "rarity": "Legendary", "amount": 1000}, {"petal": "Faster", "rarity": "Legendary", "amount": 1001}, {"petal": "Glass", "rarity": "Legendary", "amount": 1000}, {"petal": "Grape", "rarity": "Legendary", "amount": 1000}, {"petal": "Heavy", "rarity": "Legendary", "amount": 1}, {"petal": "Honey", "rarity": "Legendary", "amount": 1107}, {"petal": "Leaf", "rarity": "Legendary", "amount": 2}, {"petal": "Lentil", "rarity": "Legendary", "amount": 1000}, {"petal": "Light", "rarity": "Legendary", "amount": 4}, {"petal": "Magnet", "rarity": "Legendary", "amount": 1000}, {"petal": "Missile", "rarity": "Legendary", "amount": 4}, {"petal": "Moon", "rarity": "Legendary", "amount": 1000}, {"petal": "Pea", "rarity": "Legendary", "amount": 3}, {"petal": "Pincer", "rarity": "Legendary", "amount": 1000}, {"petal": "Poison", "rarity": "Legendary", "amount": 1000}, {"petal": "Pollen", "rarity": "Legendary", "amount": 1000}, {"petal": "Rice", "rarity": "Legendary", "amount": 1000}, {"petal": "Rock", "rarity": "Legendary", "amount": 1000}, {"petal": "Rose", "rarity": "Legendary", "amount": 4}, {"petal": "Sand", "rarity": "Legendary", "amount": 1000}, {"petal": "Shark", "rarity": "Legendary", "amount": 1087}, {"petal": "Shell", "rarity": "Legendary", "amount": 1000}, {"petal": "Soil", "rarity": "Legendary", "amount": 1000}, {"petal": "Stick", "rarity": "Legendary", "amount": 1000}, {"petal": "Stinger", "rarity": "Legendary", "amount": 2}, {"petal": "Third Eye", "rarity": "Legendary", "amount": 1000}, {"petal": "Web", "rarity": "Legendary", "amount": 1089}, {"petal": "Wing", "rarity": "Legendary", "amount": 4}, {"petal": "Ant Egg", "rarity": "Epic", "amount": 1000}, {"petal": "Antenna", "rarity": "Epic", "amount": 2}, {"petal": "Basic", "rarity": "Epic", "amount": 2}, {"petal": "Beetle Egg", "rarity": "Epic", "amount": 1000}, {"petal": "Bone", "rarity": "Epic", "amount": 3}, {"petal": "Boubloom", "rarity": "Epic", "amount": 1000}, {"petal": "Boulder", "rarity": "Epic", "amount": 1000}, {"petal": "Bubble", "rarity": "Epic", "amount": 2}, {"petal": "Cactus", "rarity": "Epic", "amount": 2}, {"petal": "Cice", "rarity": "Epic", "amount": 1000}, {"petal": "Clover", "rarity": "Epic", "amount": 1000}, {"petal": "Corn", "rarity": "Epic", "amount": 1000}, {"petal": "Faster", "rarity": "Epic", "amount": 992}, {"petal": "Glass", "rarity": "Epic", "amount": 1000}, {"petal": "Grape", "rarity": "Epic", "amount": 1000}, {"petal": "Heavy", "rarity": "Epic", "amount": 4}, {"petal": "Honey", "rarity": "Epic", "amount": 2}, {"petal": "Lentil", "rarity": "Epic", "amount": 1000}, {"petal": "Light", "rarity": "Epic", "amount": 12}, {"petal": "Magnet", "rarity": "Epic", "amount": 1000}, {"petal": "Missile", "rarity": "Epic", "amount": 2}, {"petal": "Moon", "rarity": "Epic", "amount": 1000}, {"petal": "Pea", "rarity": "Epic", "amount": 2}, {"petal": "Pincer", "rarity": "Epic", "amount": 1000}, {"petal": "Poison", "rarity": "Epic", "amount": 1000}, {"petal": "Pollen", "rarity": "Epic", "amount": 1000}, {"petal": "Rice", "rarity": "Epic", "amount": 1000}, {"petal": "Rock", "rarity": "Epic", "amount": 1000}, {"petal": "Sand", "rarity": "Epic", "amount": 1000}, {"petal": "Shark", "rarity": "Epic", "amount": 1}, {"petal": "Shell", "rarity": "Epic", "amount": 1000}, {"petal": "Soil", "rarity": "Epic", "amount": 1000}, {"petal": "Stick", "rarity": "Epic", "amount": 1000}, {"petal": "Stinger", "rarity": "Epic", "amount": 4}, {"petal": "Third Eye", "rarity": "Epic", "amount": 1000}, {"petal": "Web", "rarity": "Epic", "amount": 3}, {"petal": "Wing", "rarity": "Epic", "amount": 4}, {"petal": "Ant Egg", "rarity": "Rare", "amount": 1000}, {"petal": "Antenna", "rarity": "Rare", "amount": 1000}, {"petal": "Basic", "rarity": "Rare", "amount": 3}, {"petal": "Beetle Egg", "rarity": "Rare", "amount": 1000}, {"petal": "Bone", "rarity": "Rare", "amount": 2}, {"petal": "Boubloom", "rarity": "Rare", "amount": 1000}, {"petal": "Boulder", "rarity": "Rare", "amount": 1000}, {"petal": "Bubble", "rarity": "Rare", "amount": 1000}, {"petal": "Cactus", "rarity": "Rare", "amount": 2}, {"petal": "Cice", "rarity": "Rare", "amount": 1000}, {"petal": "Clover", "rarity": "Rare", "amount": 1000}, {"petal": "Corn", "rarity": "Rare", "amount": 1000}, {"petal": "Faster", "rarity": "Rare", "amount": 1000}, {"petal": "Glass", "rarity": "Rare", "amount": 1000}, {"petal": "Grape", "rarity": "Rare", "amount": 1000}, {"petal": "Heavy", "rarity": "Rare", "amount": 2}, {"petal": "Honey", "rarity": "Rare", "amount": 1000}, {"petal": "Leaf", "rarity": "Rare", "amount": 3}, {"petal": "Lentil", "rarity": "Rare", "amount": 1000}, {"petal": "Light", "rarity": "Rare", "amount": 2}, {"petal": "Magnet", "rarity": "Rare", "amount": 1000}, {"petal": "Missile", "rarity": "Rare", "amount": 4}, {"petal": "Moon", "rarity": "Rare", "amount": 1000}, {"petal": "Pincer", "rarity": "Rare", "amount": 1000}, {"petal": "Poison", "rarity": "Rare", "amount": 1000}, {"petal": "Pollen", "rarity": "Rare", "amount": 1000}, {"petal": "Rice", "rarity": "Rare", "amount": 1000}, {"petal": "Rock", "rarity": "Rare", "amount": 1000}, {"petal": "Rose", "rarity": "Rare", "amount": 4}, {"petal": "Sand", "rarity": "Rare", "amount": 1000}, {"petal": "Shark", "rarity": "Rare", "amount": 1000}, {"petal": "Shell", "rarity": "Rare", "amount": 1000}, {"petal": "Soil", "rarity": "Rare", "amount": 1000}, {"petal": "Stick", "rarity": "Rare", "amount": 1000}, {"petal": "Stinger", "rarity": "Rare", "amount": 11}, {"petal": "Third Eye", "rarity": "Rare", "amount": 1000}, {"petal": "Web", "rarity": "Rare", "amount": 1000}, {"petal": "Wing", "rarity": "Rare", "amount": 1}, {"petal": "Ant Egg", "rarity": "Unusual", "amount": 1000}, {"petal": "Antenna", "rarity": "Unusual", "amount": 1014}, {"petal": "Basic", "rarity": "Unusual", "amount": 2}, {"petal": "Beetle Egg", "rarity": "Unusual", "amount": 1000}, {"petal": "Bone", "rarity": "Unusual", "amount": 1001}, {"petal": "Boubloom", "rarity": "Unusual", "amount": 1000}, {"petal": "Boulder", "rarity": "Unusual", "amount": 1000}, {"petal": "Bubble", "rarity": "Unusual", "amount": 1000}, {"petal": "Cice", "rarity": "Unusual", "amount": 1000}, {"petal": "Clover", "rarity": "Unusual", "amount": 1000}, {"petal": "Corn", "rarity": "Unusual", "amount": 1000}, {"petal": "Faster", "rarity": "Unusual", "amount": 1027}, {"petal": "Glass", "rarity": "Unusual", "amount": 1013}, {"petal": "Grape", "rarity": "Unusual", "amount": 1000}, {"petal": "Heavy", "rarity": "Unusual", "amount": 1234}, {"petal": "Honey", "rarity": "Unusual", "amount": 1045}, {"petal": "Leaf", "rarity": "Unusual", "amount": 1210}, {"petal": "Lentil", "rarity": "Unusual", "amount": 1000}, {"petal": "Light", "rarity": "Unusual", "amount": 16}, {"petal": "Magnet", "rarity": "Unusual", "amount": 1000}, {"petal": "Missile", "rarity": "Unusual", "amount": 1033}, {"petal": "Moon", "rarity": "Unusual", "amount": 1000}, {"petal": "Pea", "rarity": "Unusual", "amount": 1000}, {"petal": "Pincer", "rarity": "Unusual", "amount": 1000}, {"petal": "Poison", "rarity": "Unusual", "amount": 1000}, {"petal": "Pollen", "rarity": "Unusual", "amount": 1058}, {"petal": "Rice", "rarity": "Unusual", "amount": 1010}, {"petal": "Rock", "rarity": "Unusual", "amount": 1029}, {"petal": "Rose", "rarity": "Unusual", "amount": 53}, {"petal": "Sand", "rarity": "Unusual", "amount": 1000}, {"petal": "Shark", "rarity": "Unusual", "amount": 1000}, {"petal": "Shell", "rarity": "Unusual", "amount": 1000}, {"petal": "Soil", "rarity": "Unusual", "amount": 1000}, {"petal": "Stick", "rarity": "Unusual", "amount": 1000}, {"petal": "Stinger", "rarity": "Unusual", "amount": 20}, {"petal": "Third Eye", "rarity": "Unusual", "amount": 1000}, {"petal": "Web", "rarity": "Unusual", "amount": 1032}, {"petal": "Wing", "rarity": "Unusual", "amount": 22}, {"petal": "Ant Egg", "rarity": "Common", "amount": 1000}, {"petal": "Antenna", "rarity": "Common", "amount": 1027}, {"petal": "Beetle Egg", "rarity": "Common", "amount": 1000}, {"petal": "Bone", "rarity": "Common", "amount": 1}, {"petal": "Boubloom", "rarity": "Common", "amount": 1008}, {"petal": "Boulder", "rarity": "Common", "amount": 1000}, {"petal": "Bubble", "rarity": "Common", "amount": 1000}, {"petal": "Cice", "rarity": "Common", "amount": 1000}, {"petal": "Clover", "rarity": "Common", "amount": 1000}, {"petal": "Corn", "rarity": "Common", "amount": 1000}, {"petal": "Faster", "rarity": "Common", "amount": 1039}, {"petal": "Glass", "rarity": "Common", "amount": 1032}, {"petal": "Grape", "rarity": "Common", "amount": 1000}, {"petal": "Heavy", "rarity": "Common", "amount": 6}, {"petal": "Honey", "rarity": "Common", "amount": 1088}, {"petal": "Leaf", "rarity": "Common", "amount": 43}, {"petal": "Lentil", "rarity": "Common", "amount": 1000}, {"petal": "Light", "rarity": "Common", "amount": 17}, {"petal": "Magnet", "rarity": "Common", "amount": 1000}, {"petal": "Missile", "rarity": "Common", "amount": 1028}, {"petal": "Moon", "rarity": "Common", "amount": 1000}, {"petal": "Pea", "rarity": "Common", "amount": 1000}, {"petal": "Pincer", "rarity": "Common", "amount": 1000}, {"petal": "Poison", "rarity": "Common", "amount": 1000}, {"petal": "Pollen", "rarity": "Common", "amount": 1102}, {"petal": "Rice", "rarity": "Common", "amount": 1031}, {"petal": "Rock", "rarity": "Common", "amount": 1036}, {"petal": "Rose", "rarity": "Common", "amount": 101}, {"petal": "Sand", "rarity": "Common", "amount": 1000}, {"petal": "Shark", "rarity": "Common", "amount": 1000}, {"petal": "Shell", "rarity": "Common", "amount": 1000}, {"petal": "Soil", "rarity": "Common", "amount": 1000}, {"petal": "Stick", "rarity": "Common", "amount": 1000}, {"petal": "Stinger", "rarity": "Common", "amount": 8}, {"petal": "Third Eye", "rarity": "Common", "amount": 1000}, {"petal": "Web", "rarity": "Common", "amount": 1037}, {"petal": "Wing", "rarity": "Common", "amount": 10}], "craft_slots": [{"petal": "Stinger", "rarity": "Super", "amount": 1}, {"petal": "Stinger", "rarity": "Super", "amount": 1}, {"petal": "Stinger", "rarity": "Super", "amount": 1}], "equipped_reserved": [{"petal": "Light", "rarity": "Infino", "amount": 1}, {"petal": "Light", "rarity": "Infino", "amount": 1}, {"petal": "Light", "rarity": "Infino", "amount": 1}, {"petal": "Light", "rarity": "Infino", "amount": 1}, {"petal": "Light", "rarity": "Infino", "amount": 1}], "petals": [{"filled": true, "petal": "Light", "rarity": "Infino"}, {"filled": true, "petal": "Light", "rarity": "Infino"}, {"filled": true, "petal": "Light", "rarity": "Infino"}, {"filled": true, "petal": "Light", "rarity": "Infino"}, {"filled": true, "petal": "Light", "rarity": "Infino"}, {"filled": false, "petal": "Basic", "rarity": "Common"}, {"filled": false, "petal": "Basic", "rarity": "Common"}, {"filled": false, "petal": "Basic", "rarity": "Common"}, {"filled": false, "petal": "Basic", "rarity": "Common"}, {"filled": false, "petal": "Basic", "rarity": "Common"}], "flower_level": 250, "flower_xp": 0, "upgrade_points": 0, "hp_level": 0, "hp_upgrade_cost": 100000000000000, "mob_gallery_unlocks": {"Rock|Common": 235, "Soldier Ant|Common": 343, "Baby Ant|Common": 266, "Ladybug|Common": 421, "Spider|Common": 267, "Bee|Common": 442, "Hornet|Common": 282, "Ladybug|Ultra": 23, "Baby Ant|Unique": 8, "Ladybug|Omega": 10, "Rock|Legendary": 29, "Baby Ant|Jeddiful": 4, "Baby Ant|Unusual": 50, "Soldier Ant|Mythic": 35, "Bee|Omega": 7, "Baby Ant|Rare": 20, "Bee|Legendary": 20, "Hornet|Legendary": 26, "Soldier Ant|Rare": 23, "Soldier Ant|Legendary": 21, "Hornet|Eternal": 4, "Bee|Cosmo": 2, "Rock|Jeddiful": 2, "Hornet|Mythic": 39, "Hornet|Unique": 4, "Rock|Cosmo": 3, "Spider|Super": 7, "Baby Ant|Mythic": 37, "Hornet|Rare": 22, "Bee|Eternal": 5, "Baby Ant|Legendary": 24, "Rock|Omega": 7, "Soldier Ant|Super": 5, "Spider|Unusual": 123, "Ladybug|Jeddiful": 2, "Bee|Unique": 2, "Soldier Ant|Cosmo": 4, "Soldier Ant|Eternal": 5, "Rock|Eternal": 4, "Bee|Rare": 17, "Hornet|Unusual": 65, "Bee|Unusual": 102, "Ladybug|Unusual": 125, "Soldier Ant|Unusual": 52, "Rock|Unusual": 93, "Ladybug|Rare": 21, "Spider|Rare": 32, "Spider|Mythic": 43, "Ladybug|Epic": 34, "Rock|Mythic": 35, "Ladybug|Legendary": 21, "Spider|Legendary": 31, "Baby Ant|Epic": 40, "Soldier Ant|Epic": 33, "Bee|Ultra": 25, "Baby Ant|Ultra": 50, "Rock|Ultra": 24, "Bee|Mythic": 23, "Spider|Ultra": 36, "Soldier Ant|Ultra": 32, "Ladybug|Mythic": 28, "Baby Ant|Super": 265, "Hornet|Epic": 42, "Rock|Epic": 48, "Bee|Epic": 36, "Spider|Epic": 45, "Rock|Rare": 12, "Hornet|Super": 8, "Ladybug|Cosmo": 2, "Hornet|Cosmo": 5, "Ladybug|Eternal": 3, "Spider|Eternal": 5, "Spider|Jeddiful": 3, "Spider|Ancient": 109, "Bee|Omnient": 5, "Hornet|Ancient": 110, "Ladybug|Ancient": 109, "Baby Ant|Ancient": 105, "Baby Ant|Omnient": 9, "Rock|Ancient": 105, "Bee|Ancient": 108, "Soldier Ant|Ancient": 104, "Hornet|Omnient": 6, "Ladybug|Radium": 4, "Soldier Ant|Radium": 8, "Rock|Radium": 6, "Spider|Radium": 5, "Soldier Ant|Omnient": 8, "Hornet|Radium": 4, "Bee|Jeddiful": 1, "Rock|Super": 3, "Spider|Omega": 7, "Baby Ant|Eternal": 3, "Ladybug|Super": 6, "Soldier Ant|Jeddiful": 2, "Ladybug|Unique": 3, "Soldier Ant|Unique": 3, "Hornet|Jeddiful": 1, "Hornet|Omega": 4, "Bee|Super": 8, "Soldier Ant|Omega": 5, "Hornet|Ultra": 19, "Spider|Cosmo": 5, "Spider|Unique": 1, "Rock|Unique": 3, "Baby Ant|Cosmo": 5, "Bee|Radium": 7, "Ladybug|Omnient": 7, "Rock|Omnient": 9, "Spider|Omnient": 6, "Baby Ant|Omega": 5, "Baby Ant|Radium": 6}}, "Jen": {"inventory": [], "petals": [{"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}], "flower_level": 5, "flower_xp": 56, "upgrade_points": 9}, "Jej": {"inventory": [{"petal": "Missile", "rarity": "Unusual", "amount": 1}, {"petal": "Antenna", "rarity": "Common", "amount": 1}, {"petal": "Stinger", "rarity": "Common", "amount": 1}], "craft_slots": [], "equipped_reserved": [{"petal": "Faster", "rarity": "Infino", "amount": 1}, {"petal": "Faster", "rarity": "Infino", "amount": 1}, {"petal": "Faster", "rarity": "Infino", "amount": 1}, {"petal": "Faster", "rarity": "Infino", "amount": 1}, {"petal": "Faster", "rarity": "Infino", "amount": 1}], "petals": [{"filled": true, "petal": "Faster", "rarity": "Infino"}, {"filled": true, "petal": "Faster", "rarity": "Infino"}, {"filled": true, "petal": "Faster", "rarity": "Infino"}, {"filled": true, "petal": "Faster", "rarity": "Infino"}, {"filled": true, "petal": "Faster", "rarity": "Infino"}], "flower_level": 1, "flower_xp": 30, "upgrade_points": 0, "hp_level": 1, "hp_upgrade_cost": 1, "mob_gallery_unlocks": {"Hornet|Common": 2, "Bee|Common": 1}}, "": {"inventory": [], "craft_slots": [], "equipped_reserved": [], "petals": [], "flower_level": 1, "flower_xp": 0, "upgrade_points": 0, "hp_level": 0, "hp_upgrade_cost": 1, "mob_gallery_unlocks": {}}, "Testy": {"inventory": [], "craft_slots": [], "equipped_reserved": [{"petal": "Rice", "rarity": "Infino", "amount": 1}, {"petal": "Heavy", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}], "petals": [{"filled": true, "petal": "Rice", "rarity": "Infino"}, {"filled": true, "petal": "Heavy", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}], "flower_level": 31, "flower_xp": 11616351, "upgrade_points": 7, "hp_level": 14, "hp_upgrade_cost": 19, "mob_gallery_unlocks": {}}, "g": {"inventory": [], "craft_slots": [], "equipped_reserved": [{"petal": "Basic", "rarity": "Ultra", "amount": 1}, {"petal": "Basic", "rarity": "Ultra", "amount": 1}, {"petal": "Basic", "rarity": "Super", "amount": 1}, {"petal": "Basic", "rarity": "Mythic", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}], "petals": [{"filled": true, "petal": "Basic", "rarity": "Ultra"}, {"filled": true, "petal": "Basic", "rarity": "Ultra"}, {"filled": true, "petal": "Basic", "rarity": "Super"}, {"filled": true, "petal": "Basic", "rarity": "Mythic"}, {"filled": true, "petal": "Basic", "rarity": "Common"}], "flower_level": 17, "flower_xp": 55790, "upgrade_points": 30, "hp_level": 3, "hp_upgrade_cost": 4, "mob_gallery_unlocks": {"Hornet|Common": 1, "Soldier Ant|Common": 4, "Bee|Common": 1, "Rock|Common": 1}}, "K": {"inventory": [], "craft_slots": [], "equipped_reserved": [{"petal": "Basic", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}], "petals": [{"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}], "flower_level": 19, "flower_xp": 57607, "upgrade_points": 16, "hp_level": 6, "hp_upgrade_cost": 9, "mob_gallery_unlocks": {"Bee|Common": 7, "Ladybug|Common": 10, "Spider|Common": 10, "Baby Ant|Common": 10, "Hornet|Common": 7, "Soldier Ant|Common": 4, "Rock|Common": 3, "Bee|Unusual": 3, "Soldier Ant|Unusual": 10, "Bee|Rare": 1, "Hornet|Unusual": 4, "Spider|Unusual": 1, "Rock|Unusual": 1, "Hornet|Rare": 1, "Soldier Ant|Mythic": 4, "Hornet|Legendary": 2, "Hornet|Mythic": 3, "Baby Ant|Legendary": 1, "Baby Ant|Mythic": 2, "Bee|Mythic": 2, "Hornet|Epic": 1, "Soldier Ant|Legendary": 3, "Bee|Legendary": 2, "Ladybug|Mythic": 2, "Hornet|Ultra": 2, "Soldier Ant|Ultra": 1, "Rock|Mythic": 2, "Ladybug|Ultra": 1, "Baby Ant|Ultra": 7, "Bee|Ultra": 1, "Baby Ant|Super": 41}}, "h": {"inventory": [], "petals": [{"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}], "flower_level": 4, "flower_xp": 105, "upgrade_points": 0, "hp_level": 2, "hp_upgrade_cost": 3}, "l": {"inventory": [{"petal": "Light", "rarity": "Rare", "amount": 1}, {"petal": "Faster", "rarity": "Unusual", "amount": 1}, {"petal": "Glass", "rarity": "Unusual", "amount": 1}, {"petal": "Honey", "rarity": "Unusual", "amount": 2}, {"petal": "Light", "rarity": "Unusual", "amount": 3}, {"petal": "Missile", "rarity": "Unusual", "amount": 1}, {"petal": "Pollen", "rarity": "Unusual", "amount": 2}, {"petal": "Rice", "rarity": "Unusual", "amount": 1}, {"petal": "Rose", "rarity": "Unusual", "amount": 4}, {"petal": "Stinger", "rarity": "Unusual", "amount": 1}, {"petal": "Web", "rarity": "Unusual", "amount": 1}, {"petal": "Wing", "rarity": "Unusual", "amount": 1}, {"petal": "Antenna", "rarity": "Common", "amount": 3}, {"petal": "Faster", "rarity": "Common", "amount": 6}, {"petal": "Glass", "rarity": "Common", "amount": 1}, {"petal": "Heavy", "rarity": "Common", "amount": 1}, {"petal": "Honey", "rarity": "Common", "amount": 6}, {"petal": "Leaf", "rarity": "Common", "amount": 4}, {"petal": "Light", "rarity": "Common", "amount": 9}, {"petal": "Pollen", "rarity": "Common", "amount": 7}, {"petal": "Rice", "rarity": "Common", "amount": 1}, {"petal": "Rock", "rarity": "Common", "amount": 1}, {"petal": "Rose", "rarity": "Common", "amount": 7}, {"petal": "Stinger", "rarity": "Common", "amount": 3}, {"petal": "Web", "rarity": "Common", "amount": 4}, {"petal": "Wing", "rarity": "Common", "amount": 4}], "craft_slots": [], "equipped_reserved": [{"petal": "Basic", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}], "petals": [{"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}], "flower_level": 7, "flower_xp": 880, "upgrade_points": 8, "hp_level": 2, "hp_upgrade_cost": 3, "mob_gallery_unlocks": {"Ladybug|Common": 47, "Soldier Ant|Common": 53, "Spider|Common": 48, "Hornet|Common": 41, "Rock|Common": 17, "Baby Ant|Common": 44, "Bee|Common": 36, "Hornet|Unusual": 1, "Hornet|Rare": 1}}, "loveomond": {"inventory": [], "craft_slots": [], "equipped_reserved": [{"petal": "Basic", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}, {"petal": "Basic", "rarity": "Common", "amount": 1}], "petals": [{"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": true, "petal": "Basic", "rarity": "Common"}, {"filled": false, "petal": "Basic", "rarity": "Common"}, {"filled": false, "petal": "Basic", "rarity": "Common"}, {"filled": false, "petal": "Basic", "rarity": "Common"}, {"filled": false, "petal": "Basic", "rarity": "Common"}, {"filled": false, "petal": "Basic", "rarity": "Common"}], "flower_level": 250, "flower_xp": 0, "upgrade_points": 0, "hp_level": 0, "hp_upgrade_cost": 1, "mob_gallery_unlocks": {}}}
+{
+    "Jed": {
+        "inventory": [],
+        "craft_slots": [],
+        "equipped_reserved": [
+            {
+                "petal": "Heavy",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Infino",
+                "amount": 1
+            }
+        ],
+        "petals": [
+            {
+                "filled": true,
+                "petal": "Heavy",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Heavy",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Heavy",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Heavy",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Heavy",
+                "rarity": "Infino"
+            }
+        ],
+        "flower_level": 27,
+        "flower_xp": 2832188,
+        "upgrade_points": 1,
+        "hp_level": 5,
+        "hp_upgrade_cost": 2,
+        "mob_gallery_unlocks": {}
+    },
+    "DevGuard": {
+        "inventory": [
+            {
+                "petal": "Ant Egg",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Infino",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Celestial",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Omnient",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Ancient",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Radium",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Tacnic",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Jeddiful",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Cosmo",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Eternal",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Unique",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Omega",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Super",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Ultra",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Mythic",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Legendary",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Epic",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Rare",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Unusual",
+                "amount": 1000
+            },
+            {
+                "petal": "Ant Egg",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Beetle Egg",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Bone",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Boubloom",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Boulder",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Bubble",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Cactus",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Cice",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Clover",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Corn",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Grape",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Lentil",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Light",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Magnet",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Moon",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Pea",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Pincer",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Poison",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Sand",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Shark",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Shell",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Soil",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Stick",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Third Eye",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Web",
+                "rarity": "Common",
+                "amount": 1000
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Common",
+                "amount": 1000
+            }
+        ],
+        "craft_slots": [
+            {
+                "petal": "Stinger",
+                "rarity": "Super",
+                "amount": 1
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Super",
+                "amount": 1
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Super",
+                "amount": 1
+            }
+        ],
+        "equipped_reserved": [
+            {
+                "petal": "Light",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Light",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Light",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Light",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Light",
+                "rarity": "Infino",
+                "amount": 1
+            }
+        ],
+        "petals": [
+            {
+                "filled": true,
+                "petal": "Light",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Light",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Light",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Light",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Light",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Light",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Light",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Light",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Light",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Light",
+                "rarity": "Infino"
+            }
+        ],
+        "swap_petals": [
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            }
+        ],
+        "flower_level": 250,
+        "flower_xp": 0,
+        "upgrade_points": 0,
+        "hp_level": 0,
+        "hp_upgrade_cost": 100000000000000,
+        "mob_gallery_unlocks": {
+            "Rock|Common": 235,
+            "Soldier Ant|Common": 343,
+            "Baby Ant|Common": 266,
+            "Ladybug|Common": 421,
+            "Spider|Common": 267,
+            "Bee|Common": 442,
+            "Hornet|Common": 282,
+            "Ladybug|Ultra": 23,
+            "Baby Ant|Unique": 8,
+            "Ladybug|Omega": 10,
+            "Rock|Legendary": 29,
+            "Baby Ant|Jeddiful": 4,
+            "Baby Ant|Unusual": 50,
+            "Soldier Ant|Mythic": 35,
+            "Bee|Omega": 7,
+            "Baby Ant|Rare": 20,
+            "Bee|Legendary": 20,
+            "Hornet|Legendary": 26,
+            "Soldier Ant|Rare": 23,
+            "Soldier Ant|Legendary": 21,
+            "Hornet|Eternal": 4,
+            "Bee|Cosmo": 2,
+            "Rock|Jeddiful": 2,
+            "Hornet|Mythic": 39,
+            "Hornet|Unique": 4,
+            "Rock|Cosmo": 3,
+            "Spider|Super": 7,
+            "Baby Ant|Mythic": 37,
+            "Hornet|Rare": 22,
+            "Bee|Eternal": 5,
+            "Baby Ant|Legendary": 24,
+            "Rock|Omega": 7,
+            "Soldier Ant|Super": 5,
+            "Spider|Unusual": 123,
+            "Ladybug|Jeddiful": 2,
+            "Bee|Unique": 2,
+            "Soldier Ant|Cosmo": 4,
+            "Soldier Ant|Eternal": 5,
+            "Rock|Eternal": 4,
+            "Bee|Rare": 17,
+            "Hornet|Unusual": 65,
+            "Bee|Unusual": 102,
+            "Ladybug|Unusual": 125,
+            "Soldier Ant|Unusual": 52,
+            "Rock|Unusual": 93,
+            "Ladybug|Rare": 21,
+            "Spider|Rare": 32,
+            "Spider|Mythic": 43,
+            "Ladybug|Epic": 34,
+            "Rock|Mythic": 35,
+            "Ladybug|Legendary": 21,
+            "Spider|Legendary": 31,
+            "Baby Ant|Epic": 40,
+            "Soldier Ant|Epic": 33,
+            "Bee|Ultra": 25,
+            "Baby Ant|Ultra": 50,
+            "Rock|Ultra": 24,
+            "Bee|Mythic": 23,
+            "Spider|Ultra": 36,
+            "Soldier Ant|Ultra": 32,
+            "Ladybug|Mythic": 28,
+            "Baby Ant|Super": 265,
+            "Hornet|Epic": 42,
+            "Rock|Epic": 48,
+            "Bee|Epic": 36,
+            "Spider|Epic": 45,
+            "Rock|Rare": 12,
+            "Hornet|Super": 8,
+            "Ladybug|Cosmo": 2,
+            "Hornet|Cosmo": 5,
+            "Ladybug|Eternal": 3,
+            "Spider|Eternal": 5,
+            "Spider|Jeddiful": 3,
+            "Spider|Ancient": 109,
+            "Bee|Omnient": 5,
+            "Hornet|Ancient": 110,
+            "Ladybug|Ancient": 109,
+            "Baby Ant|Ancient": 105,
+            "Baby Ant|Omnient": 9,
+            "Rock|Ancient": 105,
+            "Bee|Ancient": 108,
+            "Soldier Ant|Ancient": 104,
+            "Hornet|Omnient": 6,
+            "Ladybug|Radium": 4,
+            "Soldier Ant|Radium": 8,
+            "Rock|Radium": 6,
+            "Spider|Radium": 5,
+            "Soldier Ant|Omnient": 8,
+            "Hornet|Radium": 4,
+            "Bee|Jeddiful": 1,
+            "Rock|Super": 3,
+            "Spider|Omega": 7,
+            "Baby Ant|Eternal": 3,
+            "Ladybug|Super": 6,
+            "Soldier Ant|Jeddiful": 2,
+            "Ladybug|Unique": 3,
+            "Soldier Ant|Unique": 3,
+            "Hornet|Jeddiful": 1,
+            "Hornet|Omega": 4,
+            "Bee|Super": 8,
+            "Soldier Ant|Omega": 5,
+            "Hornet|Ultra": 19,
+            "Spider|Cosmo": 5,
+            "Spider|Unique": 1,
+            "Rock|Unique": 3,
+            "Baby Ant|Cosmo": 5,
+            "Bee|Radium": 7,
+            "Ladybug|Omnient": 7,
+            "Rock|Omnient": 9,
+            "Spider|Omnient": 6,
+            "Baby Ant|Omega": 5,
+            "Baby Ant|Radium": 6
+        }
+    },
+    "Jen": {
+        "inventory": [],
+        "petals": [
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            }
+        ],
+        "flower_level": 5,
+        "flower_xp": 56,
+        "upgrade_points": 9
+    },
+    "Jej": {
+        "inventory": [
+            {
+                "petal": "Missile",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Common",
+                "amount": 1
+            }
+        ],
+        "craft_slots": [],
+        "equipped_reserved": [
+            {
+                "petal": "Faster",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Infino",
+                "amount": 1
+            }
+        ],
+        "petals": [
+            {
+                "filled": true,
+                "petal": "Faster",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Faster",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Faster",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Faster",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Faster",
+                "rarity": "Infino"
+            }
+        ],
+        "flower_level": 1,
+        "flower_xp": 30,
+        "upgrade_points": 0,
+        "hp_level": 1,
+        "hp_upgrade_cost": 1,
+        "mob_gallery_unlocks": {
+            "Hornet|Common": 2,
+            "Bee|Common": 1
+        }
+    },
+    "": {
+        "inventory": [],
+        "craft_slots": [],
+        "equipped_reserved": [],
+        "petals": [
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            }
+        ],
+        "swap_petals": [
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            }
+        ],
+        "flower_level": 1,
+        "flower_xp": 0,
+        "upgrade_points": 0,
+        "hp_level": 0,
+        "hp_upgrade_cost": 1,
+        "mob_gallery_unlocks": {}
+    },
+    "Testy": {
+        "inventory": [],
+        "craft_slots": [],
+        "equipped_reserved": [
+            {
+                "petal": "Rice",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            }
+        ],
+        "petals": [
+            {
+                "filled": true,
+                "petal": "Rice",
+                "rarity": "Infino"
+            },
+            {
+                "filled": true,
+                "petal": "Heavy",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            }
+        ],
+        "flower_level": 31,
+        "flower_xp": 11616351,
+        "upgrade_points": 7,
+        "hp_level": 14,
+        "hp_upgrade_cost": 19,
+        "mob_gallery_unlocks": {}
+    },
+    "g": {
+        "inventory": [],
+        "craft_slots": [],
+        "equipped_reserved": [
+            {
+                "petal": "Basic",
+                "rarity": "Ultra",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Ultra",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Super",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Mythic",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            }
+        ],
+        "petals": [
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Ultra"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Ultra"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Super"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Mythic"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            }
+        ],
+        "flower_level": 17,
+        "flower_xp": 55790,
+        "upgrade_points": 30,
+        "hp_level": 3,
+        "hp_upgrade_cost": 4,
+        "mob_gallery_unlocks": {
+            "Hornet|Common": 1,
+            "Soldier Ant|Common": 4,
+            "Bee|Common": 1,
+            "Rock|Common": 1
+        }
+    },
+    "K": {
+        "inventory": [],
+        "craft_slots": [],
+        "equipped_reserved": [
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            }
+        ],
+        "petals": [
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            }
+        ],
+        "flower_level": 19,
+        "flower_xp": 57607,
+        "upgrade_points": 16,
+        "hp_level": 6,
+        "hp_upgrade_cost": 9,
+        "mob_gallery_unlocks": {
+            "Bee|Common": 7,
+            "Ladybug|Common": 10,
+            "Spider|Common": 10,
+            "Baby Ant|Common": 10,
+            "Hornet|Common": 7,
+            "Soldier Ant|Common": 4,
+            "Rock|Common": 3,
+            "Bee|Unusual": 3,
+            "Soldier Ant|Unusual": 10,
+            "Bee|Rare": 1,
+            "Hornet|Unusual": 4,
+            "Spider|Unusual": 1,
+            "Rock|Unusual": 1,
+            "Hornet|Rare": 1,
+            "Soldier Ant|Mythic": 4,
+            "Hornet|Legendary": 2,
+            "Hornet|Mythic": 3,
+            "Baby Ant|Legendary": 1,
+            "Baby Ant|Mythic": 2,
+            "Bee|Mythic": 2,
+            "Hornet|Epic": 1,
+            "Soldier Ant|Legendary": 3,
+            "Bee|Legendary": 2,
+            "Ladybug|Mythic": 2,
+            "Hornet|Ultra": 2,
+            "Soldier Ant|Ultra": 1,
+            "Rock|Mythic": 2,
+            "Ladybug|Ultra": 1,
+            "Baby Ant|Ultra": 7,
+            "Bee|Ultra": 1,
+            "Baby Ant|Super": 41
+        }
+    },
+    "h": {
+        "inventory": [],
+        "petals": [
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            }
+        ],
+        "flower_level": 4,
+        "flower_xp": 105,
+        "upgrade_points": 0,
+        "hp_level": 2,
+        "hp_upgrade_cost": 3
+    },
+    "l": {
+        "inventory": [
+            {
+                "petal": "Light",
+                "rarity": "Rare",
+                "amount": 1
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Unusual",
+                "amount": 2
+            },
+            {
+                "petal": "Light",
+                "rarity": "Unusual",
+                "amount": 3
+            },
+            {
+                "petal": "Missile",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Unusual",
+                "amount": 2
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Unusual",
+                "amount": 4
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Web",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Unusual",
+                "amount": 1
+            },
+            {
+                "petal": "Antenna",
+                "rarity": "Common",
+                "amount": 3
+            },
+            {
+                "petal": "Faster",
+                "rarity": "Common",
+                "amount": 6
+            },
+            {
+                "petal": "Glass",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Heavy",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Honey",
+                "rarity": "Common",
+                "amount": 6
+            },
+            {
+                "petal": "Leaf",
+                "rarity": "Common",
+                "amount": 4
+            },
+            {
+                "petal": "Light",
+                "rarity": "Common",
+                "amount": 9
+            },
+            {
+                "petal": "Pollen",
+                "rarity": "Common",
+                "amount": 7
+            },
+            {
+                "petal": "Rice",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Rock",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Rose",
+                "rarity": "Common",
+                "amount": 7
+            },
+            {
+                "petal": "Stinger",
+                "rarity": "Common",
+                "amount": 3
+            },
+            {
+                "petal": "Web",
+                "rarity": "Common",
+                "amount": 4
+            },
+            {
+                "petal": "Wing",
+                "rarity": "Common",
+                "amount": 4
+            }
+        ],
+        "craft_slots": [],
+        "equipped_reserved": [
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            }
+        ],
+        "petals": [
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            }
+        ],
+        "flower_level": 7,
+        "flower_xp": 880,
+        "upgrade_points": 8,
+        "hp_level": 2,
+        "hp_upgrade_cost": 3,
+        "mob_gallery_unlocks": {
+            "Ladybug|Common": 47,
+            "Soldier Ant|Common": 53,
+            "Spider|Common": 48,
+            "Hornet|Common": 41,
+            "Rock|Common": 17,
+            "Baby Ant|Common": 44,
+            "Bee|Common": 36,
+            "Hornet|Unusual": 1,
+            "Hornet|Rare": 1
+        }
+    },
+    "loveomond": {
+        "inventory": [],
+        "craft_slots": [],
+        "equipped_reserved": [
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            },
+            {
+                "petal": "Basic",
+                "rarity": "Common",
+                "amount": 1
+            }
+        ],
+        "petals": [
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": true,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            },
+            {
+                "filled": false,
+                "petal": "Basic",
+                "rarity": "Common"
+            }
+        ],
+        "flower_level": 250,
+        "flower_xp": 0,
+        "upgrade_points": 0,
+        "hp_level": 0,
+        "hp_upgrade_cost": 1,
+        "mob_gallery_unlocks": {}
+    }
+}
