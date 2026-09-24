@@ -11678,7 +11678,58 @@ while running:
                     else:
                         # Pressing Enter while typing sends the message
                         if chat_input_text:
-                            chat_messages.append((acc_name_text, chat_input_text, time.time()))
+                            if chat_input_text.startswith("/"):
+                                parts = chat_input_text.split()
+                                cmd = parts[0]
+                                if cmd == "/spawn_enemy":
+                                    # /spawn_enemy [rarity] [mob type] [amount]
+                                    args = parts[1:]
+                                    if len(args) < 2:
+                                        chat_messages.append(
+                                            ("SYSTEM", "Usage: /spawn_enemy [rarity] [mob type] [amount]", time.time())
+                                        )
+                                    else:
+                                        rarity = args[0]
+                                        mob_type = args[1]
+                                        amount = int(args[2]) if len(args) >= 3 else 1
+                                        enemy_classes = {
+                                            "Ladybug": (Ladybug, ladybugs),
+                                            "Bee": (Bee, bees),
+                                            "Spider": (Spider, spiders),
+                                            "Rock": (Rock, rocks),
+                                            "Hornet": (Hornet, hornets),
+                                            "Baby Ant": (BabyAnt, baby_ants),
+                                            "Soldier Ant": (SoldierAnt, soldier_ants),
+                                            "BabyAnt": (BabyAnt, baby_ants),
+                                            "SoldierAnt": (SoldierAnt, soldier_ants),
+                                        }
+                                        enemy_class = enemy_classes.get(mob_type)
+                                        if enemy_class:
+                                            mob_class, mob_list = enemy_class
+                                            mouse_x, mouse_y = pygame.mouse.get_pos()
+                                            world_x = mouse_x + camera_x
+                                            world_y = mouse_y + camera_y
+                                            for _ in range(amount):
+                                                enemy = mob_class()
+                                                enemy.rarity = rarity
+                                                apply_enemy_rarity_stats(enemy)
+                                                enemy.x = world_x
+                                                enemy.y = world_y
+                                                mob_list.append(enemy)
+                                            chat_messages.append(
+                                                ("SYSTEM", f"Spawned {amount}x {rarity} {mob_type}", time.time())
+                                            )
+                                        else:
+                                            valid_mobs = ", ".join(enemy_classes.keys())
+                                            chat_messages.append(
+                                                ("SYSTEM", f"Invalid mob type. Valid: {valid_mobs}", time.time())
+                                            )
+                                else:
+                                    chat_messages.append(
+                                        ("SYSTEM", f"Unknown command: {cmd}", time.time())
+                                    )
+                            else:
+                                chat_messages.append((acc_name_text, chat_input_text, time.time()))
                         chat_input_text = ""
                         chat_text_visible = False
                         chat_scroll_target = 0
@@ -12671,8 +12722,6 @@ while running:
             move_x -= 1
         if keys[pygame.K_RIGHT]:
             move_x += 1
-        if keys[pygame.K_SPACE]:
-            spawn_random_mob()
 
         if player_spawn_cooldown > 0:
             player_spawn_cooldown -= 1
