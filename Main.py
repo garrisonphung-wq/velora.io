@@ -11689,21 +11689,13 @@ while running:
                                             ("SYSTEM", "Usage: /spawn_enemy [rarity] [mob type] [amount]", time.time())
                                         )
                                     else:
-                                        rarity = args[0]
+                                        rarity = args[0].capitalize()
                                         mob_type = args[1]
-                                        amount = int(args[2]) if len(args) >= 3 else 1
-                                        enemy_classes = {
-                                            "Ladybug": (Ladybug, ladybugs),
-                                            "Bee": (Bee, bees),
-                                            "Spider": (Spider, spiders),
-                                            "Rock": (Rock, rocks),
-                                            "Hornet": (Hornet, hornets),
-                                            "Baby Ant": (BabyAnt, baby_ants),
-                                            "Soldier Ant": (SoldierAnt, soldier_ants),
-                                            "BabyAnt": (BabyAnt, baby_ants),
-                                            "SoldierAnt": (SoldierAnt, soldier_ants),
-                                        }
-                                        enemy_class = enemy_classes.get(mob_type)
+                                        enemy_class = None
+                                        for key in enemy_classes:
+                                            if key.lower() == mob_type.lower():
+                                                enemy_class = enemy_classes[key]
+                                                break
                                         if enemy_class:
                                             mob_class, mob_list = enemy_class
                                             mouse_x, mouse_y = pygame.mouse.get_pos()
