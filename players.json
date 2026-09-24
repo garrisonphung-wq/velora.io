@@ -3813,6 +3813,31 @@
                 "petal": "Light",
                 "rarity": "Infino",
                 "amount": 1
+            },
+            {
+                "petal": "Light",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Light",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Light",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Light",
+                "rarity": "Infino",
+                "amount": 1
+            },
+            {
+                "petal": "Light",
+                "rarity": "Infino",
+                "amount": 1
             }
         ],
         "petals": [
@@ -3926,7 +3951,7 @@
         "hp_upgrade_cost": 100000000000000,
         "mob_gallery_unlocks": {
             "Rock|Common": 235,
-            "Soldier Ant|Common": 343,
+            "Soldier Ant|Common": 345,
             "Baby Ant|Common": 266,
             "Ladybug|Common": 421,
             "Spider|Common": 267,
@@ -3967,7 +3992,7 @@
             "Bee|Rare": 17,
             "Hornet|Unusual": 65,
             "Bee|Unusual": 102,
-            "Ladybug|Unusual": 125,
+            "Ladybug|Unusual": 126,
             "Soldier Ant|Unusual": 52,
             "Rock|Unusual": 93,
             "Ladybug|Rare": 21,

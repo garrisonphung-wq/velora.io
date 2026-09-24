@@ -80,6 +80,10 @@ infino_gradient_timer = 0
 spawn_message_timer = 0
 spawn_message_alpha = 255
 
+error_message = ""
+error_message_timer = 0
+error_message_alpha = 255
+
 upgrade_menu_open = False
 WALL = 100
 WORLD = 5000
@@ -5846,6 +5850,16 @@ def show_spawn_message(rarity, mob):
     spawn_message = f"{rarity} {mob} Spawned!"
     spawn_message_timer = 180
     spawn_message_alpha = 255
+
+def show_error(message):
+
+    global error_message
+    global error_message_timer
+    global error_message_alpha
+
+    error_message = message
+    error_message_timer = 180
+    error_message_alpha = 255
 
 def show_defeat_message(rarity, mob_name):
 
@@ -11685,13 +11699,23 @@ while running:
                                     # /spawn_enemy [rarity] [mob type] [amount]
                                     args = parts[1:]
                                     if len(args) < 2:
-                                        chat_messages.append(
-                                            ("SYSTEM", "Usage: /spawn_enemy [rarity] [mob type] [amount]", time.time())
-                                        )
+                                        # Error display handled separately
+                                        show_error("Usage: /spawn_enemy [rarity] [mob type] [amount]")
                                     else:
                                         rarity = args[0].capitalize()
                                         mob_type = args[1]
                                         amount = int(args[2]) if len(args) >= 3 else 1
+                                        enemy_classes = {
+                                            "Ladybug": (Ladybug, ladybugs),
+                                            "Bee": (Bee, bees),
+                                            "Spider": (Spider, spiders),
+                                            "Rock": (Rock, rocks),
+                                            "Hornet": (Hornet, hornets),
+                                            "Baby Ant": (BabyAnt, baby_ants),
+                                            "Soldier Ant": (SoldierAnt, soldier_ants),
+                                            "BabyAnt": (BabyAnt, baby_ants),
+                                            "SoldierAnt": (SoldierAnt, soldier_ants),
+                                        }
                                         enemy_class = None
                                         for key in enemy_classes:
                                             if key.lower() == mob_type.lower():
@@ -11709,14 +11733,9 @@ while running:
                                                 enemy.x = world_x
                                                 enemy.y = world_y
                                                 mob_list.append(enemy)
-                                            chat_messages.append(
-                                                ("SYSTEM", f"Spawned {amount}x {rarity} {mob_type}", time.time())
-                                            )
                                         else:
                                             valid_mobs = ", ".join(enemy_classes.keys())
-                                            chat_messages.append(
-                                                ("SYSTEM", f"Invalid mob type. Valid: {valid_mobs}", time.time())
-                                            )
+                                            show_error(f"Invalid mob type. Valid: {valid_mobs}")
                                 else:
                                     chat_messages.append(
                                         ("SYSTEM", f"Unknown command: {cmd}", time.time())
@@ -17647,6 +17666,50 @@ while running:
                     20
                 )
             )
+
+        # ---------------- ERROR MESSAGE ----------------
+
+        if error_message_timer > 0:
+            error_message_timer -= 3
+            if error_message_timer < 60:
+                error_message_alpha = int(
+                    255 * (error_message_timer / 60)
+                )
+
+            error_font = pygame.font.Font(None, 24)
+            error_text = error_font.render(
+                error_message,
+                True,
+                (255, 255, 255)
+            )
+            error_text.set_alpha(error_message_alpha)
+
+            # Calculate rectangle alpha (max 80 for the rectangle's alpha channel)
+            rect_alpha = int(80 * (error_message_alpha / 255))
+
+            # Centered at top, with y=80
+            error_box = pygame.Rect(
+                WIDTH//2 - error_text.get_width()//2 - 10,
+                80,
+                error_text.get_width() + 20,
+                error_text.get_height() + 10
+            )
+
+            pygame.draw.rect(
+                screen,
+                (0, 0, 0, rect_alpha),
+                error_box,
+                border_radius=5
+            )
+
+            screen.blit(
+                error_text,
+                (
+                    error_box.x + 10,
+                    error_box.y + 5
+                )
+            )
+
         # ---------------- UPDATE SCREEN ----------------
 
     # ---------------- IRIS WIPE TRANSITION ----------------
