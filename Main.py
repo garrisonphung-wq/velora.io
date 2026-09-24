@@ -17621,10 +17621,9 @@ while running:
                 game_state = "game"
                 welcome_transition_phase = "open"
                 welcome_transition_progress = 1.0
-                # Set the game grid color and start transitioning to the biome
-                if selected_biome and selected_biome in BIOME_COLORS:
-                    game_grid_color = (60, 180, 75)
-                    game_target_grid_color = BIOME_COLORS[selected_biome]
+                # Set the game grid color to match the current welcome grid color
+                game_grid_color = welcome_grid_color
+                game_target_grid_color = welcome_target_grid_color
 
         else:  # "open"
 
