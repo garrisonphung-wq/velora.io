@@ -1136,6 +1136,20 @@ welcome_petal_reload = 40
 # Currently highlighted biome on the welcome screen (None until one is
 # pressed, then one of "garden", "desert", "ocean", "eagle", "farm").
 welcome_selected_biome = None
+
+# Smooth biome grid color transition on the welcome screen.
+# BIOME_COLORS maps each biome name to its grid background color.
+BIOME_COLORS = {
+    "garden": (80, 200, 90),
+    "desert": (210, 175, 100),
+    "ocean": (80, 150, 200),
+    "eagle": (180, 220, 60),
+    "farm": (80, 200, 90),
+}
+
+welcome_grid_color = (80, 200, 90)
+welcome_target_grid_color = (80, 200, 90)
+
 # Set to True when the player clicks the green Play button
 welcome_play_pressed = False
 # Chat text visibility flag
@@ -11981,11 +11995,26 @@ while running:
 
     elif game_state == "welcome":
 
-        # advance the scrolling green grid (right and a little down)
+        # Smoothly interpolate the grid color toward the selected biome.
+        # This makes the grid colors change slowly instead of instantly.
+        if welcome_grid_color != welcome_target_grid_color:
+            welcome_grid_color = tuple(
+                int(
+                    welcome_grid_color[i]
+                    + (
+                        welcome_target_grid_color[i]
+                        - welcome_grid_color[i]
+                    )
+                    * 0.04
+                )
+                for i in range(3)
+            )
+
+        # advance the scrolling grid (right and a little down)
         welcome_scroll_x += 1.5
         welcome_scroll_y += 0.35
 
-        screen.fill((80, 200, 90))
+        screen.fill(welcome_grid_color)
 
         # draw the grid tiles with the same size as the real in-game grass,
         # shifted by the scroll offset so they move right and a little down,
@@ -11995,6 +12024,11 @@ while running:
         off_x = welcome_scroll_x % gsize
         off_y = welcome_scroll_y % gsize
 
+        grid_border_color = tuple(
+            max(0, c - 10)
+            for c in welcome_grid_color
+        )
+
         for gx in range(-1, WIDTH // gsize + 2):
             for gy in range(-1, HEIGHT // gsize + 2):
 
@@ -12003,12 +12037,12 @@ while running:
 
                 pygame.draw.rect(
                     screen,
-                    (80, 200, 90),
+                    welcome_grid_color,
                     (x, y, gsize, gsize)
                 )
                 pygame.draw.rect(
                     screen,
-                    (70, 180, 80),
+                    grid_border_color,
                     (x, y, gsize, gsize),
                     1
                 )
@@ -12386,6 +12420,8 @@ while running:
                         welcome_selected_biome = None
                     else:
                         welcome_selected_biome = biome_name
+                        # Set the target grid color for smooth transition
+                        welcome_target_grid_color = BIOME_COLORS[biome_name]
 
                 # start the iris wipe when the (green) play button is clicked:
             # only works once a biome has been selected, and never restarts
