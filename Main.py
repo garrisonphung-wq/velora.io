@@ -1297,6 +1297,21 @@ def wrap_text(font, text, max_width):
                 final_lines.append(current)
     return final_lines if final_lines else [""]
 
+# ---------------- CHAT BAD WORD FILTER ----------------
+BAD_WORDS = [
+    "fucking", "shit", "bitch", "bastard", "fuck", "asshole",
+    "cunt", "damn", "dick", "piss", "prick", "slut", "whore",
+    "retard", "retarded", "kike", "nigger", "faggot", "dyke",
+]
+
+def is_bad_word(text):
+    """Check if text contains any bad word (case-insensitive)."""
+    text_lower = text.lower()
+    for word in BAD_WORDS:
+        if word in text_lower:
+            return True
+    return False
+
 def format_elapsed(seconds):
     """Format elapsed time as a compact readable string."""
     seconds = int(max(0, seconds))
@@ -11739,7 +11754,10 @@ while running:
                                 else:
                                     show_error(f"Unknown command: {cmd}")
                             else:
-                                chat_messages.append((acc_name_text, chat_input_text, time.time()))
+                                if not is_bad_word(chat_input_text):
+                                    chat_messages.append((acc_name_text, chat_input_text, time.time()))
+                                else:
+                                    show_error("Chat message contains inappropriate content")
                         chat_input_text = ""
                         chat_text_visible = False
                         chat_scroll_target = 0
