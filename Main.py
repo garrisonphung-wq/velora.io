@@ -11757,7 +11757,7 @@ while running:
                                 if not is_bad_word(chat_input_text):
                                     chat_messages.append((acc_name_text, chat_input_text, time.time()))
                                 else:
-                                    show_error("Chat message contains inappropriate content")
+                                    show_error("The chat does not allow bad words")
                         chat_input_text = ""
                         chat_text_visible = False
                         chat_scroll_target = 0
