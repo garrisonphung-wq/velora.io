@@ -1150,6 +1150,14 @@ BIOME_COLORS = {
 welcome_grid_color = (80, 200, 90)
 welcome_target_grid_color = (80, 200, 90)
 
+# Biome selected on the welcome screen; persists into the game state so
+# the real grid can use the same color.
+selected_biome = None
+
+# Game state grid color transition (used when transitioning from welcome to game)
+game_grid_color = (60, 180, 75)
+game_target_grid_color = (60, 180, 75)
+
 # Set to True when the player clicks the green Play button
 welcome_play_pressed = False
 # Chat text visibility flag
@@ -12418,8 +12426,10 @@ while running:
                 if btn.collidepoint(mx, my):
                     if welcome_selected_biome == biome_name:
                         welcome_selected_biome = None
+                        selected_biome = None
                     else:
                         welcome_selected_biome = biome_name
+                        selected_biome = biome_name
                         # Set the target grid color for smooth transition
                         welcome_target_grid_color = BIOME_COLORS[biome_name]
 
@@ -12521,6 +12531,20 @@ while running:
     elif game_state == "game":
 
         dt = clock.tick(FPS)
+
+        # Smoothly interpolate the game grid color toward the selected biome.
+        if game_grid_color != game_target_grid_color:
+            game_grid_color = tuple(
+                int(
+                    game_grid_color[i]
+                    + (
+                        game_target_grid_color[i]
+                        - game_grid_color[i]
+                    )
+                    * 0.04
+                )
+                for i in range(3)
+            )
 
         # ---------------- INVENTORY PANEL SLIDE (acceleration) ----------------
         # Damped-spring slide: it accelerates toward the resting x position
@@ -13489,7 +13513,7 @@ while running:
 
         # -------- DRAW --------
 
-        screen.fill((60, 180, 75))
+        screen.fill(game_grid_color)
 
         # Draw grass tiles
         start_x = int(camera_x // GRASS_SIZE) - 1
@@ -13507,7 +13531,7 @@ while running:
                 screen_x = world_x - camera_x
                 screen_y = world_y - camera_y
 
-                color = (80, 200, 90)
+                color = grass_color
 
                 pygame.draw.rect(
                     screen,
@@ -13517,7 +13541,7 @@ while running:
 
                 pygame.draw.rect(
                     screen,
-                    (70, 180, 80),
+                    grass_border,
                     (screen_x, screen_y, GRASS_SIZE, GRASS_SIZE),
                     1
                 )
@@ -17597,6 +17621,10 @@ while running:
                 game_state = "game"
                 welcome_transition_phase = "open"
                 welcome_transition_progress = 1.0
+                # Set the game grid color and start transitioning to the biome
+                if selected_biome and selected_biome in BIOME_COLORS:
+                    game_grid_color = (60, 180, 75)
+                    game_target_grid_color = BIOME_COLORS[selected_biome]
 
         else:  # "open"
 
