@@ -17683,8 +17683,8 @@ while running:
             )
             error_text.set_alpha(error_message_alpha)
 
-            # Calculate rectangle alpha (max 60 for the rectangle's alpha channel)
-            rect_alpha = int(60 * (error_message_alpha / 255))
+            # Calculate rectangle alpha (max 128 for the rectangle's alpha channel)
+            rect_alpha = int(128 * (error_message_alpha / 255))
 
             # Centered at top, very close to the top edge
             error_box_width = error_text.get_width() + 20
@@ -17851,8 +17851,10 @@ while running:
                     time_color = (0, 255, 0)
                 elif elapsed_sec < 600:
                     time_color = (255, 255, 0)
-                else:
+                elif elapsed_sec < 1800:
                     time_color = (255, 0, 0)
+                else:
+                    time_color = (64, 64, 64)
                 time_surf = msg_font.render(f" [{elapsed}]: ", True, time_color)
                 prefix_w = name_surf.get_width() + time_surf.get_width()
                 max_msg_width = inner_rect_w - 10 - prefix_w
