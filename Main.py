@@ -11737,9 +11737,7 @@ while running:
                                             valid_mobs = ", ".join(enemy_classes.keys())
                                             show_error(f"Invalid mob type. Valid: {valid_mobs}")
                                 else:
-                                    chat_messages.append(
-                                        ("SYSTEM", f"Unknown command: {cmd}", time.time())
-                                    )
+                                    show_error(f"Unknown command: {cmd}")
                             else:
                                 chat_messages.append((acc_name_text, chat_input_text, time.time()))
                         chat_input_text = ""
@@ -17684,13 +17682,13 @@ while running:
             )
             error_text.set_alpha(error_message_alpha)
 
-            # Calculate rectangle alpha (max 80 for the rectangle's alpha channel)
-            rect_alpha = int(80 * (error_message_alpha / 255))
+            # Calculate rectangle alpha (max 60 for the rectangle's alpha channel)
+            rect_alpha = int(60 * (error_message_alpha / 255))
 
-            # Centered at top, with y=80
+            # Centered at top, very close to the top edge
             error_box = pygame.Rect(
                 WIDTH//2 - error_text.get_width()//2 - 10,
-                80,
+                40,
                 error_text.get_width() + 20,
                 error_text.get_height() + 10
             )
