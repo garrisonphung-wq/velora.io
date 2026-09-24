@@ -17669,6 +17669,7 @@ while running:
 
         if error_message_timer > 0:
             error_message_timer -= 3
+
             if error_message_timer < 60:
                 error_message_alpha = int(
                     255 * (error_message_timer / 60)
@@ -17686,25 +17687,33 @@ while running:
             rect_alpha = int(60 * (error_message_alpha / 255))
 
             # Centered at top, very close to the top edge
-            error_box = pygame.Rect(
-                WIDTH//2 - error_text.get_width()//2 - 10,
+            error_box_width = error_text.get_width() + 20
+            error_box_height = error_text.get_height() + 10
+            error_box_rect = pygame.Rect(
+                WIDTH//2 - error_box_width//2,
                 10,
-                error_text.get_width() + 20,
-                error_text.get_height() + 10
+                error_box_width,
+                error_box_height
             )
 
+            # Create a transparent surface for the error box background
+            error_box_surf = pygame.Surface((error_box_width, error_box_height), pygame.SRCALPHA)
             pygame.draw.rect(
-                screen,
+                error_box_surf,
                 (0, 0, 0, rect_alpha),
-                error_box,
+                error_box_surf.get_rect(),
                 border_radius=5
             )
 
+            # Blit the error box surface to screen
+            screen.blit(error_box_surf, error_box_rect.topleft)
+
+            # Blit the text on top
             screen.blit(
                 error_text,
                 (
-                    error_box.x + 10,
-                    error_box.y + 5
+                    error_box_rect.x + 10,
+                    error_box_rect.y + 5
                 )
             )
 
