@@ -11691,6 +11691,7 @@ while running:
                                     else:
                                         rarity = args[0].capitalize()
                                         mob_type = args[1]
+                                        amount = int(args[2]) if len(args) >= 3 else 1
                                         enemy_class = None
                                         for key in enemy_classes:
                                             if key.lower() == mob_type.lower():
