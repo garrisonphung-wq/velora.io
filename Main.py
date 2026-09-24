@@ -1141,7 +1141,7 @@ welcome_selected_biome = None
 # BIOME_COLORS maps each biome name to its grid background color.
 BIOME_COLORS = {
     "garden": (80, 200, 90),
-    "desert": (210, 175, 100),
+    "desert": (222, 204, 150),
     "ocean": (80, 150, 200),
     "eagle": (180, 220, 60),
     "farm": (80, 200, 90),
