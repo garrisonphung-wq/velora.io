@@ -13515,6 +13515,10 @@ while running:
 
         screen.fill(game_grid_color)
 
+        # Compute grass colors based on current game grid color
+        grass_color = game_grid_color
+        grass_border = tuple(max(0, c - 10) for c in game_grid_color)
+
         # Draw grass tiles
         start_x = int(camera_x // GRASS_SIZE) - 1
         end_x = start_x + WIDTH // GRASS_SIZE + 3
