@@ -17688,7 +17688,7 @@ while running:
             # Centered at top, very close to the top edge
             error_box = pygame.Rect(
                 WIDTH//2 - error_text.get_width()//2 - 10,
-                40,
+                10,
                 error_text.get_width() + 20,
                 error_text.get_height() + 10
             )
