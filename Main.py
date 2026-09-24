@@ -4830,6 +4830,18 @@ def load_player():
     data = player_data[acc_name_text]
 
 
+    # ---------------- FLOWER DATA ----------------
+
+    # Compute PETAL_SLOTS from the saved flower level *before* slicing the
+    # petal arrays, so older saves with fewer than 10 entries still expand
+    # to the full 10-slot layout.
+    flower_level = data.get(
+        "flower_level",
+        1
+    )
+    PETAL_SLOTS = get_petal_slots(flower_level)
+
+
     # ---------------- PETALS ----------------
 
     # Older saves may contain fewer than PETAL_SLOTS entries.  Keep the
