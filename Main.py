@@ -4737,6 +4737,253 @@ class SoldierAnt:
 
 # ----- DIF SECTION -----
 
+class WorkerAnt:
+
+    def __init__(self):
+
+        self.x = random.randint(-500, 500)
+        self.y = random.randint(-500, 500)
+        self.knockback_x = 0
+        self.knockback_y = 0
+        self.rarity = "Common"
+
+        # Stats
+        self.damage = 30
+        self.max_hp = (
+            50 *
+            MOB_HP_MULTIPLIER[self.rarity]
+        )
+
+        self.hp = self.max_hp
+        self.alive = True
+        self.flash_timer = 0
+        self.attack_cooldown = 2
+        self.petal_attack_cooldown = 2
+
+        # Size
+        self.radius = random.randint(14, 20)
+
+        # Direction
+        self.angle = random.uniform(0, 360)
+        self.target_angle = self.angle
+
+        # Movement
+        self.speed = 0
+        self.max_speed = 2.5
+        self.acceleration = 0.3
+        self.friction = 0.4
+
+        # AI
+        self.state = "turn"
+        self.timer = 0
+
+    def take_damage(self, amount):
+
+        if not self.alive:
+            return
+
+        self.hp -= int(amount)
+        self.flash_timer = 4
+
+        if self.hp <= 0:
+
+            self.alive = False
+            register_mob_kill(self)
+            drop_mob_loot(self)
+
+            if self.rarity in ("Celestial", "Omnient"):
+
+                show_defeat_message(
+                    self.rarity,
+                    type(self).__name__
+                )
+
+            give_xp(
+                int(
+                    10 * MOB_XP_MULTIPLIER[self.rarity]
+                )
+            )
+
+    def turn_to(self, target_angle, speed):
+
+        difference = (
+            target_angle - self.angle + 180
+        ) % 360 - 180
+
+        if abs(difference) <= speed:
+
+            self.angle = target_angle
+
+            return True
+
+        if difference > 0:
+
+            self.angle += speed
+
+        else:
+
+            self.angle -= speed
+
+        return False
+
+    def update(self):
+
+        if not self.alive:
+            return
+
+        if dead_flower_ai(self):
+            return
+
+        self.timer += 1
+
+        if self.state == "turn":
+
+            if self.turn_to(
+                self.target_angle,
+                2
+            ):
+
+                self.state = "walk"
+
+                self.timer = 0
+
+        elif self.state == "walk":
+
+            if self.speed < self.max_speed:
+
+                self.speed += self.acceleration
+
+            rad = math.radians(
+                self.angle
+            )
+
+            dx = math.cos(rad) * self.speed * 0.15
+
+            dy = math.sin(rad) * self.speed * 0.15
+
+            move_with_collision(
+                self,
+                dx,
+                dy
+            )
+
+            if self.timer >= 80:
+
+                self.state = "slow"
+
+                self.timer = 0
+
+        elif self.state == "slow":
+
+            self.speed -= self.friction
+
+            if self.speed < 0:
+
+                self.speed = 0
+
+            rad = math.radians(
+                self.angle
+            )
+
+            dx = math.cos(rad) * self.speed * 0.15
+
+            dy = math.sin(rad) * self.speed * 0.15
+
+            move_with_collision(
+                self,
+                dx,
+                dy
+            )
+
+            if self.speed == 0:
+
+                self.state = "pause"
+
+                self.timer = 0
+
+        elif self.state == "pause":
+
+            if self.timer >= 50:
+
+                self.target_angle = random.uniform(
+                    0,
+                    360
+                )
+
+                self.state = "turn"
+
+                self.timer = 0
+
+    def draw(self):
+
+        if not self.alive:
+            return
+
+        sx = self.x - camera_x
+        sy = self.y - camera_y
+
+        if (
+            sx < -100 or
+            sx > WIDTH + 100 or
+            sy < -100 or
+            sy > HEIGHT + 100
+        ):
+            return
+
+        pygame.draw.circle(
+            screen,
+            flash_color((120, 70, 30), self.flash_timer),
+            (int(sx), int(sy)),
+            int(self.radius)
+        )
+
+        pygame.draw.circle(
+            screen,
+            flash_color((80, 50, 20), self.flash_timer),
+            (int(sx), int(sy)),
+            int(self.radius * 0.7)
+        )
+
+        if self.hp < self.max_hp:
+
+            bar_width = max(1, int(45 * settings_hp_bar_scale))
+            bar_height = max(
+                1,
+                int(5 * settings_hp_bar_scale)
+            )
+
+            hp_percent = self.hp / self.max_hp
+
+            pygame.draw.rect(
+                screen,
+                (210, 45, 45),
+                (
+                    int(sx - bar_width/2),
+                    int(sy - self.radius - 13 - bar_height),
+                    bar_width,
+                    bar_height
+                )
+            )
+
+            pygame.draw.rect(
+                screen,
+                (0,255,0),
+                (
+                    int(sx - bar_width/2),
+                    int(sy - self.radius - 13 - bar_height),
+                    int(bar_width * hp_percent),
+                    bar_height
+                )
+            )
+
+        if not getattr(self, "hide_rarity_label", False):
+
+            draw_mob_rarity_label(
+                self,
+                int(sx),
+                int(sy + self.radius + 15)
+            )
+
 def delete_enemy(enemy):
 
     if acc_name_text != "DevGuard":
@@ -5817,7 +6064,8 @@ def spawn_random_mob():
         "Rock": (Rock, rocks),
         "Hornet": (Hornet, hornets),
         "Baby Ant": (BabyAnt, baby_ants),
-        "Soldier Ant": (SoldierAnt, soldier_ants)
+        "Soldier Ant": (SoldierAnt, soldier_ants),
+        "Worker Ant": (WorkerAnt, worker_ants)
     }
 
     drop_mob_names = sorted({
@@ -6268,7 +6516,8 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
         "Rock": Rock,
         "Hornet": Hornet,
         "Baby Ant": BabyAnt,
-        "Soldier Ant": SoldierAnt
+        "Soldier Ant": SoldierAnt,
+        "Worker Ant": WorkerAnt
     }
     enemy_class = enemy_classes.get(mob_name)
     if enemy_class is None:
@@ -6402,7 +6651,8 @@ def update_boss_hp():
         rocks +
         hornets +
         baby_ants +
-        soldier_ants
+        soldier_ants +
+        worker_ants
     )
 
 
@@ -10846,6 +11096,7 @@ rocks = []
 hornets = []
 baby_ants = []
 soldier_ants = []
+worker_ants = []
 
 def draw_login_screen():
 
@@ -11052,6 +11303,7 @@ while running:
         + hornets
         + baby_ants
         + soldier_ants
+        + worker_ants
     )
 
     for event in pygame.event.get():
@@ -11730,6 +11982,8 @@ while running:
                                             "Soldier Ant": (SoldierAnt, soldier_ants),
                                             "BabyAnt": (BabyAnt, baby_ants),
                                             "SoldierAnt": (SoldierAnt, soldier_ants),
+                                            "Worker Ant": (WorkerAnt, worker_ants),
+                                            "WorkerAnt": (WorkerAnt, worker_ants),
                                         }
                                         enemy_class = None
                                         for key in enemy_classes:
