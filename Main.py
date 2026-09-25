@@ -4777,6 +4777,17 @@ class WorkerAnt:
         self.state = "turn"
         self.timer = 0
 
+
+
+        # player detection
+
+        self.view_range = 400
+
+        self.charging = False
+
+        self.charge_speed = 2.5
+        self.wing_phase = 0.0
+
     def take_damage(self, amount):
 
         if not self.alive:
