@@ -11977,12 +11977,9 @@ while running:
                                     # /spawn_enemy [rarity] [mob type] [amount]
                                     args = parts[1:]
                                     if len(args) < 2:
-                                        # Error display handled separately
                                         show_error("Usage: /spawn_enemy [rarity] [mob type] [amount]")
                                     else:
                                         rarity = args[0].capitalize()
-                                        mob_type = args[1]
-                                        amount = int(args[2]) if len(args) >= 3 else 1
                                         enemy_classes = {
                                             "Ladybug": (Ladybug, ladybugs),
                                             "Bee": (Bee, bees),
@@ -11996,6 +11993,21 @@ while running:
                                             "Worker Ant": (WorkerAnt, worker_ants),
                                             "WorkerAnt": (WorkerAnt, worker_ants),
                                         }
+                                        # Try to match multi-word mob names first (e.g. "Baby Ant", "Soldier Ant", "Worker Ant")
+                                        mob_type = None
+                                        amount = 1
+                                        if len(args) >= 3:
+                                            # Try 2-word mob names first
+                                            two_word = args[1] + " " + args[2]
+                                            for key in enemy_classes:
+                                                if key.lower() == two_word.lower():
+                                                    mob_type = key
+                                                    amount = int(args[3]) if len(args) >= 4 else 1
+                                                    break
+                                        if mob_type is None:
+                                            # Try single-word mob names
+                                            mob_type = args[1]
+                                            amount = int(args[2]) if len(args) >= 3 else 1
                                         enemy_class = None
                                         for key in enemy_classes:
                                             if key.lower() == mob_type.lower():
