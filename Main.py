@@ -1518,13 +1518,12 @@ def update_king_roses():
 
             hit_something = True
 
-        # Roses heal ladybugs on contact, then bounce away —
-        # but only off minions; regular ladybugs absorb the rose.
+        # Roses heal ladybugs on contact. Minions get healed and
+        # the rose bounces away from them; the king and regular
+        # ladybugs simply absorb the rose.
         if not hit_something:
             for bug in ladybugs:
                 if not bug.alive:
-                    continue
-                if not getattr(bug, "is_minion", False):
                     continue
                 d = distance(
                     rose["x"],
@@ -1538,9 +1537,9 @@ def update_king_roses():
                             bug.max_hp,
                             bug.hp + rose["heal"]
                         )
-                    # Bounce the rose away from the ladybug so it
-                    # doesn't get absorbed instantly.
-                    if d > 0:
+                    if getattr(bug, "is_minion", False) and d > 0:
+                        # Bounce the rose away from the minion so
+                        # it doesn't get absorbed instantly.
                         away_x = (rose["x"] - bug.x) / d
                         away_y = (rose["y"] - bug.y) / d
                         rose["x"] = (
