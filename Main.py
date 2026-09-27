@@ -1612,6 +1612,13 @@ settings_button_rect = pygame.Rect(
     above_craft_button_rect.height
 )
 
+cmd_button_rect = pygame.Rect(
+    settings_button_rect.x,
+    settings_button_rect.y - 70,
+    settings_button_rect.width,
+    settings_button_rect.height
+)
+
 # ---------------- SETTINGS PANEL ----------------
 
 settings_panel_open = False
@@ -1644,6 +1651,7 @@ settings_hp_bar_knob_progress = 0.0
 settings_hp_bar_dragging = False
 settings_hp_bar_track_rect = pygame.Rect(0, 0, 10, 14)
 settings_label_font = pygame.font.Font(None, 18)
+cmd_button_font = pygame.font.Font(None, 22)
 # Toggle switch in the settings panel.
 settings_switch_on = False
 settings_switch_rect = pygame.Rect(0, 0, 60, 14)
@@ -15579,6 +15587,34 @@ while running:
 
 
         # ---------------- INVENTORY BUTTON ----------------
+
+        # ---------------- SETTINGS BUTTON ----------------
+        # Drawn before the panels so any open panel covers it.
+
+        # ---------------- CMD BUTTON ----------------
+
+        pygame.draw.rect(
+            screen,
+            (128, 0, 196),
+            cmd_button_rect,
+            border_radius=8
+        )
+        pygame.draw.rect(
+            screen,
+            (70, 0, 110),
+            cmd_button_rect,
+            3,
+            border_radius=8
+        )
+        cmd_txt = cmd_button_font.render(
+            "cmd",
+            True,
+            (255, 255, 255)
+        )
+        cmd_txt_rect = cmd_txt.get_rect(
+            center=cmd_button_rect.center
+        )
+        screen.blit(cmd_txt, cmd_txt_rect)
 
         # ---------------- SETTINGS BUTTON ----------------
         # Drawn before the panels so any open panel covers it.
