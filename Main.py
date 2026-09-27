@@ -1499,26 +1499,63 @@ def update_king_roses():
                     1.0
                 )
             )
+
+            if player_hp < 0:
+                player_hp = 0
+
+            player_flash_timer = 4
+
+            if player_hp == 0:
+                # Killed by the king's rose: fake "enemy" carrying the
+                # king's class/rarity for the death screen.
+                class _RoseKiller:
+                    __class__ = type(rose["owner"])
+                    rarity = rose["owner"].rarity
+                    x = rose["x"]
+                    y = rose["y"]
+
+                kill_player(_RoseKiller)
+
             hit_something = True
 
-        # Roses heal ladybugs.
+        # Roses heal ladybugs on contact, then bounce away.
         if not hit_something:
             for bug in ladybugs:
                 if not bug.alive:
                     continue
-                if distance(
+                d = distance(
                     rose["x"],
                     rose["y"],
                     bug.x,
                     bug.y
-                ) <= bug.radius + rose_hit_radius:
+                )
+                if d <= bug.radius + rose_hit_radius:
                     if bug.hp < bug.max_hp:
                         bug.hp = min(
                             bug.max_hp,
                             bug.hp + rose["heal"]
                         )
-                        hit_something = True
-                        break
+                    # Bounce the rose away from the ladybug so it
+                    # doesn't get absorbed instantly.
+                    if d > 0:
+                        away_x = (rose["x"] - bug.x) / d
+                        away_y = (rose["y"] - bug.y) / d
+                        rose["x"] = (
+                            bug.x
+                            + away_x
+                            * (bug.radius + rose_hit_radius + 2)
+                        )
+                        rose["y"] = (
+                            bug.y
+                            + away_y
+                            * (bug.radius + rose_hit_radius + 2)
+                        )
+                        speed = math.sqrt(
+                            rose["dx"] ** 2 + rose["dy"] ** 2
+                        )
+                        rose["dx"] = away_x * speed
+                        rose["dy"] = away_y * speed
+                    break
 
         if hit_something:
             king_rose_projectiles.remove(rose)
