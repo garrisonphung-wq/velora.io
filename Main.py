@@ -1215,18 +1215,21 @@ def minion_ai(minion):
         and king.alive
     )
 
-    dist_to_player = distance(
-        minion.x,
-        minion.y,
-        player_x,
-        player_y
-    )
-
-    if (
+    # Minions follow the king's decision: if the king is chasing,
+    # they charge too; once the king gives up, they fall back and
+    # orbit around him.
+    king_chasing = (
         has_king
         and not player_dead
-        and dist_to_player <= KING_CHASE_RANGE
-    ):
+        and distance(
+            king.x,
+            king.y,
+            player_x,
+            player_y
+        ) <= KING_CHASE_RANGE
+    )
+
+    if king_chasing:
         # Much faster than the king: charge the flower.
         target_angle = math.degrees(
             math.atan2(
