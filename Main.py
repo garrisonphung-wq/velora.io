@@ -1270,13 +1270,19 @@ def minion_ai(minion):
             (time.time() * 40)
             + orbit_slot * (360 / 6)
         )
+        # The orbit ring scales with the king's size, so bigger
+        # kings get a wider guard ring.
+        king_orbit = max(
+            KING_GUARD_ORBIT,
+            int(king.radius * 1.6)
+        )
         target_x = (
             king.x
-            + math.cos(orbit_angle) * KING_GUARD_ORBIT
+            + math.cos(orbit_angle) * king_orbit
         )
         target_y = (
             king.y
-            + math.sin(orbit_angle) * KING_GUARD_ORBIT
+            + math.sin(orbit_angle) * king_orbit
         )
         dx = target_x - minion.x
         dy = target_y - minion.y
