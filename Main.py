@@ -6645,6 +6645,8 @@ def register_mob_kill(enemy):
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
         mob_name = "Soldier Ant"
+    elif mob_name == "WorkerAnt":
+        mob_name = "Worker Ant"
 
     key = f"{mob_name}|{enemy.rarity}"
     previous_count = int(mob_gallery_unlocks.get(key, 0))
@@ -6674,6 +6676,8 @@ def drop_mob_loot(enemy):
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
         mob_name = "Soldier Ant"
+    elif mob_name == "WorkerAnt":
+        mob_name = "Worker Ant"
 
     drop_table = MOB_DROP_INFO.get((mob_name, enemy.rarity))
     if not drop_table:
@@ -6893,32 +6897,27 @@ GALLERY_MOB_DESCRIPTIONS = {
         "starts fights, but it will bite back when bothered."
     ),
     "Bee": (
-        "A striped pollen lover that flies in soft waves. Bees "
-        "run from trouble, yet an angry one chases fast."
+        "this striped animal is harmless until you attack it, "
+        "it is very dangerous when you touch it."
     ),
     "Spider": (
-        "A dark eight legged hunter. It hides quietly until prey "
-        "comes near, then lunges with surprising speed."
+        "you don't want to go to its webs."
     ),
     "Rock": (
-        "A silent gray boulder. It cannot move or attack, but "
-        "cracking one open takes many patient hits."
+        "its just a grey rock but becareful from its throwed rocks."
     ),
     "Hornet": (
-        "An angry wild cousin of the bee. Hornets guard their "
-        "zone and dive at any flower that comes close."
+        "it uses missles to attack."
     ),
     "Baby Ant": (
-        "A tiny ant that is mostly head and hunger. It scurries "
-        "nonstop and can barely defend itself."
+        "its the baby of the ant colony."
     ),
     "Soldier Ant": (
-        "The nest guardian. Heavy jaws and fast legs make this "
-        "armored ant a real threat up close."
+        "it pretects the ant hole and sometimes their lost."
     ),
     "Worker Ant": (
-        "The nest's hauler. It carries food back home and calls "
-        "soldier ants for help when it gets attacked."
+        "this one worker for the queen ant but it chase you"
+        "when you damage it."
     )
 }
 
@@ -19101,7 +19100,7 @@ while running:
         inner_rect_x = box_x + inner_padding
         inner_rect_y = box_y + chat_box_h - inner_height - inner_padding
         inner_rect_w = chat_box_w - 2 * inner_padding
-        
+
         pygame.draw.rect(
             chat_surf,
             (40, 40, 40, 180),  # Slightly lighter and more transparent
@@ -19218,45 +19217,45 @@ while running:
             font = pygame.font.SysFont("arial", 16)
             outline_color = (255, 255, 255)
             text_color = (255, 255, 255)
-            
+
             # Text wrapping parameters
             padding_x = 10
             spacing = 4
             max_width = inner_rect_w - padding_x * 2
             line_height = 15
             max_visible_lines = 1  # Show only current line
-            
+
             # Split text into lines that fit the width (account for per-character spacing)
             lines = []
             current_line = ""
-            
+
             for char in chat_input_text:
                 test_line = current_line + char
                 test_width = font.render(test_line, True, text_color).get_width() + len(test_line) * spacing
-                
+
                 if test_width <= max_width:
                     current_line = test_line
                 else:
                     if current_line:  # Add the current line if it's not empty
                         lines.append(current_line)
                     current_line = char
-            
+
             # Add the last line
             if current_line:
                 lines.append(current_line)
-            
+
             # Show only the last N lines so the cursor is always visible (scroll up)
             if len(lines) > max_visible_lines:
                 visible_lines = lines[-max_visible_lines:]
             else:
                 visible_lines = lines
-            
+
             # Render visible lines, aligned to top of inner rectangle
             for line_idx, line in enumerate(visible_lines):
                 line_y = inner_rect_y + 4 + line_idx * line_height
                 start_x = inner_rect_x + padding_x
                 char_x = start_x
-                
+
                 for ch in line:
                     # Get character width
                     char_w = font.render(ch, True, text_color).get_width()
@@ -19269,7 +19268,7 @@ while running:
                     chat_surf.blit(text_surf, (char_x, line_y))
                     # Move to next letter position (tight spacing, 2px gap between outlines)
                     char_x += char_w + 4
-                
+
                 # Update cursor position for this line
                 if line_idx == len(visible_lines) - 1:
                     cursor_x = char_x + 2
