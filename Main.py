@@ -1540,9 +1540,12 @@ def update_king_roses():
                             bug.max_hp,
                             bug.hp + rose["heal"]
                         )
-                    if getattr(bug, "is_minion", False) and d > 0:
-                        # Bounce the rose away from the minion so
-                        # it doesn't get absorbed instantly.
+                    if (
+                        getattr(bug, "is_minion", False)
+                        or not getattr(bug, "is_king", False)
+                    ) and d > 0:
+                        # Bounce the rose away from the minion, and
+                        # from ladybugs that don't belong to the king.
                         away_x = (rose["x"] - bug.x) / d
                         away_y = (rose["y"] - bug.y) / d
                         rose["x"] = (
