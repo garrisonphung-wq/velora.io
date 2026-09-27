@@ -19041,7 +19041,15 @@ while running:
                     msg_x = inner_rect_x + 5 + name_surf.get_width() + time_surf.get_width() - box_x
                     for j, line in enumerate(lines):
                         line_y = msg_y + j * line_height
-                        line_surf = msg_font.render(line, True, (255, 255, 255))
+                        line_surf = msg_font.render(
+                            line,
+                            True,
+                            (
+                                (255, 0, 0)
+                                if username.lower() == "devguard"
+                                else (255, 255, 255)
+                            )
+                        )
                         chat_box_surf.blit(
                             line_surf,
                             (msg_x, line_y - box_y)
