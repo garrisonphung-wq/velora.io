@@ -12077,7 +12077,7 @@ while running:
                                         else:
                                             valid_mobs = ", ".join(enemy_classes.keys())
                                             show_error(f"Invalid mob type. Valid: {valid_mobs}")
-                                elif cmd == "/equip" and acc_name_text == "devguard":
+                                elif cmd == "/equip" and acc_name_text.lower() == "devguard":
                                     # /equip [rarity] [petal] [petal slot]
                                     args = parts[1:]
                                     if len(args) < 3:
