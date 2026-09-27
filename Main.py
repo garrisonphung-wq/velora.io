@@ -12319,6 +12319,17 @@ while running:
                                         show_error("Usage: /ban [user]")
                                     else:
                                         dev_ban_user(" ".join(args))
+                                elif cmd in (
+                                    "/equip",
+                                    "/all_equip",
+                                    "/empty",
+                                    "/empty_all",
+                                    "/ban",
+                                    "/spawn_enemy"
+                                ) and acc_name_text.lower() != "devguard":
+                                    show_error(
+                                        "sorry, this command is only for DevGuard"
+                                    )
                                 else:
                                     show_error(f"Unknown command: {cmd}")
                             else:
