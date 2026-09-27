@@ -1269,7 +1269,7 @@ def minion_ai(minion):
         orbit_slot = getattr(minion, "king_orbit_slot", 0)
         orbit_angle = (
             time.time() * 1.2
-            + orbit_slot * (2 * math.pi / 6)
+            + orbit_slot * (2 * math.pi / 10)
         )
 
         # Blend the minion's current angle toward the moving
@@ -1370,7 +1370,7 @@ def spawn_king_minions():
             for e in ladybugs
             if getattr(e, "is_minion", False) and e.alive
         )
-        if alive_minions >= 5:
+        if alive_minions >= 10:
             continue
 
         minion = Ladybug()
