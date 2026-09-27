@@ -6840,9 +6840,9 @@ def register_mob_kill(enemy):
 
 def spawn_pickup(x, y, petal, rarity):
 
-    # Stingers last twice as long on the ground before despawning.
+    # Stingers last three times as long on the ground before despawning.
     pickup_lifetime = (
-        PICKUP_LIFETIME * 2
+        PICKUP_LIFETIME * 3
         if petal == "Stinger"
         else PICKUP_LIFETIME
     )
@@ -14509,6 +14509,12 @@ while running:
 
             if player_spawn_cooldown <= 0:
                 worker_ant.update()
+
+            if worker_ant.attack_cooldown > 0:
+                worker_ant.attack_cooldown -= 1
+
+            if worker_ant.petal_attack_cooldown > 0:
+                worker_ant.petal_attack_cooldown -= 1
 
             if worker_ant.flash_timer > 0:
                 worker_ant.flash_timer -= 1
