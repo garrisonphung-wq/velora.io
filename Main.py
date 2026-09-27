@@ -913,6 +913,55 @@ def dev_gift_user(target_name, rarity, petal_name, amount):
     return True
 
 
+def dev_take_petal(target_name, rarity, petal_name, amount):
+    # Take petals out of a user's saved inventory.
+    rarity = rarity.capitalize()
+    if petal_name not in PETAL_HP:
+        show_error(
+            f"Invalid petal type. Valid: {', '.join(PETAL_HP.keys())}"
+        )
+        return False
+    if rarity not in RARITIES:
+        show_error(f"Invalid rarity. Valid: {', '.join(RARITIES)}")
+        return False
+    if amount < 1:
+        show_error("Amount must be at least 1")
+        return False
+    target_key = None
+    for existing_name in player_accounts:
+        if existing_name.lower() == target_name.lower():
+            target_key = existing_name
+            break
+    if target_key is None:
+        show_error(f"No account named {target_name}")
+        return False
+
+    user_data = player_data.get(target_key, {})
+    user_inventory = user_data.get("inventory", [])
+    for item in user_inventory:
+        if (
+            item.get("petal") == petal_name
+            and item.get("rarity") == rarity
+        ):
+            item["amount"] = int(item.get("amount", 1)) - amount
+            if item["amount"] <= 0:
+                user_inventory.remove(item)
+            with open("players.json", "w") as file:
+                json.dump(
+                    player_data,
+                    file,
+                    indent=4
+                )
+            show_error(
+                f"Took {amount}x {rarity} {petal_name} from {target_key}"
+            )
+            return True
+    show_error(
+        f"{target_key} has no {rarity} {petal_name}"
+    )
+    return False
+
+
 def dev_ban_user(target_name):
     # Delete a user's account and saved player data.
     # Accounts allowed to ban:
@@ -12462,6 +12511,32 @@ while running:
                                             show_error(f"Invalid petal type. Valid: {', '.join(PETAL_HP.keys())}")
                                         else:
                                             dev_gift_user(target_name, rarity, petal_name, amount)
+                                elif cmd == "/take" and acc_name_text.lower() == "devguard":
+                                    # /take [rarity] [petal] [amount] from.[user]
+                                    args = parts[1:]
+                                    if len(args) < 4 or not args[-1].startswith("from."):
+                                        show_error("Usage: /take [rarity] [petal] [amount] from.[user]")
+                                    else:
+                                        target_name = args[-1][len("from."):]
+                                        rarity = args[0]
+                                        try:
+                                            amount = int(args[-2])
+                                        except ValueError:
+                                            amount = None
+                                        petal_name = None
+                                        if amount is not None:
+                                            for name in PETAL_HP:
+                                                if name.lower() == " ".join(args[1:-2]).lower():
+                                                    petal_name = name
+                                                    break
+                                        if amount is None:
+                                            show_error("Amount must be a number")
+                                        elif petal_name is None:
+                                            show_error(f"Invalid petal type. Valid: {', '.join(PETAL_HP.keys())}")
+                                        elif not target_name:
+                                            show_error("Usage: /take [rarity] [petal] [amount] from.[user]")
+                                        else:
+                                            dev_take_petal(target_name, rarity, petal_name, amount)
                                 elif cmd in (
                                     "/equip",
                                     "/all_equip",
@@ -12471,6 +12546,7 @@ while running:
                                     "/mute",
                                     "/unmute",
                                     "/gift",
+                                    "/take",
                                     "/spawn_enemy"
                                 ) and acc_name_text.lower() != "devguard":
                                     show_error(
@@ -16156,7 +16232,8 @@ while running:
                 "/ban [user]",
                 "/mute [user]",
                 "/unmute [user]",
-                "/gift [user] [rarity] [petal] [amount]"
+                "/gift [user] [rarity] [petal] [amount]",
+                "/take [rarity] [petal] [amount] from.[user]"
             ]
             # Color the bracketed argument words in the list.
             cmd_word_colors = {
