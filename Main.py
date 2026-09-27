@@ -14676,6 +14676,10 @@ while running:
 
             soldier_ant.draw()
 
+        for worker_ant in worker_ants:
+
+            worker_ant.draw()
+
         for pickup in PICKUP_LIST:
 
             collect_t = pickup.get("collecting")
