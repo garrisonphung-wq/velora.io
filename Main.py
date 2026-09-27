@@ -1519,11 +1519,14 @@ def update_king_roses():
             hit_something = True
 
         # Roses heal ladybugs on contact. Minions get healed and
-        # the rose bounces away from them; the king and regular
-        # ladybugs simply absorb the rose.
+        # the rose bounces away from them. Regular ladybugs absorb
+        # the rose; the king is immune to rose healing and the rose
+        # passes through him.
         if not hit_something:
             for bug in ladybugs:
                 if not bug.alive:
+                    continue
+                if getattr(bug, "is_king", False):
                     continue
                 d = distance(
                     rose["x"],
