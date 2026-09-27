@@ -11979,6 +11979,15 @@ while running:
                     login_error_timer = 60
 
 
+                elif (
+                    acc_name_text.lower() == "devguard"
+                    and acc_name_text != "DevGuard"
+                ):
+
+                    login_error = "That account name is reserved"
+                    login_error_timer = 60
+
+
                 elif acc_name_text in accounts or acc_name_text in player_accounts:
 
                     login_error = "Acc name or Password already exists: Dont Hack"
