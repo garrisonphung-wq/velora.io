@@ -1412,8 +1412,11 @@ def minion_ai(minion):
 def fire_king_rose_volley(king):
     # The king fires 8 rose petals, one every 45 degrees.
     rose_radius = max(4, int(king.radius / KING_ROSE_SIZE_FRACTION))
-    rose_damage = max(1, int(king.damage / KING_ROSE_DMG_FRACTION))
-    rose_heal = max(1, int(king.damage / KING_ROSE_HEAL_FRACTION))
+    # Rose damage/heal matches a minion's damage (1/3 of the king),
+    # and the rose has a minion's HP so petals can destroy it.
+    rose_damage = max(1, int(king.damage / 3))
+    rose_heal = max(1, int(king.damage / 3))
+    rose_hp = max(1, int(king.max_hp / 3))
     for rose_index in range(KING_ROSE_VOLLEY_COUNT):
         rose_angle = (
             king.angle
@@ -1430,6 +1433,8 @@ def fire_king_rose_volley(king):
                 "damage": rose_damage,
                 "heal": rose_heal,
                 "radius": rose_radius,
+                "hp": rose_hp,
+                "max_hp": rose_hp,
                 "has_homed": False,
                 "timer": KING_ROSE_LIFETIME,
                 "owner": king
@@ -16139,6 +16144,23 @@ while running:
                                         enemy.knockback_x += dx * knockback / weight
                                         enemy.knockback_y += dy * knockback / weight
 
+                                hit = True
+
+                        # Petals can also destroy the king's roses.
+                        for rose in king_rose_projectiles[:]:
+                            rose_d = distance(
+                                petal_world_x,
+                                petal_world_y,
+                                rose["x"],
+                                rose["y"]
+                            )
+                            if rose_d < (
+                                petal_range
+                                + rose.get("radius", 8)
+                            ):
+                                rose["hp"] -= damage
+                                if rose["hp"] <= 0:
+                                    king_rose_projectiles.remove(rose)
                                 hit = True
 
                         if hit:
