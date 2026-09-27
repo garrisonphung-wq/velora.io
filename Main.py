@@ -15948,61 +15948,57 @@ while running:
                 "/empty [petal slot]",
                 "/empty_all"
             ]
+            # Color the bracketed argument words in the list.
+            cmd_word_colors = {
+                "[rarity]": (255, 255, 0),
+                "[mob": (0, 255, 0),
+                "type]": (0, 255, 0),
+                "[amount]": (0, 128, 255),
+                "[petal]": (255, 0, 0),
+                "[petal": (255, 0, 0),
+                "slot]": (255, 165, 0),
+            }
             cmd_max_width = cmd_panel_rect.width - 48
             cmd_line_y = cmd_panel_rect.y + 44
             for cmd_number, cmd_line in enumerate(cmd_lines, start=1):
-                # Wrap the command text into lines that fit the panel.
                 words = cmd_line.split()
-                current_line = ""
+                cmd_line_x = cmd_panel_rect.x + 16
                 first_line = True
                 for word in words:
-                    test_line = (
-                        word
-                        if not current_line
-                        else current_line + " " + word
-                    )
-                    if cmd_list_font.size(test_line)[0] <= cmd_max_width:
-                        current_line = test_line
-                    else:
-                        prefix = (
-                            f"{cmd_number}. "
-                            if first_line
-                            else "   "
-                        )
-                        wrapped_txt = cmd_list_font.render(
-                            prefix + current_line,
-                            True,
-                            (255, 255, 255)
-                        )
-                        screen.blit(
-                            wrapped_txt,
-                            (
-                                cmd_panel_rect.x + 16,
-                                cmd_line_y
-                            )
-                        )
-                        cmd_line_y += 24
-                        current_line = word
-                        first_line = False
-                if current_line:
                     prefix = (
                         f"{cmd_number}. "
                         if first_line
-                        else "   "
+                        else ""
                     )
-                    wrapped_txt = cmd_list_font.render(
-                        prefix + current_line,
+                    word_txt = cmd_list_font.render(
+                        prefix + word,
                         True,
-                        (255, 255, 255)
+                        cmd_word_colors.get(word, (255, 255, 255))
                     )
-                    screen.blit(
-                        wrapped_txt,
-                        (
-                            cmd_panel_rect.x + 16,
-                            cmd_line_y
+                    space_width = (
+                        cmd_list_font.size(" ")[0]
+                        if first_line
+                        else cmd_list_font.size("  ")[0]
+                    )
+                    # Wrap when the word would pass the panel edge.
+                    if (
+                        cmd_line_x
+                        + word_txt.get_width()
+                        > cmd_panel_rect.right - 32
+                    ):
+                        cmd_line_x = cmd_panel_rect.x + 40
+                        cmd_line_y += 24
+                        first_line = False
+                        word_txt = cmd_list_font.render(
+                            word,
+                            True,
+                            cmd_word_colors.get(word, (255, 255, 255))
                         )
-                    )
-                    cmd_line_y += 24
+                        space_width = cmd_list_font.size(" ")[0]
+                    screen.blit(word_txt, (cmd_line_x, cmd_line_y))
+                    cmd_line_x += word_txt.get_width() + space_width
+                    first_line = False
+                cmd_line_y += 24
                 cmd_line_y += 8
 
         if settings_panel_rect.y > -settings_panel_rect.height:
