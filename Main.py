@@ -12518,22 +12518,6 @@ while running:
                                         else:
                                             valid_mobs = ", ".join(enemy_classes.keys())
                                             show_error(f"Invalid mob type. Valid: {valid_mobs}")
-                                elif cmd == "/help":
-                                    # /help - list all commands
-                                    show_error(
-                                        "Commands: "
-                                        "/help, /me [action], /stats, "
-                                        "/spawn_enemy [rarity] [mob type] [amount], "
-                                        "/equip [rarity] [petal] [petal slot], "
-                                        "/all_equip [rarity] [petal], "
-                                        "/empty [petal slot], /empty_all, "
-                                        "/ban [user], /mute [user], /unmute [user], "
-                                        "/gift [user] [rarity] [petal] [amount], "
-                                        "/take [rarity] [petal] [amount] from.[user], "
-                                        "/kick [user], /give_points [user] [amount], "
-                                        "/tp [user], /announce [message]"
-                                    )
-                                    error_message_timer = 600
                                 elif cmd == "/me":
                                     # /me [action] - roleplay action in chat
                                     args = parts[1:]
@@ -16434,7 +16418,6 @@ while running:
                 "/give_points [user] [amount]",
                 "/tp [user]",
                 "/announce [message]",
-                "/help",
                 "/me [action]",
                 "/stats"
             ]
