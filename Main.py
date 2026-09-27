@@ -14535,9 +14535,6 @@ while running:
 
             # ---------------- PETAL ATTACK ----------------
 
-            petal_world_x = player_x + math.cos(angle) * petal_distance
-            petal_world_y = player_y + math.sin(angle) * petal_distance
-
 # ---------------- PETAL ATTACK ----------------
 
             # Calculate total elements and increment for attack positions
