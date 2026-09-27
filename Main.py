@@ -962,6 +962,99 @@ def dev_take_petal(target_name, rarity, petal_name, amount):
     return False
 
 
+def show_announcement(message):
+    # Show a big announcement on screen for 5 seconds.
+    global spawn_message
+    global spawn_message_timer
+    global spawn_message_alpha
+
+    spawn_message = message
+    spawn_message_timer = 300
+    spawn_message_alpha = 255
+
+
+def dev_kick_user(target_name):
+    # Kick the currently logged-in player out to the login screen.
+    global game_state
+
+    target_key = None
+    for existing_name in player_accounts:
+        if existing_name.lower() == target_name.lower():
+            target_key = existing_name
+            break
+    if target_key is None:
+        show_error(f"No account named {target_name}")
+        return False
+    if target_key.lower() == "devguard":
+        show_error("You can't kick the developer")
+        return False
+    if target_key != acc_name_text:
+        show_error(
+            f"{target_key} is not playing right now"
+        )
+        return False
+
+    save_player()
+    game_state = "login"
+    show_error(f"Kicked {target_key}")
+    return True
+
+
+def dev_give_points(target_name, amount):
+    # Give upgrade points to a user's saved data.
+    target_key = None
+    for existing_name in player_accounts:
+        if existing_name.lower() == target_name.lower():
+            target_key = existing_name
+            break
+    if target_key is None:
+        show_error(f"No account named {target_name}")
+        return False
+    user_data = player_data.setdefault(target_key, {})
+    user_data["upgrade_points"] = (
+        int(user_data.get("upgrade_points", 0)) + amount
+    )
+    with open("players.json", "w") as file:
+        json.dump(
+            player_data,
+            file,
+            indent=4
+        )
+    show_error(f"Gave {amount} points to {target_key}")
+    return True
+
+
+def dev_tp_user(target_name):
+    # Teleport to a user's last saved world position.
+    global player_x
+    global player_y
+
+    target_key = None
+    for existing_name in player_accounts:
+        if existing_name.lower() == target_name.lower():
+            target_key = existing_name
+            break
+    if target_key is None:
+        show_error(f"No account named {target_name}")
+        return False
+    if target_key == acc_name_text:
+        show_error("You can't teleport to yourself")
+        return False
+    user_data = player_data.get(target_key, {})
+    if (
+        "player_x" not in user_data
+        or "player_y" not in user_data
+    ):
+        show_error(
+            f"{target_key} has no saved position yet"
+        )
+        return False
+    player_x = user_data["player_x"]
+    player_y = user_data["player_y"]
+    show_error(f"Teleported to {target_key}")
+    return True
+
+
 def dev_ban_user(target_name):
     # Delete a user's account and saved player data.
     # Accounts allowed to ban:
@@ -5441,7 +5534,9 @@ def save_player():
         "upgrade_points": upgrade_points,
         "hp_level": PLAYER_HP_LEVEL,
         "hp_upgrade_cost": hp_upgrade_cost,
-        "mob_gallery_unlocks": mob_gallery_unlocks
+        "mob_gallery_unlocks": mob_gallery_unlocks,
+        "player_x": player_x,
+        "player_y": player_y
 
     }
 
@@ -5484,6 +5579,9 @@ def load_player():
     global hp_upgrade_cost
     global player_hp
 
+    global player_x
+    global player_y
+
 
     if acc_name_text not in player_data:
         # The account can exist in accounts.json without a saved player
@@ -5505,6 +5603,10 @@ def load_player():
         1
     )
     PETAL_SLOTS = get_petal_slots(flower_level)
+
+    # Restore the player's saved world position (used by /tp).
+    player_x = data.get("player_x", player_x)
+    player_y = data.get("player_y", player_y)
 
 
     # ---------------- PETALS ----------------
@@ -12537,6 +12639,43 @@ while running:
                                             show_error("Usage: /take [rarity] [petal] [amount] from.[user]")
                                         else:
                                             dev_take_petal(target_name, rarity, petal_name, amount)
+                                elif cmd == "/kick" and acc_name_text.lower() == "devguard":
+                                    # /kick [user]
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /kick [user]")
+                                    else:
+                                        dev_kick_user(" ".join(args))
+                                elif cmd == "/give_points" and acc_name_text.lower() == "devguard":
+                                    # /give_points [user] [amount]
+                                    args = parts[1:]
+                                    if len(args) < 2:
+                                        show_error("Usage: /give_points [user] [amount]")
+                                    else:
+                                        try:
+                                            amount = int(args[-1])
+                                        except ValueError:
+                                            amount = None
+                                        if amount is None:
+                                            show_error("Amount must be a number")
+                                        elif amount < 1:
+                                            show_error("Amount must be at least 1")
+                                        else:
+                                            dev_give_points(" ".join(args[:-1]), amount)
+                                elif cmd == "/tp" and acc_name_text.lower() == "devguard":
+                                    # /tp [user]
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /tp [user]")
+                                    else:
+                                        dev_tp_user(" ".join(args))
+                                elif cmd == "/announce" and acc_name_text.lower() == "devguard":
+                                    # /announce [message]
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /announce [message]")
+                                    else:
+                                        show_announcement(" ".join(args))
                                 elif cmd in (
                                     "/equip",
                                     "/all_equip",
@@ -12547,6 +12686,10 @@ while running:
                                     "/unmute",
                                     "/gift",
                                     "/take",
+                                    "/kick",
+                                    "/give_points",
+                                    "/tp",
+                                    "/announce",
                                     "/spawn_enemy"
                                 ) and acc_name_text.lower() != "devguard":
                                     show_error(
@@ -16233,7 +16376,11 @@ while running:
                 "/mute [user]",
                 "/unmute [user]",
                 "/gift [user] [rarity] [petal] [amount]",
-                "/take [rarity] [petal] [amount] from.[user]"
+                "/take [rarity] [petal] [amount] from.[user]",
+                "/kick [user]",
+                "/give_points [user] [amount]",
+                "/tp [user]",
+                "/announce [message]"
             ]
             # Color the bracketed argument words in the list.
             cmd_word_colors = {
