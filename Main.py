@@ -1295,6 +1295,30 @@ def minion_ai(minion):
         dy = target_y - minion.y
         length = math.sqrt(dx * dx + dy * dy)
         step = KING_GUARD_SPEED * 2.5
+
+        # Slow down when another minion is close ahead on the ring.
+        # The closer the minion in front, the bigger the slowdown.
+        separation = minion.radius * 2.2
+        for other in ladybugs:
+            if other is minion:
+                continue
+            if not getattr(other, "is_minion", False):
+                continue
+            if not other.alive:
+                continue
+            d = distance(
+                minion.x,
+                minion.y,
+                other.x,
+                other.y
+            )
+            if d < separation and d > 0:
+                # 0 when touching, up to 1 when just at the
+                # separation distance.
+                closeness = 1.0 - (d / separation)
+                step *= 1.0 - closeness * 0.9
+                break
+
         if length > step:
             minion.x += dx / length * step
             minion.y += dy / length * step
