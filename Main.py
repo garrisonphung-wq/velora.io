@@ -1134,8 +1134,20 @@ KING_ROSE_HEAL_FRACTION = 3
 KING_ROSE_HOMING_RANGE = 500
 KING_ROSE_LIFETIME = 120
 
+# Bee king stinger volley: 10 stingers fired every 8 seconds, 36
+# degrees apart (8 * 45 == 10 * 36 == 360). Stinger damage matches
+# the bee king's damage, HP is one fourth of the bee king's HP.
+KING_STINGER_VOLLEY_COUNT = 10
+KING_STINGER_SPEED = 8
+KING_STINGER_HP_FRACTION = 4
+KING_STINGER_HOMING_RANGE = 500
+KING_STINGER_LIFETIME = 120
+
 # Flying king rose projectiles (damage the flower, heal ladybugs).
 king_rose_projectiles = []
+
+# Flying bee-king stinger projectiles (damage the flower).
+king_stinger_projectiles = []
 
 # Lines a king posts in chat while it is alive.
 KING_CHAT_LINES = [
@@ -1442,6 +1454,113 @@ def fire_king_rose_volley(king):
         )
 
 
+def fire_king_stinger_volley(king):
+    # The bee king fires 10 stinger petals, one every 36 degrees.
+    # Each stinger has the king's damage and one fourth of the
+    # king's HP, and homes in on the flower once it "sees" it.
+    stinger_damage = int(king.damage)
+    stinger_hp = max(1, int(king.max_hp / KING_STINGER_HP_FRACTION))
+    stinger_radius = max(4, int(king.radius / 3))
+    for stinger_index in range(KING_STINGER_VOLLEY_COUNT):
+        stinger_angle = (
+            king.angle
+            + stinger_index * (360 / KING_STINGER_VOLLEY_COUNT)
+        )
+        rad = math.radians(stinger_angle)
+        king_stinger_projectiles.append(
+            {
+                "x": king.x,
+                "y": king.y,
+                "angle": stinger_angle,
+                "dx": math.cos(rad) * KING_STINGER_SPEED,
+                "dy": math.sin(rad) * KING_STINGER_SPEED,
+                "damage": stinger_damage,
+                "radius": stinger_radius,
+                "hp": stinger_hp,
+                "max_hp": stinger_hp,
+                "has_homed": False,
+                "timer": KING_STINGER_LIFETIME,
+                "owner": king
+            }
+        )
+
+
+def update_king_stingers():
+    # Move the bee king's stingers; they home toward the flower once
+    # and damage it on contact. Petals can destroy them.
+    global player_hp
+
+    for stinger in king_stinger_projectiles[:]:
+
+        stinger["timer"] -= 1
+
+        if stinger["timer"] <= 0:
+            king_stinger_projectiles.remove(stinger)
+            continue
+
+        # Home in on the flower once, like the king's roses.
+        if (
+            not stinger["has_homed"]
+            and not player_dead
+            and distance(
+                stinger["x"],
+                stinger["y"],
+                player_x,
+                player_y
+            ) <= KING_STINGER_HOMING_RANGE
+        ):
+            stinger["has_homed"] = True
+            home_angle = math.atan2(
+                player_y - stinger["y"],
+                player_x - stinger["x"]
+            )
+            stinger["dx"] = (
+                math.cos(home_angle) * KING_STINGER_SPEED
+            )
+            stinger["dy"] = (
+                math.sin(home_angle) * KING_STINGER_SPEED
+            )
+
+        stinger["x"] += stinger["dx"]
+        stinger["y"] += stinger["dy"]
+
+        stinger_hit_radius = stinger.get("radius", 8)
+
+        # Stingers damage the flower.
+        if (
+            not player_dead
+            and distance(
+                stinger["x"],
+                stinger["y"],
+                player_x,
+                player_y
+            ) <= PLAYER_RADIUS + stinger_hit_radius
+        ):
+            player_hp -= (
+                stinger["damage"]
+                * MOB_DAMAGE_MULTIPLIER.get(
+                    stinger["owner"].rarity,
+                    1.0
+                )
+            )
+
+            if player_hp < 0:
+                player_hp = 0
+
+            player_flash_timer = 4
+
+            if player_hp == 0:
+                class _StingerKiller:
+                    __class__ = type(stinger["owner"])
+                    rarity = stinger["owner"].rarity
+                    x = stinger["x"]
+                    y = stinger["y"]
+
+                kill_player(_StingerKiller)
+
+            king_stinger_projectiles.remove(stinger)
+
+
 def update_king_roses():
     # Move the king's roses; they hurt the flower and heal
     # ladybugs (including the king and minions).
@@ -1595,13 +1714,16 @@ def spawn_king_minions():
                 random.choice(KING_CHAT_LINES)
             )
 
-        # Kings fire their rose volley every 8 seconds.
+        # Kings fire their volley every 8 seconds.
         enemy.king_rose_timer = (
             getattr(enemy, "king_rose_timer", 0) + 1
         )
         if enemy.king_rose_timer >= 480:
             enemy.king_rose_timer = 0
-            fire_king_rose_volley(enemy)
+            if type(enemy).__name__ == "Bee":
+                fire_king_stinger_volley(enemy)
+            else:
+                fire_king_rose_volley(enemy)
 
         if enemy.king_minion_timer < 180:
             continue
@@ -3352,6 +3474,13 @@ class Bee:
         )
         self.angry = False
 
+        # King / minion flags (set by the /king command)
+        self.is_king = False
+        self.is_minion = False
+        self.king_minion_timer = 0
+        self.king_chat_timer = 0
+        self.king_rose_timer = 0
+
     def turn_to(self, target, speed):
 
         difference = (target - self.angle + 180) % 360 - 180
@@ -3436,6 +3565,14 @@ class Bee:
 
         self.time += 1
 
+        # ---------------- KING AI ----------------
+        # The bee king hunts the flower like the ladybug king: same
+        # chase range and speed, always aggro while king.
+
+        if getattr(self, "is_king", False):
+
+            if king_chase_or_guard(self):
+                return
 
         # ---------------- CHECK PLAYER ----------------
 
@@ -3733,6 +3870,51 @@ class Bee:
         bee = pygame.transform.rotate(bee, -self.angle)
         screen.blit(bee, bee.get_rect(center=(int(sx), int(sy))))
 
+        # ---------------- KING CROWN ----------------
+
+        if getattr(self, "is_king", False):
+
+            crown_y = int(sy - self.radius - 18)
+            crown_w = int(self.radius * 1.2)
+            crown_h = int(self.radius * 0.6)
+            crown_left = int(sx - crown_w / 2)
+            crown_right = int(sx + crown_w / 2)
+
+            crown_points = [
+                (crown_left, crown_y + crown_h),
+                (crown_left, crown_y + crown_h * 0.4),
+                (
+                    crown_left + crown_w * 0.25,
+                    crown_y + crown_h * 0.4
+                ),
+                (
+                    int(sx - crown_w * 0.15),
+                    crown_y
+                ),
+                (
+                    int(sx + crown_w * 0.15),
+                    crown_y + crown_h * 0.4
+                ),
+                (
+                    crown_right - crown_w * 0.25,
+                    crown_y + crown_h * 0.4
+                ),
+                (crown_right, crown_y + crown_h * 0.4),
+                (crown_right, crown_y + crown_h)
+            ]
+
+            pygame.draw.polygon(
+                screen,
+                flash_color((255, 200, 0), self.flash_timer),
+                crown_points
+            )
+            pygame.draw.polygon(
+                screen,
+                flash_color((160, 110, 0), self.flash_timer),
+                crown_points,
+                2
+            )
+
         # ---------------- RARITY TEXT ----------------
 
         if not getattr(self, "hide_rarity_label", False):
@@ -3742,6 +3924,7 @@ class Bee:
                 int(sx),
                 int(sy + self.radius + 15)
             )
+
 # ---------------- SPIDER ----------------
 
 class Spider:
@@ -15570,6 +15753,47 @@ while running:
 
             worker_ant.draw()
 
+        # ---------------- KING STINGERS ----------------
+
+        for stinger in king_stinger_projectiles:
+
+            stinger_x = stinger["x"] - camera_x
+            stinger_y = stinger["y"] - camera_y
+
+            if (
+                -50 <= stinger_x <= WIDTH + 50
+                and -50 <= stinger_y <= HEIGHT + 50
+            ):
+                # Dark triangle pointing along its flight angle,
+                # like a stinger petal.
+                stinger_r = stinger.get("radius", 8)
+                stinger_rad = math.radians(stinger["angle"])
+                tip_x = (
+                    stinger_x
+                    + math.cos(stinger_rad) * stinger_r * 2
+                )
+                tip_y = (
+                    stinger_y
+                    + math.sin(stinger_rad) * stinger_r * 2
+                )
+                side_x = math.cos(stinger_rad + math.pi / 2)
+                side_y = math.sin(stinger_rad + math.pi / 2)
+                pygame.draw.polygon(
+                    screen,
+                    (50, 50, 55),
+                    [
+                        (tip_x, tip_y),
+                        (
+                            stinger_x + side_x * stinger_r,
+                            stinger_y + side_y * stinger_r
+                        ),
+                        (
+                            stinger_x - side_x * stinger_r,
+                            stinger_y - side_y * stinger_r
+                        )
+                    ]
+                )
+
         # ---------------- KING ROSES ----------------
 
         for rose in king_rose_projectiles:
@@ -16197,7 +16421,8 @@ while running:
 
                                 hit = True
 
-                        # Petals can also destroy the king's roses.
+                        # Petals can also destroy the king's roses
+                        # and the bee king's stingers.
                         for rose in king_rose_projectiles[:]:
                             rose_d = distance(
                                 petal_world_x,
@@ -16212,6 +16437,22 @@ while running:
                                 rose["hp"] -= damage
                                 if rose["hp"] <= 0:
                                     king_rose_projectiles.remove(rose)
+                                hit = True
+
+                        for stinger in king_stinger_projectiles[:]:
+                            stinger_d = distance(
+                                petal_world_x,
+                                petal_world_y,
+                                stinger["x"],
+                                stinger["y"]
+                            )
+                            if stinger_d < (
+                                petal_range
+                                + stinger.get("radius", 8)
+                            ):
+                                stinger["hp"] -= damage
+                                if stinger["hp"] <= 0:
+                                    king_stinger_projectiles.remove(stinger)
                                 hit = True
 
                         if hit:
@@ -16479,6 +16720,7 @@ while running:
 
         spawn_king_minions()
         update_king_roses()
+        update_king_stingers()
 
         for i in range(PETAL_SLOTS):
 
