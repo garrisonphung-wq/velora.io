@@ -1272,14 +1272,15 @@ def minion_ai(minion):
             + orbit_slot * (2 * math.pi / 10)
         )
 
-        # Blend the minion's current angle toward the moving
-        # orbit slot so they converge smoothly, then march along.
-        angle_diff = (
-            (orbit_angle - cur_angle + math.pi)
+        # Always march FORWARD around the ring. When the minion is
+        # behind its slot it speeds up to catch it; when ahead it
+        # crawls, so it never walks backward.
+        angle_behind = (
+            (orbit_angle - cur_angle)
             % (2 * math.pi)
-            - math.pi
         )
-        new_angle = cur_angle + angle_diff * 0.15
+        angle_step = 0.02 + min(angle_behind, 1.5) * 0.03
+        new_angle = cur_angle + angle_step
 
         target_x = (
             king.x
