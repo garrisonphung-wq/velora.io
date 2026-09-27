@@ -1117,11 +1117,29 @@ def dev_heal_user(target_name, amount, full=False):
 # Kings: one king per mob type (biome regions come later).
 kings = {}
 
+# Lines a king posts in chat while it is alive.
+KING_CHAT_LINES = [
+    "you dare enter my land?",
+    "my minions will crush you!",
+    "i am the king of this biome!",
+    "kneel before your king!",
+    "you will make a fine snack!",
+    "no one defeats the king!",
+]
+
+def king_say(mob_name, message):
+    # A king posts a chat message.
+    chat_messages.append(
+        (f"King {mob_name}", message, time.time())
+    )
+
 def cleanup_king(enemy):
-    # Free the king slot when a king dies.
+    # Free the king slot when a king dies, and announce it in chat.
     if getattr(enemy, "is_king", False):
-        kings.pop(type(enemy).__name__, None)
+        mob_name = type(enemy).__name__
+        kings.pop(mob_name, None)
         enemy.is_king = False
+        king_say(mob_name, "i'll be back...")
 
 
 def dev_make_king(enemy):
@@ -1147,7 +1165,7 @@ def dev_make_king(enemy):
 
 
 def spawn_king_minions():
-    # Kings summon minions around them.
+    # Kings summon minions around them and talk in chat.
     if not all_enemies:
         return
 
@@ -1159,6 +1177,18 @@ def spawn_king_minions():
             continue
 
         enemy.king_minion_timer += 1
+
+        # Kings talk in chat every ~8 seconds.
+        enemy.king_chat_timer = (
+            getattr(enemy, "king_chat_timer", 0) + 1
+        )
+        if enemy.king_chat_timer >= 480:
+            enemy.king_chat_timer = 0
+            mob_name = type(enemy).__name__
+            king_say(
+                mob_name,
+                random.choice(KING_CHAT_LINES)
+            )
 
         if enemy.king_minion_timer < 180:
             continue
