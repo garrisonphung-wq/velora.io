@@ -15964,7 +15964,18 @@ while running:
                 words = cmd_line.split()
                 cmd_line_x = cmd_panel_rect.x + 16
                 first_line = True
-                for word in words:
+                for word_index, word in enumerate(words):
+                    # A bracketed [petal that is followed by slot]
+                    # belongs to [petal slot] (orange), not [petal].
+                    word_color = cmd_word_colors.get(
+                        word, (255, 255, 255)
+                    )
+                    if (
+                        word == "[petal"
+                        and word_index + 1 < len(words)
+                        and words[word_index + 1] == "slot]"
+                    ):
+                        word_color = (255, 165, 0)
                     prefix = (
                         f"{cmd_number}. "
                         if first_line
@@ -15973,7 +15984,7 @@ while running:
                     word_txt = cmd_list_font.render(
                         prefix + word,
                         True,
-                        cmd_word_colors.get(word, (255, 255, 255))
+                        word_color
                     )
                     space_width = (
                         cmd_list_font.size(" ")[0]
@@ -15992,7 +16003,7 @@ while running:
                         word_txt = cmd_list_font.render(
                             word,
                             True,
-                            cmd_word_colors.get(word, (255, 255, 255))
+                            word_color
                         )
                         space_width = cmd_list_font.size(" ")[0]
                     screen.blit(word_txt, (cmd_line_x, cmd_line_y))
