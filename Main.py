@@ -1123,6 +1123,16 @@ KING_CHASE_RANGE = 700
 KING_GUARD_ORBIT = 70
 KING_GUARD_SPEED = 3.2
 
+# King rose volley: 8 roses fired every 8 seconds, 45 degrees apart.
+KING_ROSE_VOLLEY_COUNT = 8
+KING_ROSE_SPEED = 7
+KING_ROSE_DAMAGE = 15
+KING_ROSE_HEAL = 10
+KING_ROSE_LIFETIME = 120
+
+# Flying king rose projectiles (damage the flower, heal ladybugs).
+king_rose_projectiles = []
+
 # Lines a king posts in chat while it is alive.
 KING_CHAT_LINES = [
     "you dare enter my land?",
@@ -1395,6 +1405,82 @@ def minion_ai(minion):
         minion.speed = 0
 
 
+def fire_king_rose_volley(king):
+    # The king fires 8 rose petals, one every 45 degrees.
+    for rose_index in range(KING_ROSE_VOLLEY_COUNT):
+        rose_angle = (
+            king.angle
+            + rose_index * 45
+        )
+        rad = math.radians(rose_angle)
+        king_rose_projectiles.append(
+            {
+                "x": king.x,
+                "y": king.y,
+                "angle": rose_angle,
+                "dx": math.cos(rad) * KING_ROSE_SPEED,
+                "dy": math.sin(rad) * KING_ROSE_SPEED,
+                "damage": KING_ROSE_DAMAGE,
+                "heal": KING_ROSE_HEAL,
+                "timer": KING_ROSE_LIFETIME,
+                "owner": king
+            }
+        )
+
+
+def update_king_roses():
+    # Move the king's roses; they hurt the flower and heal
+    # ladybugs (including the king and minions).
+    global player_hp
+
+    for rose in king_rose_projectiles[:]:
+
+        rose["x"] += rose["dx"]
+        rose["y"] += rose["dy"]
+        rose["timer"] -= 1
+
+        if rose["timer"] <= 0:
+            king_rose_projectiles.remove(rose)
+            continue
+
+        hit_something = False
+
+        # Roses damage the flower.
+        if (
+            not player_dead
+            and distance(
+                rose["x"],
+                rose["y"],
+                player_x,
+                player_y
+            ) <= PLAYER_RADIUS + 8
+        ):
+            player_hp -= rose["damage"]
+            hit_something = True
+
+        # Roses heal ladybugs.
+        if not hit_something:
+            for bug in ladybugs:
+                if not bug.alive:
+                    continue
+                if distance(
+                    rose["x"],
+                    rose["y"],
+                    bug.x,
+                    bug.y
+                ) <= bug.radius + 8:
+                    if bug.hp < bug.max_hp:
+                        bug.hp = min(
+                            bug.max_hp,
+                            bug.hp + rose["heal"]
+                        )
+                        hit_something = True
+                        break
+
+        if hit_something:
+            king_rose_projectiles.remove(rose)
+
+
 def spawn_king_minions():
     # Kings summon minions around them and talk in chat.
     if not all_enemies:
@@ -1420,6 +1506,14 @@ def spawn_king_minions():
                 mob_name,
                 random.choice(KING_CHAT_LINES)
             )
+
+        # Kings fire their rose volley every 8 seconds.
+        enemy.king_rose_timer = (
+            getattr(enemy, "king_rose_timer", 0) + 1
+        )
+        if enemy.king_rose_timer >= 480:
+            enemy.king_rose_timer = 0
+            fire_king_rose_volley(enemy)
 
         if enemy.king_minion_timer < 180:
             continue
@@ -15388,6 +15482,32 @@ while running:
 
             worker_ant.draw()
 
+        # ---------------- KING ROSES ----------------
+
+        for rose in king_rose_projectiles:
+
+            rose_x = rose["x"] - camera_x
+            rose_y = rose["y"] - camera_y
+
+            if (
+                -50 <= rose_x <= WIDTH + 50
+                and -50 <= rose_y <= HEIGHT + 50
+            ):
+                # Small pink rose petal with a darker outline.
+                pygame.draw.circle(
+                    screen,
+                    (255, 105, 180),
+                    (int(rose_x), int(rose_y)),
+                    8
+                )
+                pygame.draw.circle(
+                    screen,
+                    (200, 60, 130),
+                    (int(rose_x), int(rose_y)),
+                    8,
+                    2
+                )
+
         for pickup in PICKUP_LIST:
 
             collect_t = pickup.get("collecting")
@@ -16252,6 +16372,7 @@ while running:
                     )
 
         spawn_king_minions()
+        update_king_roses()
 
         for i in range(PETAL_SLOTS):
 
