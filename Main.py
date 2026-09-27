@@ -19008,7 +19008,7 @@ while running:
                 all_wrapped.append((username, name_surf, time_surf, lines))
 
             if all_wrapped:
-                total_msg_height = sum(len(lines) * line_height for _, _, lines in all_wrapped) + (len(all_wrapped) - 1) * 5
+                total_msg_height = sum(len(lines) * line_height for _, _, _, lines in all_wrapped) + (len(all_wrapped) - 1) * 5
                 visible_area_height = inner_rect_y - 5 - box_y
                 chat_max_scroll = max(0, total_msg_height - visible_area_height)
                 chat_scroll_target = max(0, min(chat_max_scroll, chat_scroll_target))
