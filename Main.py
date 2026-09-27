@@ -15363,6 +15363,24 @@ while running:
             )
             screen.blit(flower_name_text, flower_name_rect)
 
+            xp_text = flower_info_font.render(
+                "XP: " + format_number(int(flower_xp)) +
+                "/" +
+                format_number(int(flower_xp_needed)),
+                True,
+                (255, 255, 255)
+            )
+            level_text = flower_info_font.render(
+                "Level: " + str(flower_level),
+                True,
+                (255, 255, 255)
+            )
+            points_text = flower_info_font.render(
+                "Points: " + format_number(upgrade_points),
+                True,
+                (255, 255, 0)
+            )
+
             flower_xp_rect = xp_text.get_rect(
                 midtop=(
                     player_center_x,
