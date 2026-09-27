@@ -12533,6 +12533,7 @@ while running:
                                         "/kick [user], /give_points [user] [amount], "
                                         "/tp [user], /announce [message]"
                                     )
+                                    error_message_timer = 600
                                 elif cmd == "/me":
                                     # /me [action] - roleplay action in chat
                                     args = parts[1:]
