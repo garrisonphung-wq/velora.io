@@ -15948,20 +15948,62 @@ while running:
                 "/empty [petal slot]",
                 "/empty_all"
             ]
-            for cmd_line_index, cmd_line in enumerate(cmd_lines):
-                cmd_line_txt = cmd_list_font.render(
-                    cmd_line,
-                    True,
-                    (255, 255, 255)
-                )
-                screen.blit(
-                    cmd_line_txt,
-                    (
-                        cmd_panel_rect.x + 16,
-                        cmd_panel_rect.y + 44
-                        + cmd_line_index * 26
+            cmd_max_width = cmd_panel_rect.width - 48
+            cmd_line_y = cmd_panel_rect.y + 44
+            for cmd_number, cmd_line in enumerate(cmd_lines, start=1):
+                # Wrap the command text into lines that fit the panel.
+                words = cmd_line.split()
+                current_line = ""
+                first_line = True
+                for word in words:
+                    test_line = (
+                        word
+                        if not current_line
+                        else current_line + " " + word
                     )
-                )
+                    if cmd_list_font.size(test_line)[0] <= cmd_max_width:
+                        current_line = test_line
+                    else:
+                        prefix = (
+                            f"{cmd_number}. "
+                            if first_line
+                            else "   "
+                        )
+                        wrapped_txt = cmd_list_font.render(
+                            prefix + current_line,
+                            True,
+                            (255, 255, 255)
+                        )
+                        screen.blit(
+                            wrapped_txt,
+                            (
+                                cmd_panel_rect.x + 16,
+                                cmd_line_y
+                            )
+                        )
+                        cmd_line_y += 24
+                        current_line = word
+                        first_line = False
+                if current_line:
+                    prefix = (
+                        f"{cmd_number}. "
+                        if first_line
+                        else "   "
+                    )
+                    wrapped_txt = cmd_list_font.render(
+                        prefix + current_line,
+                        True,
+                        (255, 255, 255)
+                    )
+                    screen.blit(
+                        wrapped_txt,
+                        (
+                            cmd_panel_rect.x + 16,
+                            cmd_line_y
+                        )
+                    )
+                    cmd_line_y += 24
+                cmd_line_y += 8
 
         if settings_panel_rect.y > -settings_panel_rect.height:
             pygame.draw.rect(
