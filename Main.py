@@ -1054,6 +1054,25 @@ def dev_tp_user(target_name):
     return True
 
 
+def dev_self_heal(amount):
+    # Heal yourself by the given amount (up to max HP).
+    global player_hp
+
+    if amount < 1:
+        show_error("Amount must be at least 1")
+        return False
+    if player_dead:
+        show_error("You can't heal while dead")
+        return False
+    healed = min(amount, PLAYER_MAX_HP - player_hp)
+    if healed <= 0:
+        show_error("You are already at full HP")
+        return False
+    player_hp += healed
+    show_error(f"Healed {healed} HP")
+    return True
+
+
 def dev_ban_user(target_name):
     # Delete a user's account and saved player data.
     # Accounts allowed to ban:
@@ -12713,6 +12732,20 @@ while running:
                                         show_error("Usage: /announce [message]")
                                     else:
                                         show_announcement(" ".join(args))
+                                elif cmd == "/self_heal" and acc_name_text.lower() == "devguard":
+                                    # /self_heal [amount]
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /self_heal [amount]")
+                                    else:
+                                        try:
+                                            amount = int(args[0])
+                                        except ValueError:
+                                            amount = None
+                                        if amount is None:
+                                            show_error("Amount must be a number")
+                                        else:
+                                            dev_self_heal(amount)
                                 elif cmd in (
                                     "/equip",
                                     "/all_equip",
@@ -12727,6 +12760,7 @@ while running:
                                     "/give_points",
                                     "/tp",
                                     "/announce",
+                                    "/self_heal",
                                     "/spawn_enemy"
                                 ) and acc_name_text.lower() != "devguard":
                                     show_error(
@@ -16418,6 +16452,7 @@ while running:
                 "/give_points [user] [amount]",
                 "/tp [user]",
                 "/announce [message]",
+                "/self_heal [amount]",
                 "/me [action]",
                 "/stats"
             ]
