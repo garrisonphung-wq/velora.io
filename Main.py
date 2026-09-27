@@ -1251,25 +1251,6 @@ def minion_ai(minion):
 
     # Out of range (or no king): return to the king and orbit it.
     if has_king:
-        angle_to_king = math.degrees(
-            math.atan2(
-                king.y - minion.y,
-                king.x - minion.x
-            )
-        )
-        minion.turn_to(angle_to_king, 6)
-        rad = math.radians(minion.angle)
-        move_with_collision(
-            minion,
-            math.cos(rad) * KING_GUARD_SPEED * 0.15,
-            math.sin(rad) * KING_GUARD_SPEED * 0.15
-        )
-
-        orbit_slot = getattr(minion, "king_orbit_slot", 0)
-        orbit_angle = math.radians(
-            (time.time() * 40)
-            + orbit_slot * (360 / 6)
-        )
         # The orbit ring scales with the king's size, so bigger
         # kings get a wider guard ring. The +40 gap keeps minions
         # from ever touching the king's body.
@@ -1277,23 +1258,53 @@ def minion_ai(minion):
             KING_GUARD_ORBIT,
             int(king.radius * 1.6) + 40
         )
+
+        # Current angle of the minion around the king.
+        cur_angle = math.atan2(
+            minion.y - king.y,
+            minion.x - king.x
+        )
+
+        # Slide around the ring over time (guard orbit).
+        orbit_slot = getattr(minion, "king_orbit_slot", 0)
+        orbit_angle = (
+            time.time() * 1.2
+            + orbit_slot * (2 * math.pi / 6)
+        )
+
+        # Blend the minion's current angle toward the moving
+        # orbit slot so they converge smoothly, then march along.
+        angle_diff = (
+            (orbit_angle - cur_angle + math.pi)
+            % (2 * math.pi)
+            - math.pi
+        )
+        new_angle = cur_angle + angle_diff * 0.15
+
         target_x = (
             king.x
-            + math.cos(orbit_angle) * king_orbit
+            + math.cos(new_angle) * king_orbit
         )
         target_y = (
             king.y
-            + math.sin(orbit_angle) * king_orbit
+            + math.sin(new_angle) * king_orbit
         )
+
+        # Move straight toward the ring point at a decent pace.
         dx = target_x - minion.x
         dy = target_y - minion.y
         length = math.sqrt(dx * dx + dy * dy)
-        if length > 4:
-            minion.x += dx / length * KING_GUARD_SPEED * 0.5
-            minion.y += dy / length * KING_GUARD_SPEED * 0.5
-        minion.angle = math.degrees(
-            math.atan2(dy, dx)
-        )
+        step = KING_GUARD_SPEED * 2.5
+        if length > step:
+            minion.x += dx / length * step
+            minion.y += dy / length * step
+        else:
+            minion.x = target_x
+            minion.y = target_y
+
+        # Face the direction of travel around the ring.
+        minion.angle = math.degrees(new_angle + math.pi / 2)
+        minion.speed = 0
 
 
 def spawn_king_minions():
