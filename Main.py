@@ -1173,7 +1173,7 @@ def spawn_king_minions():
             for e in ladybugs
             if getattr(e, "is_minion", False) and e.alive
         )
-        if alive_minions >= 6:
+        if alive_minions >= 5:
             continue
 
         minion = Ladybug()
