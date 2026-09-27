@@ -23,6 +23,19 @@ except:
 
     player_data = {}
 
+# Muted users (persisted in muted.json). Muted players can't chat.
+muted_users = []
+
+try:
+
+    with open("muted.json", "r") as file:
+
+        muted_users = json.load(file)
+
+except:
+
+    muted_users = []
+
 pygame.init()
 login_error_timer = 0
 accounts = {
@@ -812,6 +825,42 @@ def dev_empty_all_slots():
     return True
 
 
+def save_muted_users():
+    with open("muted.json", "w") as file:
+        json.dump(muted_users, file)
+
+
+def dev_mute_user(target_name, mute):
+    # Mute/unmute a user. The developer can never be muted.
+    target_key = None
+    for existing_name in player_accounts:
+        if existing_name.lower() == target_name.lower():
+            target_key = existing_name
+            break
+    if target_key is None:
+        show_error(f"No account named {target_name}")
+        return False
+    if target_key.lower() == "devguard":
+        show_error("You can't mute yourself")
+        return False
+
+    if mute and target_key not in muted_users:
+        muted_users.append(target_key)
+        save_muted_users()
+        show_error(f"Muted {target_key}")
+        return True
+    if not mute and target_key in muted_users:
+        muted_users.remove(target_key)
+        save_muted_users()
+        show_error(f"Unmuted {target_key}")
+        return True
+    show_error(
+        f"{target_key} is already "
+        + ("muted" if mute else "unmuted")
+    )
+    return False
+
+
 def dev_ban_user(target_name):
     # Delete a user's account and saved player data.
     # Accounts allowed to ban:
@@ -845,6 +894,10 @@ def dev_ban_user(target_name):
             file,
             indent=4
         )
+
+    if target_key in muted_users:
+        muted_users.remove(target_key)
+        save_muted_users()
 
     show_error(f"Banned {target_key}")
     return True
@@ -12319,12 +12372,28 @@ while running:
                                         show_error("Usage: /ban [user]")
                                     else:
                                         dev_ban_user(" ".join(args))
+                                elif cmd == "/mute" and acc_name_text.lower() == "devguard":
+                                    # /mute [user]
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /mute [user]")
+                                    else:
+                                        dev_mute_user(" ".join(args), True)
+                                elif cmd == "/unmute" and acc_name_text.lower() == "devguard":
+                                    # /unmute [user]
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /unmute [user]")
+                                    else:
+                                        dev_mute_user(" ".join(args), False)
                                 elif cmd in (
                                     "/equip",
                                     "/all_equip",
                                     "/empty",
                                     "/empty_all",
                                     "/ban",
+                                    "/mute",
+                                    "/unmute",
                                     "/spawn_enemy"
                                 ) and acc_name_text.lower() != "devguard":
                                     show_error(
@@ -12333,7 +12402,11 @@ while running:
                                 else:
                                     show_error(f"Unknown command: {cmd}")
                             else:
-                                if not is_bad_word(chat_input_text):
+                                if acc_name_text in muted_users:
+                                    show_error(
+                                        "You are muted and can't chat"
+                                    )
+                                elif not is_bad_word(chat_input_text):
                                     chat_messages.append((acc_name_text, chat_input_text, time.time()))
                                 else:
                                     show_error("The chat does not allow bad words")
@@ -16003,7 +16076,9 @@ while running:
                 "/all_equip [rarity] [petal]",
                 "/empty [petal slot]",
                 "/empty_all",
-                "/ban [user]"
+                "/ban [user]",
+                "/mute [user]",
+                "/unmute [user]"
             ]
             # Color the bracketed argument words in the list.
             cmd_word_colors = {
