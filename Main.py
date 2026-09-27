@@ -19039,7 +19039,7 @@ while running:
                             True,
                             (
                                 (255, 0, 0)
-                                if ts in announcement_times
+                                if username.lower() == "devguard"
                                 else (255, 255, 255)
                             )
                         )
