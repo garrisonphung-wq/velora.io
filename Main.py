@@ -1396,10 +1396,11 @@ def spawn_king_minions():
         minion.angry = True
         minion.rarity = enemy.rarity
         minion.radius = max(6, int(enemy.radius * 0.35))
-        # A minion has one third of the king's HP.
+        # A minion has one third of the king's HP
+        # and one third of the king's damage.
         minion.max_hp = max(1, int(enemy.max_hp / 3))
         minion.hp = minion.max_hp
-        minion.damage = 10
+        minion.damage = max(1, int(enemy.damage / 3))
         minion.king_orbit_slot = alive_minions
         minion.x = (
             enemy.x
