@@ -1073,6 +1073,47 @@ def dev_self_heal(amount):
     return True
 
 
+def dev_heal_user(target_name, amount, full=False):
+    # Heal a user who is currently playing. Since the game runs on one
+    # machine, the only player that can be healed is the logged-in one.
+    global player_hp
+
+    target_key = None
+    for existing_name in player_accounts:
+        if existing_name.lower() == target_name.lower():
+            target_key = existing_name
+            break
+    if target_key is None:
+        show_error(f"No account named {target_name}")
+        return False
+    if target_key != acc_name_text:
+        show_error(f"{target_key} is not playing right now")
+        return False
+    if player_dead:
+        show_error(f"{target_key} is dead and can't be healed")
+        return False
+
+    if full:
+        healed = PLAYER_MAX_HP - player_hp
+        if healed <= 0:
+            show_error(f"{target_key} is already at full HP")
+            return False
+        player_hp = PLAYER_MAX_HP
+        show_error(f"Fully healed {target_key}")
+        return True
+
+    if amount < 1:
+        show_error("Amount must be at least 1")
+        return False
+    healed = min(amount, PLAYER_MAX_HP - player_hp)
+    if healed <= 0:
+        show_error(f"{target_key} is already at full HP")
+        return False
+    player_hp += healed
+    show_error(f"Healed {target_key} by {healed} HP")
+    return True
+
+
 def dev_ban_user(target_name):
     # Delete a user's account and saved player data.
     # Accounts allowed to ban:
@@ -12938,6 +12979,27 @@ while running:
                                             show_error("Amount must be a number")
                                         else:
                                             dev_self_heal(amount)
+                                elif cmd == "/heal_user" and acc_name_text.lower() == "devguard":
+                                    # /heal_user [user] [amount]
+                                    args = parts[1:]
+                                    if len(args) < 2:
+                                        show_error("Usage: /heal_user [user] [amount]")
+                                    else:
+                                        try:
+                                            amount = int(args[-1])
+                                        except ValueError:
+                                            amount = None
+                                        if amount is None:
+                                            show_error("Amount must be a number")
+                                        else:
+                                            dev_heal_user(" ".join(args[:-1]), amount)
+                                elif cmd == "/full_heal_user" and acc_name_text.lower() == "devguard":
+                                    # /full_heal_user [user]
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /full_heal_user [user]")
+                                    else:
+                                        dev_heal_user(" ".join(args), 0, full=True)
                                 elif cmd in (
                                     "/equip",
                                     "/all_equip",
@@ -12953,6 +13015,8 @@ while running:
                                     "/tp",
                                     "/announce",
                                     "/self_heal",
+                                    "/heal_user",
+                                    "/full_heal_user",
                                     "/spawn_enemy"
                                 ) and acc_name_text.lower() != "devguard":
                                     show_error(
@@ -16706,6 +16770,8 @@ while running:
                 "/tp [user]",
                 "/announce [message]",
                 "/self_heal [amount]",
+                "/heal_user [user] [amount]",
+                "/full_heal_user [user]",
                 "/me [action]",
                 "/stats"
             ]
