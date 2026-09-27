@@ -12817,7 +12817,11 @@ while running:
 
                             if d <= enemy.radius:
 
-                                enemy.alive = False
+                                # Shrink the enemy away instead of
+                                # deleting it instantly.
+                                enemy.dying = True
+                                enemy.shrink_scale = 1.0
+                                enemy.full_radius = enemy.radius
 
                                 break
 
@@ -15493,6 +15497,25 @@ while running:
             + baby_ants
             + soldier_ants
         )
+
+        # ---------------- ENEMY DEATH SHRINK ----------------
+        # D-key deleted enemies shrink until they vanish.
+
+        for enemy in all_enemies:
+
+            if getattr(enemy, "dying", False):
+
+                enemy.shrink_scale -= 0.08
+
+                if enemy.shrink_scale <= 0:
+
+                    enemy.shrink_scale = 0
+                    enemy.dying = False
+                    enemy.alive = False
+                else:
+                    enemy.radius = (
+                        enemy.full_radius * enemy.shrink_scale
+                    )
 
         for i in range(PETAL_SLOTS):
 
