@@ -5226,8 +5226,10 @@ class WorkerAnt:
         self.rarity = "Common"
 
         # Stats
-        # Worker ants are harmless: they carry food, they don't fight.
+        # Worker ants are harmless to the flower, but they still
+        # defend themselves by damaging petals that touch them.
         self.damage = 0
+        self.petal_damage = 30
         self.max_hp = (
             50 *
             MOB_HP_MULTIPLIER[self.rarity]
@@ -15350,7 +15352,13 @@ while running:
 
                                 if d < petal_range + enemy.radius:
                                     if enemy.attack_cooldown == 0:
-                                        light_hp[i][li] -= enemy.damage
+                                        light_hp[i][li] -= (
+                                            getattr(
+                                                enemy,
+                                                "petal_damage",
+                                                enemy.damage
+                                            )
+                                        )
                                         if light_hp[i][li] <= 0:
                                             light_alive[i][li] = False
                                             light_cooldowns[i][li] = PETAL_RELOAD["Light"]
@@ -15417,7 +15425,15 @@ while running:
                                 # enemy damages petal
                                 if enemy.attack_cooldown == 0:
 
-                                    petal_hp[i] -= enemy.damage
+                                    # Worker ants (and similar harmless
+                                    # mobs) can still damage petals.
+                                    petal_hp[i] -= (
+                                        getattr(
+                                            enemy,
+                                            "petal_damage",
+                                            enemy.damage
+                                        )
+                                    )
                                     petal_flash_timers[i] = 4
 
                                     if petal_hp[i] <= 0:
