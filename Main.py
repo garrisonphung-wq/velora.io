@@ -1247,6 +1247,30 @@ def minion_ai(minion):
             math.cos(rad) * minion.speed * 0.15,
             math.sin(rad) * minion.speed * 0.15
         )
+
+        # Bounce off other minions when they bump while chasing.
+        for other in ladybugs:
+            if other is minion:
+                continue
+            if not getattr(other, "is_minion", False):
+                continue
+            if not other.alive:
+                continue
+            d = distance(
+                minion.x,
+                minion.y,
+                other.x,
+                other.y
+            )
+            min_dist = minion.radius + other.radius
+            if 0 < d < min_dist:
+                overlap = (min_dist - d) / 2
+                minion.x += (
+                    (minion.x - other.x) / d * overlap * 2
+                )
+                minion.y += (
+                    (minion.y - other.y) / d * overlap * 2
+                )
         return
 
     # Out of range (or no king): return to the king and orbit it.
