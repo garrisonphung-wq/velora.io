@@ -760,6 +760,34 @@ def dev_equip_all_petal(rarity, petal_name):
     return True
 
 
+def dev_empty_slot(slot_index):
+    # Empty a single petal slot (1-based) so it does not spawn its petal
+    if not 1 <= slot_index <= len(petal_slots):
+        show_error(f"Invalid petal slot. Valid: 1-{len(petal_slots)}")
+        return False
+
+    i = slot_index - 1
+    slot = petal_slots[i]
+    slot["filled"] = False
+    slot["petal"] = "Basic"
+    slot["rarity"] = "Common"
+
+    resize_petal_lists()
+
+    petal_alive[i] = False
+    petal_max_hp[i] = 0
+    petal_hp[i] = 0
+    petal_respawn_timer[i] = 0
+    petal_respawn_text_timer[i] = 0
+    petal_cooldowns[i] = 0
+    light_hp[i] = []
+    light_cooldowns[i] = []
+    light_alive[i] = []
+
+    save_player()
+    return True
+
+
 def pad_petal_slots():
     while len(petal_slots) < PETAL_SLOTS:
         petal_slots.append({
@@ -12163,6 +12191,20 @@ while running:
                                             show_error(f"Invalid petal type. Valid: {', '.join(PETAL_HP.keys())}")
                                         elif dev_equip_all_petal(rarity, petal_name):
                                             show_error(f"Equipped {rarity.capitalize()} {petal_name} in all slots")
+                                elif cmd == "/empty" and acc_name_text.lower() == "devguard":
+                                    # /empty [petal slot]
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /empty [petal slot]")
+                                    else:
+                                        try:
+                                            slot_index = int(args[0])
+                                        except ValueError:
+                                            slot_index = None
+                                        if slot_index is None:
+                                            show_error("Petal slot must be a number")
+                                        elif dev_empty_slot(slot_index):
+                                            show_error(f"Emptied slot {slot_index}")
                                 else:
                                     show_error(f"Unknown command: {cmd}")
                             else:
