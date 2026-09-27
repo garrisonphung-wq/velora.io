@@ -18907,6 +18907,7 @@ while running:
             error_box_height = (
                 sum(surf.get_height() for surf in error_text_surfs)
                 + 10
+                + (len(error_text_surfs) - 1) * 10
             )
             error_box_rect = pygame.Rect(
                 WIDTH//2 - error_box_width//2,
@@ -18937,7 +18938,7 @@ while running:
                         error_text_y
                     )
                 )
-                error_text_y += error_text.get_height()
+                error_text_y += error_text.get_height() + 10
 
         # ---------------- UPDATE SCREEN ----------------
 
