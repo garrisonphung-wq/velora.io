@@ -963,14 +963,10 @@ def dev_take_petal(target_name, rarity, petal_name, amount):
 
 
 def show_announcement(message):
-    # Show a big announcement on screen for 5 seconds.
-    global spawn_message
-    global spawn_message_timer
-    global spawn_message_alpha
-
-    spawn_message = message
-    spawn_message_timer = 300
-    spawn_message_alpha = 255
+    # Post the announcement into chat, rendered in red.
+    chat_messages.append(
+        ("Announcement", message, time.time())
+    )
 
 
 def dev_kick_user(target_name):
@@ -19009,7 +19005,7 @@ while running:
                 prefix_w = name_surf.get_width() + time_surf.get_width()
                 max_msg_width = inner_rect_w - 10 - prefix_w
                 lines = wrap_text(msg_font, msg, max_msg_width)
-                all_wrapped.append((name_surf, time_surf, lines))
+                all_wrapped.append((username, name_surf, time_surf, lines))
 
             if all_wrapped:
                 total_msg_height = sum(len(lines) * line_height for _, _, lines in all_wrapped) + (len(all_wrapped) - 1) * 5
@@ -19022,7 +19018,7 @@ while running:
                 running_y = inner_rect_y - 5
                 positions = []
                 for msg_data in reversed(all_wrapped):
-                    name_surf, time_surf, lines = msg_data
+                    username, name_surf, time_surf, lines = msg_data
                     h = len(lines) * line_height
                     running_y -= h
                     positions.append((name_surf, time_surf, lines, running_y + scroll_pix))
@@ -19035,7 +19031,15 @@ while running:
                     msg_x = inner_rect_x + 5 + name_surf.get_width() + time_surf.get_width() - box_x
                     for j, line in enumerate(lines):
                         line_y = msg_y + j * line_height
-                        line_surf = msg_font.render(line, True, (255, 255, 255))
+                        line_surf = msg_font.render(
+                            line,
+                            True,
+                            (
+                                (255, 0, 0)
+                                if username == "Announcement"
+                                else (255, 255, 255)
+                            )
+                        )
                         chat_box_surf.blit(
                             line_surf,
                             (msg_x, line_y - box_y)
