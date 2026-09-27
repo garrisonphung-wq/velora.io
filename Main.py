@@ -831,7 +831,7 @@ def dev_ban_user(target_name):
         show_error(f"No account named {target_name}")
         return False
     if target_key.lower() in banned_protected:
-        show_error("You can't ban the developer")
+        show_error("You can't ban yourself")
         return False
 
     del player_accounts[target_key]
@@ -16002,7 +16002,8 @@ while running:
                 "/equip [rarity] [petal] [petal slot]",
                 "/all_equip [rarity] [petal]",
                 "/empty [petal slot]",
-                "/empty_all"
+                "/empty_all",
+                "/ban [user]"
             ]
             # Color the bracketed argument words in the list.
             cmd_word_colors = {
