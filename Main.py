@@ -16436,6 +16436,7 @@ while running:
                 "slot]": (255, 165, 0),
                 "[user]": (128, 255, 0),
                 "[message]": (0, 255, 255),
+                "[action]": (255, 0, 255),
             }
             cmd_max_width = cmd_panel_rect.width - 48
             cmd_line_y = cmd_panel_rect.y + 44
