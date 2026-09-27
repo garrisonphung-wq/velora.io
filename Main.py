@@ -1299,7 +1299,10 @@ def minion_ai(minion):
 
         # Slow down when another minion is close ahead on the ring.
         # The closer the minion in front, the bigger the slowdown.
+        # Overlapping minions bounce apart from each other.
         separation = minion.radius * 2.2
+        bounce_x = 0.0
+        bounce_y = 0.0
         for other in ladybugs:
             if other is minion:
                 continue
@@ -1318,7 +1321,16 @@ def minion_ai(minion):
                 # separation distance.
                 closeness = 1.0 - (d / separation)
                 step *= 1.0 - closeness * 0.9
-                break
+                # Bounce away from the minion we bumped into.
+                min_dist = minion.radius + other.radius
+                if d < min_dist:
+                    overlap = (min_dist - d) / 2
+                    bounce_x += (
+                        (minion.x - other.x) / d * overlap
+                    )
+                    bounce_y += (
+                        (minion.y - other.y) / d * overlap
+                    )
 
         if length > step:
             minion.x += dx / length * step
@@ -1326,6 +1338,11 @@ def minion_ai(minion):
         else:
             minion.x = target_x
             minion.y = target_y
+
+        # Apply the bounce push away from bumped minions.
+        if bounce_x or bounce_y:
+            minion.x += bounce_x * 2
+            minion.y += bounce_y * 2
 
         # Face the direction of travel around the ring.
         minion.angle = math.degrees(new_angle + math.pi / 2)
