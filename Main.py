@@ -1492,7 +1492,13 @@ def update_king_roses():
                 player_y
             ) <= PLAYER_RADIUS + rose_hit_radius
         ):
-            player_hp -= rose["damage"]
+            player_hp -= (
+                rose["damage"]
+                * MOB_DAMAGE_MULTIPLIER.get(
+                    rose["owner"].rarity,
+                    1.0
+                )
+            )
             hit_something = True
 
         # Roses heal ladybugs.
