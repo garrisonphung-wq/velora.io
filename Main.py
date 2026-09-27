@@ -2006,7 +2006,8 @@ mob_gallery_names = (
     "Rock",
     "Hornet",
     "Baby Ant",
-    "Soldier Ant"
+    "Soldier Ant",
+    "Worker Ant"
 )
 mob_gallery_scroll_target = 0
 mob_gallery_scroll_position = 0.0
@@ -6914,6 +6915,10 @@ GALLERY_MOB_DESCRIPTIONS = {
     "Soldier Ant": (
         "The nest guardian. Heavy jaws and fast legs make this "
         "armored ant a real threat up close."
+    ),
+    "Worker Ant": (
+        "The nest's hauler. It carries food back home and calls "
+        "soldier ants for help when it gets attacked."
     )
 }
 
@@ -15114,7 +15119,8 @@ while running:
                         rocks +
                         hornets +
                         baby_ants +
-                        soldier_ants
+                        soldier_ants +
+                        worker_ants
                     )
 
                     hit = False
@@ -15178,7 +15184,8 @@ while running:
                             rocks +
                             hornets +
                             baby_ants +
-                            soldier_ants
+                            soldier_ants +
+                            worker_ants
                         )
 
                         damage = get_petal_damage(
@@ -15496,6 +15503,7 @@ while running:
             + hornets
             + baby_ants
             + soldier_ants
+            + worker_ants
         )
 
         # ---------------- ENEMY DEATH SHRINK ----------------
