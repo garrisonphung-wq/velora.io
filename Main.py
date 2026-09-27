@@ -15057,6 +15057,9 @@ while running:
                             dy * rarity_push
                         )
 
+        player_center_x = WIDTH // 2
+        player_center_y = HEIGHT // 2
+
         pygame.draw.circle(
             screen,
             (225,225,0),
