@@ -812,6 +812,44 @@ def dev_empty_all_slots():
     return True
 
 
+def dev_ban_user(target_name):
+    # Delete a user's account and saved player data.
+    # Accounts allowed to ban:
+    ban_allowed = {"devguard"}
+    # The developer can never be banned.
+    banned_protected = {"devguard"}
+
+    if acc_name_text.lower() not in ban_allowed:
+        show_error("Unknown command: /ban")
+        return False
+    target_key = None
+    for existing_name in player_accounts:
+        if existing_name.lower() == target_name.lower():
+            target_key = existing_name
+            break
+    if target_key is None:
+        show_error(f"No account named {target_name}")
+        return False
+    if target_key.lower() in banned_protected:
+        show_error("You can't ban the developer")
+        return False
+
+    del player_accounts[target_key]
+    with open("accounts.json", "w") as file:
+        json.dump(player_accounts, file)
+
+    player_data.pop(target_key, None)
+    with open("players.json", "w") as file:
+        json.dump(
+            player_data,
+            file,
+            indent=4
+        )
+
+    show_error(f"Banned {target_key}")
+    return True
+
+
 def pad_petal_slots():
     while len(petal_slots) < PETAL_SLOTS:
         petal_slots.append({
@@ -12274,6 +12312,13 @@ while running:
                                     # /empty_all
                                     dev_empty_all_slots()
                                     show_error("Emptied all petal slots")
+                                elif cmd == "/ban" and acc_name_text.lower() == "devguard":
+                                    # /ban [user]
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /ban [user]")
+                                    else:
+                                        dev_ban_user(" ".join(args))
                                 else:
                                     show_error(f"Unknown command: {cmd}")
                             else:
