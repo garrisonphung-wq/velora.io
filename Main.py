@@ -1619,6 +1619,22 @@ cmd_button_rect = pygame.Rect(
     settings_button_rect.height
 )
 
+# ---------------- CMD PANEL ----------------
+
+cmd_panel_open = False
+# Sits to the right of the flower hp upgrade button, slides down from
+# offscreen above the top edge and stops close to the bottom edge.
+cmd_panel_target_rect = pygame.Rect(
+    hp_button_rect.right + 10,
+    10,
+    280,
+    max(200, HEIGHT - 40)
+)
+cmd_panel_rect = cmd_panel_target_rect.copy()
+# Start fully offscreen above the top edge.
+cmd_panel_rect.y = -cmd_panel_rect.height - 20
+cmd_panel_slide_velocity = 0.0
+
 # ---------------- SETTINGS PANEL ----------------
 
 settings_panel_open = False
@@ -1770,12 +1786,14 @@ def open_only_panel(panel_name):
     global craft_open
     global inventory_open
     global hp_menu_open
+    global cmd_panel_open
 
     new_button_panel_open = panel_name == "gallery"
     settings_panel_open = panel_name == "settings"
     craft_open = panel_name == "craft"
     inventory_open = panel_name == "inventory"
     hp_menu_open = panel_name == "hp"
+    cmd_panel_open = panel_name == "cmd"
 
 
 inventory_panel_rect = pygame.Rect(
@@ -11698,6 +11716,10 @@ while running:
                     and settings_panel_rect.collidepoint(event.pos)
                 )
                 or (
+                    cmd_panel_open
+                    and cmd_panel_rect.collidepoint(event.pos)
+                )
+                or (
                     craft_open
                     and craft_panel_rect.collidepoint(event.pos)
                 )
@@ -11735,6 +11757,16 @@ while running:
             ):
                 open_only_panel(
                     None if settings_panel_open else "settings"
+                )
+
+            if (
+                cmd_button_rect.collidepoint(
+                    event.pos
+                )
+                and not ui_click_blocked
+            ):
+                open_only_panel(
+                    None if cmd_panel_open else "cmd"
                 )
 
             # Grab the mob hp bar size slider (or jump it to the
@@ -15765,6 +15797,35 @@ while running:
             settings_panel_rect.y = settings_target_y
             settings_panel_slide_velocity = 0.0
 
+        # ---------------- CMD PANEL SLIDE ----------------
+
+        # Slides down from offscreen above the top edge and eases into
+        # place, mirroring the settings panel behavior.
+        cmd_panel_target_y = (
+            cmd_panel_target_rect.y
+            if cmd_panel_open
+            else -cmd_panel_rect.height - 20
+        )
+        cmd_panel_slide_velocity += (
+            cmd_panel_target_y - cmd_panel_rect.y
+        ) * 0.045
+        cmd_panel_slide_velocity *= 0.78
+        cmd_panel_rect.y += cmd_panel_slide_velocity
+        # Once nearly closed, rest exactly offscreen so no outline
+        # sliver stays visible.
+        if not cmd_panel_open and (
+            cmd_panel_rect.y
+            <= -cmd_panel_rect.height + 1
+        ):
+            cmd_panel_rect.y = -cmd_panel_rect.height - 20
+            cmd_panel_slide_velocity = 0.0
+        if (
+            abs(cmd_panel_target_y - cmd_panel_rect.y) < 0.5
+            and abs(cmd_panel_slide_velocity) < 0.5
+        ):
+            cmd_panel_rect.y = cmd_panel_target_y
+            cmd_panel_slide_velocity = 0.0
+
         # The switch knob slides between the ends with acceleration.
         switch_target_progress = (
             1.0 if settings_switch_on else 0.0
@@ -15834,6 +15895,33 @@ while running:
                 switch3_target_progress
             )
             settings_switch3_slide_velocity = 0.0
+
+        if cmd_panel_rect.y > -cmd_panel_rect.height:
+            pygame.draw.rect(
+                screen,
+                (128, 0, 196),
+                cmd_panel_rect,
+                border_radius=10
+            )
+            pygame.draw.rect(
+                screen,
+                (70, 0, 110),
+                cmd_panel_rect,
+                4,
+                border_radius=10
+            )
+            cmd_title_txt = cmd_button_font.render(
+                "/cmd commands",
+                True,
+                (255, 255, 255)
+            )
+            screen.blit(
+                cmd_title_txt,
+                (
+                    cmd_panel_rect.x + 16,
+                    cmd_panel_rect.y + 12
+                )
+            )
 
         if settings_panel_rect.y > -settings_panel_rect.height:
             pygame.draw.rect(
