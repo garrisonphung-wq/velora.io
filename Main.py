@@ -1191,7 +1191,7 @@ def king_chase_or_guard(enemy):
             )
         )
         enemy.turn_to(target_angle, 4)
-        enemy.speed = enemy.max_speed * 1.8
+        enemy.speed = enemy.max_speed * 3.1
         rad = math.radians(enemy.angle)
         move_with_collision(
             enemy,
@@ -1240,8 +1240,8 @@ def update_king_minions():
                 )
             )
             minion.turn_to(target_angle, 6)
-            # Minions chase twice as fast as their king.
-            minion.speed = king.max_speed * 2
+            # Minions chase three times as fast as their king's base.
+            minion.speed = king.max_speed * 3
             rad = math.radians(minion.angle)
             move_with_collision(
                 minion,
