@@ -18993,7 +18993,12 @@ while running:
             # Pre-calculate wrapped lines and heights for ALL messages for pixel scrolling
             all_wrapped = []
             for username, msg, ts in chat_messages:
-                name_surf = msg_font.render(f"[{username}]", True, (255, 255, 0))
+                is_dev = username.lower() == "devguard"
+                name_surf = msg_font.render(
+                    f"[{username}]",
+                    True,
+                    (255, 0, 0) if is_dev else (255, 255, 0)
+                )
                 elapsed = format_elapsed(time.time() - ts)
                 elapsed_sec = time.time() - ts
                 if elapsed_sec < 300:
@@ -19004,6 +19009,8 @@ while running:
                     time_color = (255, 0, 0)
                 else:
                     time_color = (64, 64, 64)
+                if is_dev:
+                    time_color = (255, 0, 0)
                 time_surf = msg_font.render(f" [{elapsed}]: ", True, time_color)
                 prefix_w = name_surf.get_width() + time_surf.get_width()
                 max_msg_width = inner_rect_w - 10 - prefix_w
@@ -19034,15 +19041,7 @@ while running:
                     msg_x = inner_rect_x + 5 + name_surf.get_width() + time_surf.get_width() - box_x
                     for j, line in enumerate(lines):
                         line_y = msg_y + j * line_height
-                        line_surf = msg_font.render(
-                            line,
-                            True,
-                            (
-                                (255, 0, 0)
-                                if username.lower() == "devguard"
-                                else (255, 255, 255)
-                            )
-                        )
+                        line_surf = msg_font.render(line, True, (255, 255, 255))
                         chat_box_surf.blit(
                             line_surf,
                             (msg_x, line_y - box_y)
