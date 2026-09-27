@@ -714,6 +714,52 @@ def dev_equip_petal(rarity, petal_name, slot_index):
     return True
 
 
+def dev_equip_all_petal(rarity, petal_name):
+    # Replace every petal slot with the given petal/rarity
+    petal_name = petal_name.capitalize()
+    rarity = rarity.capitalize()
+    if petal_name not in PETAL_HP:
+        show_error(
+            f"Invalid petal type. Valid: {', '.join(PETAL_HP.keys())}"
+        )
+        return False
+    if rarity not in RARITIES:
+        show_error(f"Invalid rarity. Valid: {', '.join(RARITIES)}")
+        return False
+
+    for slot in petal_slots:
+        slot["filled"] = True
+        slot["petal"] = petal_name
+        slot["rarity"] = rarity
+
+    resize_petal_lists()
+
+    for i in range(len(petal_slots)):
+        petal_type = petal_slots[i]["petal"]
+        hp = PETAL_HP[petal_type] * PETAL_HP_MULTIPLIER[rarity]
+        if petal_type == "Light":
+            light_count = get_petal_count(petal_type, rarity)
+            if light_count > 0:
+                hp /= light_count
+            light_count = get_petal_count(petal_type, rarity)
+            light_hp[i] = [hp] * light_count
+            light_cooldowns[i] = [0] * light_count
+            light_alive[i] = [True] * light_count
+        else:
+            light_hp[i] = []
+            light_cooldowns[i] = []
+            light_alive[i] = []
+        petal_max_hp[i] = hp
+        petal_hp[i] = hp
+        petal_alive[i] = True
+        petal_respawn_timer[i] = 0
+        petal_respawn_text_timer[i] = 0
+        petal_cooldowns[i] = 0
+
+    save_player()
+    return True
+
+
 def pad_petal_slots():
     while len(petal_slots) < PETAL_SLOTS:
         petal_slots.append({
@@ -12101,6 +12147,22 @@ while running:
                                             show_error(f"Invalid petal type. Valid: {', '.join(PETAL_HP.keys())}")
                                         elif dev_equip_petal(rarity, petal_name, slot_index):
                                             show_error(f"Equipped {rarity.capitalize()} {petal_name} in slot {slot_index}")
+                                elif cmd == "/all_equip" and acc_name_text.lower() == "devguard":
+                                    # /all_equip [rarity] [petal]
+                                    args = parts[1:]
+                                    if len(args) < 2:
+                                        show_error("Usage: /all_equip [rarity] [petal]")
+                                    else:
+                                        rarity = args[0]
+                                        petal_name = None
+                                        for name in PETAL_HP:
+                                            if name.lower() == " ".join(args[1:]).lower():
+                                                petal_name = name
+                                                break
+                                        if petal_name is None:
+                                            show_error(f"Invalid petal type. Valid: {', '.join(PETAL_HP.keys())}")
+                                        elif dev_equip_all_petal(rarity, petal_name):
+                                            show_error(f"Equipped {rarity.capitalize()} {petal_name} in all slots")
                                 else:
                                     show_error(f"Unknown command: {cmd}")
                             else:
