@@ -15920,9 +15920,9 @@ while running:
             # fixed angles, so the petals do not spin while dead.
 
             fcx = WIDTH // 2
-            # shifted down so the real (world) flower behind the overlay
-            # stays visible above and is not covered by this picture
-            fcy = HEIGHT // 2 + 100
+            # at the same position as the real (world) flower behind
+            # the overlay, since the camera centers on the player
+            fcy = HEIGHT // 2
 
             # flower body + outline
             pygame.draw.circle(
