@@ -1126,8 +1126,12 @@ KING_GUARD_SPEED = 3.2
 # King rose volley: 8 roses fired every 8 seconds, 45 degrees apart.
 KING_ROSE_VOLLEY_COUNT = 8
 KING_ROSE_SPEED = 7
-KING_ROSE_DAMAGE = 15
-KING_ROSE_HEAL = 10
+# Rose stats scale with the king: damage and heal are one third of
+# the king's damage, and the rose is one third of the king's size.
+KING_ROSE_SIZE_FRACTION = 3
+KING_ROSE_DMG_FRACTION = 3
+KING_ROSE_HEAL_FRACTION = 3
+KING_ROSE_HOMING_RANGE = 500
 KING_ROSE_LIFETIME = 120
 
 # Flying king rose projectiles (damage the flower, heal ladybugs).
@@ -1407,6 +1411,9 @@ def minion_ai(minion):
 
 def fire_king_rose_volley(king):
     # The king fires 8 rose petals, one every 45 degrees.
+    rose_radius = max(4, int(king.radius / KING_ROSE_SIZE_FRACTION))
+    rose_damage = max(1, int(king.damage / KING_ROSE_DMG_FRACTION))
+    rose_heal = max(1, int(king.damage / KING_ROSE_HEAL_FRACTION))
     for rose_index in range(KING_ROSE_VOLLEY_COUNT):
         rose_angle = (
             king.angle
@@ -1420,8 +1427,10 @@ def fire_king_rose_volley(king):
                 "angle": rose_angle,
                 "dx": math.cos(rad) * KING_ROSE_SPEED,
                 "dy": math.sin(rad) * KING_ROSE_SPEED,
-                "damage": KING_ROSE_DAMAGE,
-                "heal": KING_ROSE_HEAL,
+                "damage": rose_damage,
+                "heal": rose_heal,
+                "radius": rose_radius,
+                "has_homed": False,
                 "timer": KING_ROSE_LIFETIME,
                 "owner": king
             }
@@ -1435,15 +1444,38 @@ def update_king_roses():
 
     for rose in king_rose_projectiles[:]:
 
-        rose["x"] += rose["dx"]
-        rose["y"] += rose["dy"]
         rose["timer"] -= 1
 
         if rose["timer"] <= 0:
             king_rose_projectiles.remove(rose)
             continue
 
+        # Once the rose spots the flower it locks on and shoots
+        # itself toward it — but only once per rose.
+        if (
+            not rose["has_homed"]
+            and not player_dead
+            and distance(
+                rose["x"],
+                rose["y"],
+                player_x,
+                player_y
+            ) <= KING_ROSE_HOMING_RANGE
+        ):
+            rose["has_homed"] = True
+            home_angle = math.atan2(
+                player_y - rose["y"],
+                player_x - rose["x"]
+            )
+            rose["dx"] = math.cos(home_angle) * KING_ROSE_SPEED
+            rose["dy"] = math.sin(home_angle) * KING_ROSE_SPEED
+
+        rose["x"] += rose["dx"]
+        rose["y"] += rose["dy"]
+
         hit_something = False
+
+        rose_hit_radius = rose.get("radius", 8)
 
         # Roses damage the flower.
         if (
@@ -1453,7 +1485,7 @@ def update_king_roses():
                 rose["y"],
                 player_x,
                 player_y
-            ) <= PLAYER_RADIUS + 8
+            ) <= PLAYER_RADIUS + rose_hit_radius
         ):
             player_hp -= rose["damage"]
             hit_something = True
@@ -1468,7 +1500,7 @@ def update_king_roses():
                     rose["y"],
                     bug.x,
                     bug.y
-                ) <= bug.radius + 8:
+                ) <= bug.radius + rose_hit_radius:
                     if bug.hp < bug.max_hp:
                         bug.hp = min(
                             bug.max_hp,
@@ -15494,17 +15526,18 @@ while running:
                 and -50 <= rose_y <= HEIGHT + 50
             ):
                 # Small pink rose petal with a darker outline.
+                rose_r = rose.get("radius", 8)
                 pygame.draw.circle(
                     screen,
                     (255, 105, 180),
                     (int(rose_x), int(rose_y)),
-                    8
+                    rose_r
                 )
                 pygame.draw.circle(
                     screen,
                     (200, 60, 130),
                     (int(rose_x), int(rose_y)),
-                    8,
+                    rose_r,
                     2
                 )
 
