@@ -16014,6 +16014,7 @@ while running:
                 "[petal]": (255, 0, 0),
                 "[petal": (255, 0, 0),
                 "slot]": (255, 165, 0),
+                "[user]": (128, 255, 0),
             }
             cmd_max_width = cmd_panel_rect.width - 48
             cmd_line_y = cmd_panel_rect.y + 44
