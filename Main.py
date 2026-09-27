@@ -1205,89 +1205,85 @@ def king_chase_or_guard(enemy):
     return False
 
 
-def update_king_minions():
-    # Minion AI: chase with the king, or orbit and guard it.
-    for minion in ladybugs:
+def minion_ai(minion):
+    # Minion AI for one minion: chase with the king,
+    # or orbit and guard it.
 
-        if not getattr(minion, "is_minion", False):
-            continue
-        if not minion.alive:
-            continue
+    king = kings.get("Ladybug")
+    has_king = (
+        king is not None
+        and king.alive
+    )
 
-        king = kings.get("Ladybug")
-        has_king = (
-            king is not None
-            and king.alive
+    dist_to_player = distance(
+        minion.x,
+        minion.y,
+        player_x,
+        player_y
+    )
+
+    if (
+        has_king
+        and not player_dead
+        and dist_to_player <= KING_CHASE_RANGE
+    ):
+        # Much faster than the king: charge the flower.
+        target_angle = math.degrees(
+            math.atan2(
+                player_y - minion.y,
+                player_x - minion.x
+            )
+        )
+        minion.turn_to(target_angle, 6)
+        # Three times the king's chase speed so the
+        # difference is clearly visible.
+        minion.speed = king.max_speed * 3.1 * 3
+        rad = math.radians(minion.angle)
+        move_with_collision(
+            minion,
+            math.cos(rad) * minion.speed * 0.15,
+            math.sin(rad) * minion.speed * 0.15
+        )
+        return
+
+    # Out of range (or no king): return to the king and orbit it.
+    if has_king:
+        angle_to_king = math.degrees(
+            math.atan2(
+                king.y - minion.y,
+                king.x - minion.x
+            )
+        )
+        minion.turn_to(angle_to_king, 6)
+        rad = math.radians(minion.angle)
+        move_with_collision(
+            minion,
+            math.cos(rad) * KING_GUARD_SPEED * 0.15,
+            math.sin(rad) * KING_GUARD_SPEED * 0.15
         )
 
-        dist_to_player = distance(
-            minion.x,
-            minion.y,
-            player_x,
-            player_y
+        orbit_slot = getattr(minion, "king_orbit_slot", 0)
+        orbit_angle = math.radians(
+            (time.time() * 40)
+            + orbit_slot * (360 / 6)
         )
-
-        if (
-            has_king
-            and not player_dead
-            and dist_to_player <= KING_CHASE_RANGE
-        ):
-            # Faster than the king: charge the flower.
-            target_angle = math.degrees(
-                math.atan2(
-                    player_y - minion.y,
-                    player_x - minion.x
-                )
-            )
-            minion.turn_to(target_angle, 6)
-            # Minions chase three times as fast as their king's base.
-            minion.speed = king.max_speed * 3
-            rad = math.radians(minion.angle)
-            move_with_collision(
-                minion,
-                math.cos(rad) * minion.speed * 0.15,
-                math.sin(rad) * minion.speed * 0.15
-            )
-            continue
-
-        # Out of range (or no king): return to the king and orbit it.
-        if has_king:
-            angle_to_king = math.degrees(
-                math.atan2(
-                    king.y - minion.y,
-                    king.x - minion.x
-                )
-            )
-            minion.turn_to(angle_to_king, 6)
-            rad = math.radians(minion.angle)
-            move_with_collision(
-                minion,
-                math.cos(rad) * KING_GUARD_SPEED * 0.15,
-                math.sin(rad) * KING_GUARD_SPEED * 0.15
-            )
-
-            orbit_slot = getattr(minion, "king_orbit_slot", 0)
-            orbit_angle = math.radians(
-                (time.time() * 40)
-                + orbit_slot * (360 / 6)
-            )
-            target_x = (
-                king.x
-                + math.cos(orbit_angle) * KING_GUARD_ORBIT
-            )
-            target_y = (
-                king.y
-                + math.sin(orbit_angle) * KING_GUARD_ORBIT
-            )
-            dx = target_x - minion.x
-            dy = target_y - minion.y
-            length = math.sqrt(dx * dx + dy * dy)
-            if length > 4:
-                minion.x += dx / length * KING_GUARD_SPEED * 0.5
-                minion.y += dy / length * KING_GUARD_SPEED * 0.5
-            minion.angle = math.degrees(
-                math.atan2(dy, dx)
-            )
+        target_x = (
+            king.x
+            + math.cos(orbit_angle) * KING_GUARD_ORBIT
+        )
+        target_y = (
+            king.y
+            + math.sin(orbit_angle) * KING_GUARD_ORBIT
+        )
+        dx = target_x - minion.x
+        dy = target_y - minion.y
+        length = math.sqrt(dx * dx + dy * dy)
+        if length > 4:
+            minion.x += dx / length * KING_GUARD_SPEED * 0.5
+            minion.y += dy / length * KING_GUARD_SPEED * 0.5
+        minion.angle = math.degrees(
+            math.atan2(dy, dx)
+        )
 
 
 def spawn_king_minions():
@@ -2579,7 +2575,7 @@ class Ladybug:
 
         if getattr(self, "is_minion", False):
 
-            update_king_minions()
+            minion_ai(self)
             return
 
         # ---------------- ANGRY LADYBUG ----------------
