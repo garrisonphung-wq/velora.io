@@ -19604,10 +19604,15 @@ while running:
             all_wrapped = []
             for username, msg, ts in chat_messages:
                 is_dev = username.lower() == "devguard"
+                is_king = username.startswith("King ")
                 name_surf = msg_font.render(
                     f"[{username}]",
                     True,
-                    (255, 0, 0) if is_dev else (255, 255, 0)
+                    (
+                        (255, 0, 0)
+                        if is_dev or is_king
+                        else (255, 255, 0)
+                    )
                 )
                 elapsed = format_elapsed(time.time() - ts)
                 elapsed_sec = time.time() - ts
