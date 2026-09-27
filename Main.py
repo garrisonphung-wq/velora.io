@@ -15929,7 +15929,7 @@ while running:
                 border_radius=10
             )
             cmd_title_txt = cmd_button_font.render(
-                "/cmd commands",
+                "Commands:",
                 True,
                 (255, 255, 255)
             )
@@ -15940,6 +15940,28 @@ while running:
                     cmd_panel_rect.y + 12
                 )
             )
+            cmd_list_font = pygame.font.Font(None, 20)
+            cmd_lines = [
+                "/spawn_enemy [rarity] [mob type] [amount]",
+                "/equip [rarity] [petal] [petal slot]",
+                "/all_equip [rarity] [petal]",
+                "/empty [petal slot]",
+                "/empty_all"
+            ]
+            for cmd_line_index, cmd_line in enumerate(cmd_lines):
+                cmd_line_txt = cmd_list_font.render(
+                    cmd_line,
+                    True,
+                    (255, 255, 255)
+                )
+                screen.blit(
+                    cmd_line_txt,
+                    (
+                        cmd_panel_rect.x + 16,
+                        cmd_panel_rect.y + 44
+                        + cmd_line_index * 26
+                    )
+                )
 
         if settings_panel_rect.y > -settings_panel_rect.height:
             pygame.draw.rect(
