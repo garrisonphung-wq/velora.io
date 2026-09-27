@@ -1198,6 +1198,28 @@ def king_chase_or_guard(enemy):
             math.cos(rad) * enemy.speed * 0.15,
             math.sin(rad) * enemy.speed * 0.15
         )
+
+        # The king bumps his own minions aside as he advances.
+        for other in ladybugs:
+            if not getattr(other, "is_minion", False):
+                continue
+            if not other.alive:
+                continue
+            d = distance(
+                enemy.x,
+                enemy.y,
+                other.x,
+                other.y
+            )
+            min_dist = enemy.radius + other.radius
+            if 0 < d < min_dist:
+                overlap = min_dist - d
+                other.x += (
+                    (other.x - enemy.x) / d * overlap
+                )
+                other.y += (
+                    (other.y - enemy.y) / d * overlap
+                )
         return True
 
     # Player escaped: stop chasing, hold position.
