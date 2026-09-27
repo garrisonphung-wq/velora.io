@@ -14493,6 +14493,17 @@ while running:
             if soldier_ant.flash_timer > 0:
                 soldier_ant.flash_timer -= 1
 
+        for worker_ant in worker_ants:
+
+            old_x = worker_ant.x
+            old_y = worker_ant.y
+
+            if player_spawn_cooldown <= 0:
+                worker_ant.update()
+
+            if worker_ant.flash_timer > 0:
+                worker_ant.flash_timer -= 1
+
         update_boss_hp()
         # ---------------- PETAL RESPAWN ----------------
 
