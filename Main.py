@@ -5226,7 +5226,8 @@ class WorkerAnt:
         self.rarity = "Common"
 
         # Stats
-        self.damage = 30
+        # Worker ants are harmless: they carry food, they don't fight.
+        self.damage = 0
         self.max_hp = (
             50 *
             MOB_HP_MULTIPLIER[self.rarity]
@@ -5266,10 +5267,16 @@ class WorkerAnt:
         self.charge_speed = 2.5
         self.wing_phase = 0.0
 
+        # Worker ants flee/wander until attacked, then they chase.
+        self.angry = False
+
     def take_damage(self, amount):
 
         if not self.alive:
             return
+
+        # Getting hit makes the worker ant chase the player.
+        self.angry = True
 
         self.hp -= int(amount)
         self.flash_timer = 4
@@ -5324,6 +5331,44 @@ class WorkerAnt:
             return
 
         self.timer += 1
+
+        # ---------------- ANGRY WORKER ANT ----------------
+        # Chases the player once it has been damaged.
+
+        if self.angry:
+
+            target_angle = math.degrees(
+                math.atan2(
+                    player_y - self.y,
+                    player_x - self.x
+                )
+            )
+
+            self.turn_to(
+                target_angle,
+                8
+            )
+
+            if self.speed < self.max_speed:
+
+                self.speed += self.acceleration
+
+            rad = math.radians(
+                self.angle
+            )
+
+            dx = math.cos(rad) * self.speed * 0.15
+            dy = math.sin(rad) * self.speed * 0.15
+
+            move_with_collision(
+                self,
+                dx,
+                dy
+            )
+
+            return
+
+        # ---------------- CALM WANDER ----------------
 
         if self.state == "turn":
 
@@ -5419,19 +5464,153 @@ class WorkerAnt:
         ):
             return
 
-        pygame.draw.circle(
-            screen,
-            flash_color((120, 70, 30), self.flash_timer),
-            (int(sx), int(sy)),
-            int(self.radius)
+        angle = math.radians(self.angle)
+
+        # ---------------- SIZE ----------------
+
+        head_size = self.radius * 0.80
+
+        body_width = self.radius * 1.2
+        body_height = self.radius * 0.8
+
+        # ---------------- OVAL BODY (BACK) ----------------
+
+        body_surface = pygame.Surface(
+            (
+                int(body_width * 2),
+                int(body_height * 2)
+            ),
+            pygame.SRCALPHA
+        )
+
+        pygame.draw.ellipse(
+            body_surface,
+            flash_color((62, 62, 62), self.flash_timer),
+            (
+                0,
+                0,
+                int(body_width * 2),
+                int(body_height * 2)
+            )
+        )
+        pygame.draw.ellipse(
+            body_surface,
+            flash_color((22, 22, 22), self.flash_timer),
+            (
+                0,
+                0,
+                int(body_width * 2),
+                int(body_height * 2)
+            ),
+            max(2, int(self.radius * 0.10))
+        )
+
+        body_surface = pygame.transform.rotate(
+            body_surface,
+            -self.angle
+        )
+
+        body_rect = body_surface.get_rect(
+            center=(int(sx), int(sy))
+        )
+
+        screen.blit(
+            body_surface,
+            body_rect
+        )
+
+        # (No wings: worker ants travel on foot.)
+
+        # ---------------- HEAD (FRONT) ----------------
+
+        head_x = (
+            sx +
+            math.cos(angle) * self.radius * 0.7
+        )
+
+        head_y = (
+            sy +
+            math.sin(angle) * self.radius * 0.7
         )
 
         pygame.draw.circle(
             screen,
-            flash_color((80, 50, 20), self.flash_timer),
-            (int(sx), int(sy)),
-            int(self.radius * 0.7)
+            flash_color((48, 48, 48), self.flash_timer),
+            (
+                int(head_x),
+                int(head_y)
+            ),
+            int(head_size)
         )
+
+        # Soft gray center highlight like the soldier ant.
+        pygame.draw.circle(
+            screen,
+            flash_color((78, 78, 78), self.flash_timer),
+            (
+                int(head_x),
+                int(head_y)
+            ),
+            int(head_size * 0.74)
+        )
+
+        # ---------------- MOUTH / MANDIBLES ----------------
+
+        front_x = math.cos(angle)
+        front_y = math.sin(angle)
+
+        side_x = math.cos(angle + math.pi/2)
+        side_y = math.sin(angle + math.pi/2)
+
+        mouth_start_x = (
+            head_x +
+            front_x * head_size * 0.75
+        )
+
+        mouth_start_y = (
+            head_y +
+            front_y * head_size * 0.75
+        )
+
+        mouth_end_x = (
+            head_x +
+            front_x * head_size * 1.25
+        )
+
+        mouth_end_y = (
+            head_y +
+            front_y * head_size * 1.25
+        )
+
+        draw_clean_line(
+            screen,
+            flash_color((40,40,40), self.flash_timer),
+            (
+                mouth_start_x + side_x * 5,
+                mouth_start_y + side_y * 5
+            ),
+            (
+                mouth_end_x + side_x * 8,
+                mouth_end_y + side_y * 8
+            ),
+            3
+        )
+
+        draw_clean_line(
+            screen,
+            flash_color((40,40,40), self.flash_timer),
+            (
+                mouth_start_x - side_x * 5,
+                mouth_start_y - side_y * 5
+            ),
+            (
+                mouth_end_x - side_x * 8,
+                mouth_end_y - side_y * 8
+            ),
+            3
+        )
+
+        # ---------------- HP BAR ----------------
 
         if self.hp < self.max_hp:
 
