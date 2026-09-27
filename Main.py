@@ -6840,9 +6840,9 @@ def register_mob_kill(enemy):
 
 def spawn_pickup(x, y, petal, rarity):
 
-    # Stingers last three times as long on the ground before despawning.
+    # Stingers last four times as long on the ground before despawning.
     pickup_lifetime = (
-        PICKUP_LIFETIME * 3
+        PICKUP_LIFETIME * 4
         if petal == "Stinger"
         else PICKUP_LIFETIME
     )
