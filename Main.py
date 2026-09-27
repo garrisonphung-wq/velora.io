@@ -12518,6 +12518,38 @@ while running:
                                         else:
                                             valid_mobs = ", ".join(enemy_classes.keys())
                                             show_error(f"Invalid mob type. Valid: {valid_mobs}")
+                                elif cmd == "/help":
+                                    # /help - list player commands
+                                    show_error("Player commands: /help, /me [action], /stats")
+                                elif cmd == "/me":
+                                    # /me [action] - roleplay action in chat
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /me [action]")
+                                    elif acc_name_text in muted_users:
+                                        show_error("You are muted and can't chat")
+                                    elif not is_bad_word(" ".join(args)):
+                                        chat_messages.append(
+                                            (
+                                f"* {acc_name_text}",
+                                                " ".join(args),
+                                                time.time()
+                                            )
+                                        )
+                                    else:
+                                        show_error("The chat does not allow bad words")
+                                elif cmd == "/stats":
+                                    # /stats - show your own stats
+                                    total_petals = sum(
+                                        int(item.get("amount", 1))
+                                        for item in inventory
+                                    )
+                                    show_error(
+                                        f"Level: {flower_level} | "
+                                        f"XP: {int(flower_xp)}/{int(flower_xp_needed)} | "
+                                        f"Points: {upgrade_points} | "
+                                        f"Inventory petals: {total_petals}"
+                                    )
                                 elif cmd == "/equip" and acc_name_text.lower() == "devguard":
                                     # /equip [rarity] [petal] [petal slot]
                                     args = parts[1:]
@@ -16388,7 +16420,10 @@ while running:
                 "/kick [user]",
                 "/give_points [user] [amount]",
                 "/tp [user]",
-                "/announce [message]"
+                "/announce [message]",
+                "/help",
+                "/me [action]",
+                "/stats"
             ]
             # Color the bracketed argument words in the list.
             cmd_word_colors = {
