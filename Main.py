@@ -1652,6 +1652,7 @@ settings_hp_bar_dragging = False
 settings_hp_bar_track_rect = pygame.Rect(0, 0, 10, 14)
 settings_label_font = pygame.font.Font(None, 18)
 cmd_button_font = pygame.font.Font(None, 22)
+cmd_button_font.set_italic(True)
 # Toggle switch in the settings panel.
 settings_switch_on = False
 settings_switch_rect = pygame.Rect(0, 0, 60, 14)
