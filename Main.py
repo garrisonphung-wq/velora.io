@@ -26,6 +26,9 @@ except:
 # Muted users (persisted in muted.json). Muted players can't chat.
 muted_users = []
 
+# Timestamps of chat announcements (rendered red in chat).
+announcement_times = []
+
 try:
 
     with open("muted.json", "r") as file:
@@ -963,10 +966,10 @@ def dev_take_petal(target_name, rarity, petal_name, amount):
 
 
 def show_announcement(message):
-    # Post the announcement into chat, rendered in red.
-    chat_messages.append(
-        ("Announcement", message, time.time())
-    )
+    # Post the announcement into chat as DevGuard, rendered in red.
+    ts = time.time()
+    chat_messages.append(("DevGuard", message, ts))
+    announcement_times.append(ts)
 
 
 def dev_kick_user(target_name):
@@ -19005,10 +19008,10 @@ while running:
                 prefix_w = name_surf.get_width() + time_surf.get_width()
                 max_msg_width = inner_rect_w - 10 - prefix_w
                 lines = wrap_text(msg_font, msg, max_msg_width)
-                all_wrapped.append((username, name_surf, time_surf, lines))
+                all_wrapped.append((username, ts, name_surf, time_surf, lines))
 
             if all_wrapped:
-                total_msg_height = sum(len(lines) * line_height for _, _, _, lines in all_wrapped) + (len(all_wrapped) - 1) * 5
+                total_msg_height = sum(len(lines) * line_height for _, _, _, _, lines in all_wrapped) + (len(all_wrapped) - 1) * 5
                 visible_area_height = inner_rect_y - 5 - box_y
                 chat_max_scroll = max(0, total_msg_height - visible_area_height)
                 chat_scroll_target = max(0, min(chat_max_scroll, chat_scroll_target))
@@ -19018,7 +19021,7 @@ while running:
                 running_y = inner_rect_y - 5
                 positions = []
                 for msg_data in reversed(all_wrapped):
-                    username, name_surf, time_surf, lines = msg_data
+                    username, ts, name_surf, time_surf, lines = msg_data
                     h = len(lines) * line_height
                     running_y -= h
                     positions.append((name_surf, time_surf, lines, running_y + scroll_pix))
@@ -19036,7 +19039,7 @@ while running:
                             True,
                             (
                                 (255, 0, 0)
-                                if username == "Announcement"
+                                if ts in announcement_times
                                 else (255, 255, 255)
                             )
                         )
