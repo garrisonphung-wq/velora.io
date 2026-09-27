@@ -1271,10 +1271,11 @@ def minion_ai(minion):
             + orbit_slot * (360 / 6)
         )
         # The orbit ring scales with the king's size, so bigger
-        # kings get a wider guard ring.
+        # kings get a wider guard ring. The +40 gap keeps minions
+        # from ever touching the king's body.
         king_orbit = max(
             KING_GUARD_ORBIT,
-            int(king.radius * 1.6)
+            int(king.radius * 1.6) + 40
         )
         target_x = (
             king.x
