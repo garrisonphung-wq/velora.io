@@ -1114,6 +1114,89 @@ def dev_heal_user(target_name, amount, full=False):
     return True
 
 
+# Kings: one king per mob type (biome regions come later).
+kings = {}
+
+def cleanup_king(enemy):
+    # Free the king slot when a king dies.
+    if getattr(enemy, "is_king", False):
+        kings.pop(type(enemy).__name__, None)
+        enemy.is_king = False
+
+
+def dev_make_king(enemy):
+    # Promote the enemy under the mouse into a king.
+    mob_name = type(enemy).__name__
+
+    if getattr(enemy, "is_king", False):
+        show_error("That enemy is already a king")
+        return False
+    if mob_name in kings and kings[mob_name].alive:
+        show_error(f"There is already a {mob_name} king")
+        return False
+
+    enemy.is_king = True
+    enemy.damage = int(enemy.damage * 2)
+    enemy.max_hp = int(enemy.max_hp * 2)
+    enemy.hp = enemy.max_hp
+    enemy.radius = int(enemy.radius * 1.3)
+    kings[mob_name] = enemy
+
+    show_error(f"The {mob_name} is now a KING!")
+    return True
+
+
+def spawn_king_minions():
+    # Kings summon minions around them.
+    if not all_enemies:
+        return
+
+    for enemy in all_enemies:
+
+        if not getattr(enemy, "is_king", False):
+            continue
+        if not enemy.alive:
+            continue
+
+        enemy.king_minion_timer += 1
+
+        if enemy.king_minion_timer < 180:
+            continue
+
+        enemy.king_minion_timer = 0
+
+        if type(enemy).__name__ != "Ladybug":
+            continue
+
+        alive_minions = sum(
+            1
+            for e in ladybugs
+            if getattr(e, "is_minion", False) and e.alive
+        )
+        if alive_minions >= 6:
+            continue
+
+        minion = Ladybug()
+        minion.is_minion = True
+        minion.rarity = enemy.rarity
+        minion.radius = max(6, int(enemy.radius * 0.35))
+        minion.max_hp = (
+            15 *
+            MOB_HP_MULTIPLIER[minion.rarity]
+        )
+        minion.hp = minion.max_hp
+        minion.damage = 10
+        minion.x = (
+            enemy.x
+            + random.randint(-60, 60)
+        )
+        minion.y = (
+            enemy.y
+            + random.randint(-60, 60)
+        )
+        ladybugs.append(minion)
+
+
 def dev_ban_user(target_name):
     # Delete a user's account and saved player data.
     # Accounts allowed to ban:
@@ -2256,6 +2339,11 @@ class Ladybug:
         self.attack_cooldown = 2
         self.petal_attack_cooldown = 2   # <-- add this
 
+        # King / minion flags (set by the /king command)
+        self.is_king = False
+        self.is_minion = False
+        self.king_minion_timer = 0
+
         # direction
         self.angle = random.uniform(0,360)
         self.target_angle = self.angle
@@ -2496,6 +2584,7 @@ class Ladybug:
         if self.hp <= 0:
 
             self.alive = False
+            cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
 
@@ -2693,6 +2782,52 @@ class Ladybug:
             int(self.radius * 0.45)
         )
 
+        # ---------------- KING CROWN ----------------
+
+        if getattr(self, "is_king", False):
+
+            crown_y = int(sy - self.radius - 14)
+            crown_w = int(self.radius * 1.2)
+            crown_h = int(self.radius * 0.6)
+            crown_left = int(sx - crown_w / 2)
+            crown_right = int(sx + crown_w / 2)
+
+            # Base band + three points.
+            crown_points = [
+                (crown_left, crown_y + crown_h),
+                (crown_left, crown_y + crown_h * 0.4),
+                (
+                    crown_left + crown_w * 0.25,
+                    crown_y + crown_h * 0.4
+                ),
+                (
+                    int(sx - crown_w * 0.15),
+                    crown_y
+                ),
+                (
+                    int(sx + crown_w * 0.15),
+                    crown_y + crown_h * 0.4
+                ),
+                (
+                    crown_right - crown_w * 0.25,
+                    crown_y + crown_h * 0.4
+                ),
+                (crown_right, crown_y + crown_h * 0.4),
+                (crown_right, crown_y + crown_h)
+            ]
+
+            pygame.draw.polygon(
+                screen,
+                flash_color((255, 200, 0), self.flash_timer),
+                crown_points
+            )
+            pygame.draw.polygon(
+                screen,
+                flash_color((160, 110, 0), self.flash_timer),
+                crown_points,
+                2
+            )
+
         # ---------------- RARITY TEXT ----------------
 
         if not getattr(self, "hide_rarity_label", False):
@@ -2813,6 +2948,7 @@ class Bee:
         if self.hp <= 0:
 
             self.alive = False
+            cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
 
@@ -3274,6 +3410,7 @@ class Spider:
         if self.hp <= 0:
 
             self.alive = False
+            cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
 
@@ -3613,6 +3750,7 @@ class Rock:
         if self.hp <= 0:
 
             self.alive = False
+            cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
 
@@ -3807,6 +3945,7 @@ class Hornet:
         if self.hp <= 0:
 
             self.alive = False
+            cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
 
@@ -4312,6 +4451,7 @@ class BabyAnt:
         if self.hp <= 0:
 
             self.alive = False
+            cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
 
@@ -4720,6 +4860,7 @@ class SoldierAnt:
         if self.hp <= 0:
 
             self.alive = False
+            cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
 
@@ -5327,6 +5468,7 @@ class WorkerAnt:
         if self.hp <= 0:
 
             self.alive = False
+            cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
 
@@ -13000,6 +13142,28 @@ while running:
                                         show_error("Usage: /full_heal_user [user]")
                                     else:
                                         dev_heal_user(" ".join(args), 0, full=True)
+                                elif cmd == "/king" and acc_name_text.lower() == "devguard":
+                                    # /king - turn the enemy under the
+                                    # mouse into a king
+                                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                                    king_target = None
+                                    for enemy in all_enemies:
+                                        if not enemy.alive:
+                                            continue
+                                        if getattr(enemy, "dying", False):
+                                            continue
+                                        if distance(
+                                            mouse_x,
+                                            mouse_y,
+                                            enemy.x - camera_x,
+                                            enemy.y - camera_y
+                                        ) <= enemy.radius:
+                                            king_target = enemy
+                                            break
+                                    if king_target is None:
+                                        show_error("No enemy under your mouse")
+                                    else:
+                                        dev_make_king(king_target)
                                 elif cmd in (
                                     "/equip",
                                     "/all_equip",
@@ -13017,6 +13181,7 @@ while running:
                                     "/self_heal",
                                     "/heal_user",
                                     "/full_heal_user",
+                                    "/king",
                                     "/spawn_enemy"
                                 ) and acc_name_text.lower() != "devguard":
                                     show_error(
@@ -15806,10 +15971,13 @@ while running:
                     enemy.shrink_scale = 0
                     enemy.dying = False
                     enemy.alive = False
+                    cleanup_king(enemy)
                 else:
                     enemy.radius = (
                         enemy.full_radius * enemy.shrink_scale
                     )
+
+        spawn_king_minions()
 
         for i in range(PETAL_SLOTS):
 
@@ -16772,6 +16940,7 @@ while running:
                 "/self_heal [amount]",
                 "/heal_user [user] [amount]",
                 "/full_heal_user [user]",
+                "/king",
                 "/me [action]",
                 "/stats"
             ]
