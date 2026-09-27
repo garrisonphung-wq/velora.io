@@ -12353,7 +12353,7 @@ while running:
                             if chat_input_text.startswith("/"):
                                 parts = chat_input_text.split()
                                 cmd = parts[0]
-                                if cmd == "/spawn_enemy":
+                                if cmd == "/spawn_enemy" and acc_name_text.lower() == "devguard":
                                     # /spawn_enemy [rarity] [mob type] [amount]
                                     args = parts[1:]
                                     if len(args) < 2:
