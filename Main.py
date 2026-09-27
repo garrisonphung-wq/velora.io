@@ -12519,8 +12519,20 @@ while running:
                                             valid_mobs = ", ".join(enemy_classes.keys())
                                             show_error(f"Invalid mob type. Valid: {valid_mobs}")
                                 elif cmd == "/help":
-                                    # /help - list player commands
-                                    show_error("Player commands: /help, /me [action], /stats")
+                                    # /help - list all commands
+                                    show_error(
+                                        "Commands: "
+                                        "/help, /me [action], /stats, "
+                                        "/spawn_enemy [rarity] [mob type] [amount], "
+                                        "/equip [rarity] [petal] [petal slot], "
+                                        "/all_equip [rarity] [petal], "
+                                        "/empty [petal slot], /empty_all, "
+                                        "/ban [user], /mute [user], /unmute [user], "
+                                        "/gift [user] [rarity] [petal] [amount], "
+                                        "/take [rarity] [petal] [amount] from.[user], "
+                                        "/kick [user], /give_points [user] [amount], "
+                                        "/tp [user], /announce [message]"
+                                    )
                                 elif cmd == "/me":
                                     # /me [action] - roleplay action in chat
                                     args = parts[1:]
@@ -18870,19 +18882,31 @@ while running:
                 )
 
             error_font = pygame.font.Font(None, 24)
-            error_text = error_font.render(
+            # Wrap the message so long text doesn't overflow the screen;
+            # the box grows taller as more lines wrap.
+            error_lines = wrap_text(
+                error_font,
                 error_message,
-                True,
-                (255, 255, 255)
+                400
             )
-            error_text.set_alpha(error_message_alpha)
+            error_text_surfs = [
+                error_font.render(line, True, (255, 255, 255))
+                for line in error_lines
+            ]
+            for error_text in error_text_surfs:
+                error_text.set_alpha(error_message_alpha)
 
             # Calculate rectangle alpha (max 128 for the rectangle's alpha channel)
             rect_alpha = int(128 * (error_message_alpha / 255))
 
             # Centered at top, very close to the top edge
-            error_box_width = error_text.get_width() + 20
-            error_box_height = error_text.get_height() + 10
+            error_box_width = max(
+                surf.get_width() for surf in error_text_surfs
+            ) + 20
+            error_box_height = (
+                sum(surf.get_height() for surf in error_text_surfs)
+                + 10
+            )
             error_box_rect = pygame.Rect(
                 WIDTH//2 - error_box_width//2,
                 10,
@@ -18902,14 +18926,17 @@ while running:
             # Blit the error box surface to screen
             screen.blit(error_box_surf, error_box_rect.topleft)
 
-            # Blit the text on top
-            screen.blit(
-                error_text,
-                (
-                    error_box_rect.x + 10,
-                    error_box_rect.y + 5
+            # Blit the text lines on top
+            error_text_y = error_box_rect.y + 5
+            for error_text in error_text_surfs:
+                screen.blit(
+                    error_text,
+                    (
+                        error_box_rect.x + 10,
+                        error_text_y
+                    )
                 )
-            )
+                error_text_y += error_text.get_height()
 
         # ---------------- UPDATE SCREEN ----------------
 
