@@ -1191,7 +1191,7 @@ def king_chase_or_guard(enemy):
             )
         )
         enemy.turn_to(target_angle, 4)
-        enemy.speed = enemy.max_speed * 0.8
+        enemy.speed = enemy.max_speed * 1.8
         rad = math.radians(enemy.angle)
         move_with_collision(
             enemy,
