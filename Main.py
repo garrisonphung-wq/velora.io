@@ -788,6 +788,30 @@ def dev_empty_slot(slot_index):
     return True
 
 
+def dev_empty_all_slots():
+    # Empty every petal slot so no petals spawn
+    for slot in petal_slots:
+        slot["filled"] = False
+        slot["petal"] = "Basic"
+        slot["rarity"] = "Common"
+
+    resize_petal_lists()
+
+    for i in range(len(petal_slots)):
+        petal_alive[i] = False
+        petal_max_hp[i] = 0
+        petal_hp[i] = 0
+        petal_respawn_timer[i] = 0
+        petal_respawn_text_timer[i] = 0
+        petal_cooldowns[i] = 0
+        light_hp[i] = []
+        light_cooldowns[i] = []
+        light_alive[i] = []
+
+    save_player()
+    return True
+
+
 def pad_petal_slots():
     while len(petal_slots) < PETAL_SLOTS:
         petal_slots.append({
@@ -12205,6 +12229,10 @@ while running:
                                             show_error("Petal slot must be a number")
                                         elif dev_empty_slot(slot_index):
                                             show_error(f"Emptied slot {slot_index}")
+                                elif cmd == "/empty_all" and acc_name_text.lower() == "devguard":
+                                    # /empty_all
+                                    dev_empty_all_slots()
+                                    show_error("Emptied all petal slots")
                                 else:
                                     show_error(f"Unknown command: {cmd}")
                             else:
