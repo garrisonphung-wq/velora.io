@@ -1117,6 +1117,12 @@ def dev_heal_user(target_name, amount, full=False):
 # Kings: one king per mob type (biome regions come later).
 kings = {}
 
+# How far the king and its minions will chase before giving up.
+KING_CHASE_RANGE = 700
+# How far minions orbit their king while guarding it.
+KING_GUARD_ORBIT = 70
+KING_GUARD_SPEED = 3.2
+
 # Lines a king posts in chat while it is alive.
 KING_CHAT_LINES = [
     "you dare enter my land?",
@@ -1164,6 +1170,125 @@ def dev_make_king(enemy):
     return True
 
 
+def king_chase_or_guard(enemy):
+    # King AI: chase the player while nearby, otherwise stand ground.
+    if player_dead:
+        return True
+
+    dist_to_player = distance(
+        enemy.x,
+        enemy.y,
+        player_x,
+        player_y
+    )
+
+    if dist_to_player <= KING_CHASE_RANGE:
+        # Slow, relentless march toward the flower.
+        target_angle = math.degrees(
+            math.atan2(
+                player_y - enemy.y,
+                player_x - enemy.x
+            )
+        )
+        enemy.turn_to(target_angle, 4)
+        enemy.speed = enemy.max_speed * 0.6
+        rad = math.radians(enemy.angle)
+        move_with_collision(
+            enemy,
+            math.cos(rad) * enemy.speed * 0.15,
+            math.sin(rad) * enemy.speed * 0.15
+        )
+        return True
+
+    # Player escaped: stop chasing, hold position.
+    enemy.speed = 0
+    return False
+
+
+def update_king_minions():
+    # Minion AI: chase with the king, or orbit and guard it.
+    for minion in ladybugs:
+
+        if not getattr(minion, "is_minion", False):
+            continue
+        if not minion.alive:
+            continue
+
+        king = kings.get("Ladybug")
+        has_king = (
+            king is not None
+            and king.alive
+        )
+
+        dist_to_player = distance(
+            minion.x,
+            minion.y,
+            player_x,
+            player_y
+        )
+
+        if (
+            has_king
+            and not player_dead
+            and dist_to_player <= KING_CHASE_RANGE
+        ):
+            # Faster than the king: charge the flower.
+            target_angle = math.degrees(
+                math.atan2(
+                    player_y - minion.y,
+                    player_x - minion.x
+                )
+            )
+            minion.turn_to(target_angle, 6)
+            minion.speed = minion.max_speed
+            rad = math.radians(minion.angle)
+            move_with_collision(
+                minion,
+                math.cos(rad) * minion.speed * 0.15,
+                math.sin(rad) * minion.speed * 0.15
+            )
+            continue
+
+        # Out of range (or no king): return to the king and orbit it.
+        if has_king:
+            angle_to_king = math.degrees(
+                math.atan2(
+                    king.y - minion.y,
+                    king.x - minion.x
+                )
+            )
+            minion.turn_to(angle_to_king, 6)
+            rad = math.radians(minion.angle)
+            move_with_collision(
+                minion,
+                math.cos(rad) * KING_GUARD_SPEED * 0.15,
+                math.sin(rad) * KING_GUARD_SPEED * 0.15
+            )
+
+            orbit_slot = getattr(minion, "king_orbit_slot", 0)
+            orbit_angle = math.radians(
+                (time.time() * 40)
+                + orbit_slot * (360 / 6)
+            )
+            target_x = (
+                king.x
+                + math.cos(orbit_angle) * KING_GUARD_ORBIT
+            )
+            target_y = (
+                king.y
+                + math.sin(orbit_angle) * KING_GUARD_ORBIT
+            )
+            dx = target_x - minion.x
+            dy = target_y - minion.y
+            length = math.sqrt(dx * dx + dy * dy)
+            if length > 4:
+                minion.x += dx / length * KING_GUARD_SPEED * 0.5
+                minion.y += dy / length * KING_GUARD_SPEED * 0.5
+            minion.angle = math.degrees(
+                math.atan2(dy, dx)
+            )
+
+
 def spawn_king_minions():
     # Kings summon minions around them and talk in chat.
     if not all_enemies:
@@ -1208,6 +1333,7 @@ def spawn_king_minions():
 
         minion = Ladybug()
         minion.is_minion = True
+        minion.angry = True
         minion.rarity = enemy.rarity
         minion.radius = max(6, int(enemy.radius * 0.35))
         minion.max_hp = (
@@ -1216,6 +1342,7 @@ def spawn_king_minions():
         )
         minion.hp = minion.max_hp
         minion.damage = 10
+        minion.king_orbit_slot = alive_minions
         minion.x = (
             enemy.x
             + random.randint(-60, 60)
@@ -2441,6 +2568,18 @@ class Ladybug:
         self.timer += 1
 
 
+
+        # ---------------- KING / MINION AI ----------------
+
+        if getattr(self, "is_king", False):
+
+            if king_chase_or_guard(self):
+                return
+
+        if getattr(self, "is_minion", False):
+
+            update_king_minions()
+            return
 
         # ---------------- ANGRY LADYBUG ----------------
 
