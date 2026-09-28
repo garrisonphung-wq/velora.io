@@ -4790,6 +4790,9 @@ class Rock:
 
         # King flags (set by the /king command) and rock volley timer
         self.is_king = False
+        self.is_minion = False
+        self.king_minion_timer = 0
+        self.king_orbit_slot = 0
         self.rock_volley_timer = 0
 
     def take_damage(self, amount):
