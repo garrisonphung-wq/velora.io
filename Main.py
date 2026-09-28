@@ -1155,6 +1155,7 @@ KING_WEB_LIFETIME = 300     # webs last 5 seconds
 KING_WEB_SLOWDOWN = 0.45    # flower moves at 45% speed inside
 king_webs = []
 player_in_web = False
+player_in_web_slowdown = KING_WEB_SLOWDOWN
 
 # Mob list lookup for king minion AI (class name -> list name).
 KING_MOB_LIST_NAMES = {
@@ -1822,11 +1823,30 @@ def update_king_roses():
             king_rose_projectiles.remove(rose)
 
 
+def get_web_slowdown(rarity):
+    # Web slowdown by spider rarity: 45% speed for Common,
+    # down to 10% speed for the rarest kings.
+    rarity_order = [
+        "Common", "Unusual", "Rare", "Epic", "Legendary",
+        "Mythic", "Ultra", "Super", "Omega", "Unique",
+        "Eternal", "Cosmo", "Jeddiful", "Tacnic", "Radium",
+        "Ancient", "Omnient", "Celestial", "Infino"
+    ]
+    if rarity in rarity_order:
+        tier = rarity_order.index(rarity)
+    else:
+        tier = 0
+    slowdown = 0.45 - tier * 0.018
+    return max(0.10, slowdown)
+
+
 def update_king_webs():
     # Age the spider king's webs and slow the flower inside them.
     global player_in_web
+    global player_in_web_slowdown
 
     player_in_web = False
+    player_in_web_slowdown = KING_WEB_SLOWDOWN
 
     for web in king_webs[:]:
         web["timer"] -= 1
@@ -1846,6 +1866,7 @@ def update_king_webs():
             player_y
         ) <= web["radius"] + PLAYER_RADIUS:
             player_in_web = True
+            player_in_web_slowdown = web["slowdown"]
 
 
 def spawn_king_minions():
@@ -1915,6 +1936,9 @@ def spawn_king_minions():
                             target_radius
                         ),
                         "spin": random.uniform(0, 360),
+                        "slowdown": get_web_slowdown(
+                            enemy.rarity
+                        ),
                     }
                 )
 
@@ -15305,10 +15329,11 @@ while running:
 
         if not player_dead:
 
-            # Sticky spider king webs slow the flower down.
+            # Sticky spider king webs slow the flower down; the
+            # slowdown depends on the spider king's rarity.
             move_speed = PLAYER_SPEED
             if player_in_web:
-                move_speed *= KING_WEB_SLOWDOWN
+                move_speed *= player_in_web_slowdown
 
             player_x += move_x * move_speed
             player_y += move_y * move_speed
