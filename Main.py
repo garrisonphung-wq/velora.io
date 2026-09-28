@@ -1880,6 +1880,23 @@ def fire_rock_volley(rock, is_king):
             + rock_index * (360 / count)
         )
         rad = math.radians(rock_angle)
+
+        # Random rocky silhouette for this projectile.
+        point_count = random.randint(6, 8)
+        shape_points = []
+        for point_i in range(point_count):
+            point_angle = (
+                math.pi * 2 * point_i / point_count
+                + random.uniform(-0.35, 0.35)
+            )
+            point_distance = random.uniform(0.82, 1.15)
+            shape_points.append(
+                (
+                    math.cos(point_angle) * point_distance,
+                    math.sin(point_angle) * point_distance
+                )
+            )
+
         rock_projectiles.append(
             {
                 "x": rock.x,
@@ -1891,6 +1908,7 @@ def fire_rock_volley(rock, is_king):
                 "radius": radius,
                 "hp": projectile_hp,
                 "max_hp": projectile_hp,
+                "shape": shape_points,
                 "is_king_shot": is_king,
                 "timer": ROCK_PROJECTILE_LIFETIME,
                 "owner": rock
@@ -16389,17 +16407,25 @@ while running:
                 and -50 <= rock_y <= HEIGHT + 50
             ):
                 rock_r = rock_p.get("radius", 8)
-                pygame.draw.circle(
+                rock_pts = [
+                    (
+                        rock_x + px * rock_r,
+                        rock_y + py * rock_r
+                    )
+                    for px, py in rock_p.get(
+                        "shape",
+                        [(0, -1), (-1, 1), (1, 1)]
+                    )
+                ]
+                pygame.draw.polygon(
                     screen,
                     (110, 110, 110),
-                    (int(rock_x), int(rock_y)),
-                    rock_r
+                    rock_pts
                 )
-                pygame.draw.circle(
+                pygame.draw.polygon(
                     screen,
                     (70, 70, 70),
-                    (int(rock_x), int(rock_y)),
-                    rock_r,
+                    rock_pts,
                     2
                 )
 
