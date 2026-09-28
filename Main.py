@@ -1180,6 +1180,7 @@ KING_MOB_LIST_NAMES = {
     "Spider": "spiders",
     "Rock": "rocks",
     "Hornet": "hornets",
+    "BabyAnt": "baby_ants",
 }
 
 def get_king_mob_list(mob_name):
@@ -1925,6 +1926,129 @@ def fire_rock_volley(rock, is_king):
         )
 
 
+def generic_minion_ai(minion):
+    # Baby ant king minions: chase with the king at 3x the king's
+    # speed; when the king stops chasing, return to the king and
+    # orbit him. HP is 1/5 of the king's, damage 1/3 (set at spawn).
+    king = kings.get(type(minion).__name__)
+    has_king = (
+        king is not None
+        and king.alive
+    )
+
+    king_chasing = (
+        has_king
+        and not player_dead
+        and distance(
+            king.x,
+            king.y,
+            player_x,
+            player_y
+        ) <= KING_CHASE_RANGE
+    )
+
+    if king_chasing:
+        target_angle = math.degrees(
+            math.atan2(
+                player_y - minion.y,
+                player_x - minion.x
+            )
+        )
+        minion.turn_to(target_angle, 7)
+        minion.speed = king.max_speed * 3.1 * 3
+        rad = math.radians(minion.angle)
+        move_with_collision(
+            minion,
+            math.cos(rad) * minion.speed * 0.15,
+            math.sin(rad) * minion.speed * 0.15
+        )
+
+        # Bounce off other minions and the king.
+        for other in get_king_mob_list(type(minion).__name__):
+            if other is minion:
+                continue
+            if not other.alive:
+                continue
+            d = distance(
+                minion.x,
+                minion.y,
+                other.x,
+                other.y
+            )
+            min_dist = minion.radius + other.radius
+            if 0 < d < min_dist:
+                overlap = (min_dist - d) / 2
+                minion.x += (
+                    (minion.x - other.x) / d * overlap * 2
+                )
+                minion.y += (
+                    (minion.y - other.y) / d * overlap * 2
+                )
+
+        kd = distance(
+            minion.x,
+            minion.y,
+            king.x,
+            king.y
+        )
+        king_min_dist = king.radius + minion.radius
+        if 0 < kd < king_min_dist:
+            overlap = king_min_dist - kd
+            minion.x += (
+                (minion.x - king.x) / kd * overlap * 2
+            )
+            minion.y += (
+                (minion.y - king.y) / kd * overlap * 2
+            )
+        return
+
+    # King stopped: return to the king and orbit him.
+    if has_king:
+        king_orbit = max(
+            70,
+            int(king.radius * 1.6) + 40
+        )
+        orbit_slot = getattr(minion, "king_orbit_slot", 0)
+        orbit_angle = (
+            time.time() * 1.2
+            + orbit_slot * (2 * math.pi / 6)
+        )
+        target_x = (
+            king.x
+            + math.cos(orbit_angle) * king_orbit
+        )
+        target_y = (
+            king.y
+            + math.sin(orbit_angle) * king_orbit
+        )
+        dx = target_x - minion.x
+        dy = target_y - minion.y
+        length = math.sqrt(dx * dx + dy * dy)
+        step = KING_GUARD_SPEED * 2.5
+        if length > step:
+            minion.x += dx / length * step
+            minion.y += dy / length * step
+        else:
+            minion.x = target_x
+            minion.y = target_y
+
+        kd = distance(
+            minion.x,
+            minion.y,
+            king.x,
+            king.y
+        )
+        king_min_dist = king.radius + minion.radius + 4
+        if 0 < kd < king_min_dist:
+            overlap = king_min_dist - kd
+            minion.x += (
+                (minion.x - king.x) / kd * overlap
+            )
+            minion.y += (
+                (minion.y - king.y) / kd * overlap
+            )
+
+
 def hornet_minion_ai(minion):
     # Hornet king minions: chase with the king; when the king stops
     # chasing, return to the king and orbit him. While stopped near
@@ -2362,7 +2486,9 @@ def spawn_king_minions():
         enemy.king_minion_timer = 0
 
         mob_name = type(enemy).__name__
-        if mob_name not in ("Ladybug", "Spider", "Rock", "Hornet"):
+        if mob_name not in (
+            "Ladybug", "Spider", "Rock", "Hornet", "BabyAnt"
+        ):
             continue
 
         mob_list = get_king_mob_list(mob_name)
@@ -2371,6 +2497,7 @@ def spawn_king_minions():
             "Spider": Spider,
             "Rock": Rock,
             "Hornet": Hornet,
+            "BabyAnt": BabyAnt,
         }[mob_name]
 
         alive_minions = sum(
@@ -2391,9 +2518,13 @@ def spawn_king_minions():
         minion.radius = max(6, int(enemy.radius * 0.35))
         # A minion has one third of the king's HP and damage,
         # and chases at three times the king's speed.
-        minion.max_hp = max(1, int(enemy.max_hp / 3))
+        if mob_name == "BabyAnt":
+            minion.max_hp = max(1, int(enemy.max_hp / 5))
+            minion.damage = max(1, int(enemy.damage / 3))
+        else:
+            minion.max_hp = max(1, int(enemy.max_hp / 3))
+            minion.damage = max(1, int(enemy.damage / 3))
         minion.hp = minion.max_hp
-        minion.damage = max(1, int(enemy.damage / 3))
         if hasattr(enemy, "max_speed"):
             minion.max_speed = enemy.max_speed * 3
         minion.king_orbit_slot = alive_minions
@@ -6009,6 +6140,14 @@ class BabyAnt:
         self.state = "turn"
         self.timer = 0
 
+        # King / minion flags (set by the /king command)
+        self.is_king = False
+        self.is_minion = False
+        self.king_minion_timer = 0
+        self.king_chat_timer = 0
+        self.king_rose_timer = 0
+        self.king_orbit_slot = 0
+
     def turn_to(self, target_angle, speed):
 
         difference = (
@@ -6082,6 +6221,20 @@ class BabyAnt:
 
 
         self.timer += 1
+
+        # ---------------- KING AI ----------------
+        # The baby ant king hunts like the other kings; its rice
+        # petals orbit it (drawn in draw()).
+
+        if getattr(self, "is_king", False):
+
+            if king_chase_or_guard(self):
+                return
+
+        if getattr(self, "is_minion", False):
+
+            generic_minion_ai(self)
+            return
 
 
 
@@ -6358,6 +6511,33 @@ class BabyAnt:
             ),
             jaw_thickness
         )
+
+        # ---------------- KING RICE ORBIT ----------------
+
+        if getattr(self, "is_king", False):
+
+            # Six rice petals circle the baby ant king.
+            rice_count = 6
+            rice_orbit = self.radius * 1.8
+            for rice_index in range(rice_count):
+                rice_angle = math.radians(
+                    time.time() * 90
+                    + rice_index * (360 / rice_count)
+                )
+                rice_x = (
+                    sx
+                    + math.cos(rice_angle) * rice_orbit
+                )
+                rice_y = (
+                    sy
+                    + math.sin(rice_angle) * rice_orbit
+                )
+                draw_petal(
+                    "Rice",
+                    rice_x,
+                    rice_y,
+                    self.rarity
+                )
 
         # ---------------- RARITY TEXT ----------------
 
