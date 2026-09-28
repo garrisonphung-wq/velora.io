@@ -1795,7 +1795,6 @@ def update_king_webs():
 
     for web in king_webs[:]:
         web["timer"] -= 1
-        web["spin"] += 0.3
         # Webs grow from tiny to full size while the spider spins.
         if web["radius"] < web["target_radius"]:
             web["radius"] = min(
