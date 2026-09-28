@@ -1882,11 +1882,6 @@ def spawn_king_minions():
                         "spin": random.uniform(0, 360),
                     }
                 )
-            enemy.king_rose_timer = 0
-            if type(enemy).__name__ == "Bee":
-                fire_king_stinger_volley(enemy)
-            else:
-                fire_king_rose_volley(enemy)
 
         if enemy.king_minion_timer < 180:
             continue
