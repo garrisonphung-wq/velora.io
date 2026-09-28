@@ -1407,6 +1407,24 @@ def minion_ai(minion):
                 minion.y += (
                     (minion.y - other.y) / d * overlap * 2
                 )
+
+        # Bounce off the king when chasing, so minions never
+        # stack up on top of him.
+        kd = distance(
+            minion.x,
+            minion.y,
+            king.x,
+            king.y
+        )
+        king_min_dist = king.radius + minion.radius
+        if 0 < kd < king_min_dist:
+            overlap = king_min_dist - kd
+            minion.x += (
+                (minion.x - king.x) / kd * overlap * 2
+            )
+            minion.y += (
+                (minion.y - king.y) / kd * overlap * 2
+            )
         return
 
     # Out of range (or no king): return to the king and orbit it.
@@ -1503,6 +1521,23 @@ def minion_ai(minion):
         if bounce_x or bounce_y:
             minion.x += bounce_x * 2
             minion.y += bounce_y * 2
+
+        # Bounce away from the king if we're pressed against him.
+        king_min_dist = king.radius + minion.radius + 4
+        kd = distance(
+            minion.x,
+            minion.y,
+            king.x,
+            king.y
+        )
+        if 0 < kd < king_min_dist:
+            overlap = king_min_dist - kd
+            minion.x += (
+                (minion.x - king.x) / kd * overlap
+            )
+            minion.y += (
+                (minion.y - king.y) / kd * overlap
+            )
 
         # Face the direction of travel around the ring.
         minion.angle = math.degrees(new_angle + math.pi / 2)
@@ -1883,7 +1918,10 @@ def spawn_king_minions():
                     }
                 )
 
-        if enemy.king_minion_timer < 180:
+        # The spider king spawns minions every 0.5 seconds; other
+        # kings every 3 seconds.
+        minion_interval = 30 if type(enemy).__name__ == "Spider" else 180
+        if enemy.king_minion_timer < minion_interval:
             continue
 
         enemy.king_minion_timer = 0
