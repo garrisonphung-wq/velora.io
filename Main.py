@@ -12942,16 +12942,9 @@ def enemy_can_see_player(enemy):
     if distance_to_player == 0:
         return True
 
-    # Chase/sight range scales with the mob's size: bigger mobs
-    # spot the flower from farther away.
-    if hasattr(enemy, "view_range") and enemy.radius > 0:
-        # view_range was tuned for the default radius, so scale
-        # the radius factor into it.
-        default_radius = getattr(enemy, "base_radius", enemy.radius)
-        sight_range = enemy.view_range * (
-            enemy.radius / default_radius
-        )
-        if distance_to_player > sight_range:
+    if hasattr(enemy, "view_range"):
+        # Fixed tuned view range per mob type (not size-dependent).
+        if distance_to_player > enemy.view_range:
             return False
     elif distance_to_player > enemy.radius * 20:
         # Mobs without a tuned view_range see 20x their size.
