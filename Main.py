@@ -1149,6 +1149,12 @@ king_rose_projectiles = []
 # Flying bee-king stinger projectiles (damage the flower).
 king_stinger_projectiles = []
 
+# Hornet missiles: fired backward from the hornet's rear when it
+# stops near the flower, then they fly at the flower.
+HORNET_MISSILE_SPEED = 6
+HORNET_MISSILE_LIFETIME = 150
+hornet_missiles = []
+
 # Rock projectiles: normal rocks shoot 5 rocks every 8 seconds;
 # the rock king shoots 10 every 2 seconds (1/3 of its damage/HP).
 ROCK_VOLLEY_COUNT = 5
@@ -1915,6 +1921,73 @@ def fire_rock_volley(rock, is_king):
                 "owner": rock
             }
         )
+
+
+def fire_hornet_missile(hornet):
+    # A missile launches from the hornet's rear and flies at the
+    # flower.
+    angle = math.radians(hornet.angle)
+    back_x = -math.cos(angle)
+    back_y = -math.sin(angle)
+    hornet_missiles.append(
+        {
+            "x": hornet.x + back_x * hornet.radius,
+            "y": hornet.y + back_y * hornet.radius,
+            "dx": -back_x * HORNET_MISSILE_SPEED,
+            "dy": -back_y * HORNET_MISSILE_SPEED,
+            "timer": HORNET_MISSILE_LIFETIME,
+            "owner": hornet
+        }
+    )
+
+
+def update_hornet_missiles():
+    # Move missiles and damage the flower on contact.
+    global player_hp
+
+    for missile in hornet_missiles[:]:
+
+        missile["timer"] -= 1
+
+        if missile["timer"] <= 0:
+            hornet_missiles.remove(missile)
+            continue
+
+        missile["x"] += missile["dx"]
+        missile["y"] += missile["dy"]
+
+        if (
+            not player_dead
+            and distance(
+                missile["x"],
+                missile["y"],
+                player_x,
+                player_y
+            ) <= PLAYER_RADIUS + 6
+        ):
+            player_hp -= (
+                missile["owner"].damage
+                * MOB_DAMAGE_MULTIPLIER.get(
+                    missile["owner"].rarity,
+                    1.0
+                )
+            )
+
+            if player_hp < 0:
+                player_hp = 0
+
+            player_flash_timer = 4
+
+            if player_hp == 0:
+                class _MissileKiller:
+                    __class__ = type(missile["owner"])
+                    rarity = missile["owner"].rarity
+                    x = missile["x"]
+                    y = missile["y"]
+
+                kill_player(_MissileKiller)
+
+            hornet_missiles.remove(missile)
 
 
 def update_rock_projectiles():
@@ -5301,6 +5374,16 @@ class Hornet:
                     dy
                 )
 
+            else:
+                # Stopped next to the flower: whip around fast so
+                # the rear-mounted missile faces it, then fire.
+                back_angle = (target_angle + 180) % 360
+                self.turn_to(back_angle, 14)
+
+                self.shoot_timer += 1
+                if self.shoot_timer >= self.missile_cooldown:
+                    self.shoot_timer = 0
+                    fire_hornet_missile(self)
 
             return
 
@@ -16435,6 +16518,44 @@ while running:
 
             worker_ant.draw()
 
+        # ---------------- HORNET MISSILES ----------------
+
+        for missile in hornet_missiles:
+
+            missile_x = missile["x"] - camera_x
+            missile_y = missile["y"] - camera_y
+
+            if (
+                -50 <= missile_x <= WIDTH + 50
+                and -50 <= missile_y <= HEIGHT + 50
+            ):
+                missile_rad = math.atan2(
+                    missile["dy"],
+                    missile["dx"]
+                )
+                fx = math.cos(missile_rad)
+                fy = math.sin(missile_rad)
+                side_x = -fy
+                side_y = fx
+                pygame.draw.polygon(
+                    screen,
+                    (0, 0, 0),
+                    [
+                        (
+                            missile_x + fx * 10,
+                            missile_y + fy * 10
+                        ),
+                        (
+                            missile_x - fx * 6 + side_x * 4,
+                            missile_y - fy * 6 + side_y * 4
+                        ),
+                        (
+                            missile_x - fx * 6 - side_x * 4,
+                            missile_y - fy * 6 - side_y * 4
+                        )
+                    ]
+                )
+
         # ---------------- ROCK PROJECTILES ----------------
 
         for rock_p in rock_projectiles:
@@ -17463,6 +17584,7 @@ while running:
         update_king_stingers()
         update_king_webs()
         update_rock_projectiles()
+        update_hornet_missiles()
 
         for i in range(PETAL_SLOTS):
 
