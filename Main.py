@@ -4149,6 +4149,14 @@ class Spider:
         self.follow_speed = 2.5
         self.leg_phase = 0.0
 
+        # King / minion flags (set by the /king command)
+        self.is_king = False
+        self.is_minion = False
+        self.king_minion_timer = 0
+        self.king_chat_timer = 0
+        self.king_rose_timer = 0
+        self.king_web_timer = 0
+
 
 
 
