@@ -1725,11 +1725,11 @@ def spawn_king_minions():
                 random.choice(KING_CHAT_LINES)
             )
 
-        # Kings fire their volley every 8 seconds.
+        # Kings fire their volley every 2 seconds.
         enemy.king_rose_timer = (
             getattr(enemy, "king_rose_timer", 0) + 1
         )
-        if enemy.king_rose_timer >= 480:
+        if enemy.king_rose_timer >= 120:
             enemy.king_rose_timer = 0
             if type(enemy).__name__ == "Bee":
                 fire_king_stinger_volley(enemy)
