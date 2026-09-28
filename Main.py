@@ -1149,6 +1149,16 @@ king_rose_projectiles = []
 # Flying bee-king stinger projectiles (damage the flower).
 king_stinger_projectiles = []
 
+# Rock projectiles: normal rocks shoot 5 rocks every 8 seconds;
+# the rock king shoots 10 every 2 seconds (1/3 of its damage/HP).
+ROCK_VOLLEY_COUNT = 5
+ROCK_KING_VOLLEY_COUNT = 10
+ROCK_VOLLEY_INTERVAL = 480      # 8 seconds
+ROCK_KING_VOLLEY_INTERVAL = 120 # 2 seconds
+ROCK_PROJECTILE_SPEED = 6
+ROCK_PROJECTILE_LIFETIME = 150
+rock_projectiles = []
+
 # Spider king webs: transparent webs that slow the flower.
 KING_WEB_INTERVAL = 120     # every 2 seconds
 KING_WEB_LIFETIME = 300     # webs last 5 seconds
