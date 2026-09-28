@@ -1172,6 +1172,7 @@ KING_MOB_LIST_NAMES = {
     "Ladybug": "ladybugs",
     "Bee": "bees",
     "Spider": "spiders",
+    "Rock": "rocks",
 }
 
 def get_king_mob_list(mob_name):
