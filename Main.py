@@ -4920,12 +4920,51 @@ class Rock:
                         (self.y - king.y) / kd * overlap
                     )
 
-            # Orbiting rocks shoot at the flower every 0.5s.
+            # Orbiting rocks aim and shoot a single rock at the
+            # flower every 0.2 seconds.
             if not player_dead:
                 self.rock_volley_timer += 1
-                if self.rock_volley_timer >= 30:
+                if self.rock_volley_timer >= 12:
                     self.rock_volley_timer = 0
-                    fire_rock_volley(self, False)
+                    aim_angle = math.degrees(
+                        math.atan2(
+                            player_y - self.y,
+                            player_x - self.x
+                        )
+                    )
+                    rock_projectiles.append(
+                        {
+                            "x": self.x,
+                            "y": self.y,
+                            "angle": aim_angle,
+                            "dx": (
+                                math.cos(
+                                    math.radians(aim_angle)
+                                )
+                                * ROCK_PROJECTILE_SPEED
+                            ),
+                            "dy": (
+                                math.sin(
+                                    math.radians(aim_angle)
+                                )
+                                * ROCK_PROJECTILE_SPEED
+                            ),
+                            "damage": max(
+                                1, int(self.damage / 3)
+                            ),
+                            "radius": max(
+                                4, int(self.radius / 3)
+                            ),
+                            "hp": max(1, int(self.max_hp / 3)),
+                            "max_hp": max(
+                                1, int(self.max_hp / 3)
+                            ),
+                            "shape": self.shape_points,
+                            "is_king_shot": False,
+                            "timer": ROCK_PROJECTILE_LIFETIME,
+                            "owner": self
+                        }
+                    )
             return
 
         # Normal rocks volley every 8 seconds; rock kings every 2.
