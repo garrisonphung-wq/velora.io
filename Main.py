@@ -1150,7 +1150,7 @@ king_rose_projectiles = []
 king_stinger_projectiles = []
 
 # Spider king webs: transparent webs that slow the flower.
-KING_WEB_INTERVAL = 60      # every 1 second
+KING_WEB_INTERVAL = 120     # every 2 seconds
 KING_WEB_LIFETIME = 300     # webs last 5 seconds
 KING_WEB_SLOWDOWN = 0.45    # flower moves at 45% speed inside
 king_webs = []
@@ -1903,7 +1903,8 @@ def spawn_king_minions():
             for e in mob_list
             if getattr(e, "is_minion", False) and e.alive
         )
-        if alive_minions >= 10:
+        minion_cap = 30 if mob_name == "Spider" else 10
+        if alive_minions >= minion_cap:
             continue
 
         minion = minion_class()
