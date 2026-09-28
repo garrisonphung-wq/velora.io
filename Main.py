@@ -1924,17 +1924,28 @@ def fire_rock_volley(rock, is_king):
 
 
 def fire_hornet_missile(hornet):
-    # A missile launches from the hornet's rear and flies at the
-    # flower.
+    # After the hornet whips around, its rear-mounted missile faces
+    # the flower. The missile launches from the rear and flies at
+    # the flower.
     angle = math.radians(hornet.angle)
     back_x = -math.cos(angle)
     back_y = -math.sin(angle)
+
+    aim_angle = math.atan2(
+        player_y - hornet.y,
+        player_x - hornet.x
+    )
+
     hornet_missiles.append(
         {
             "x": hornet.x + back_x * hornet.radius,
             "y": hornet.y + back_y * hornet.radius,
-            "dx": -back_x * HORNET_MISSILE_SPEED,
-            "dy": -back_y * HORNET_MISSILE_SPEED,
+            "dx": (
+                math.cos(aim_angle) * HORNET_MISSILE_SPEED
+            ),
+            "dy": (
+                math.sin(aim_angle) * HORNET_MISSILE_SPEED
+            ),
             "timer": HORNET_MISSILE_LIFETIME,
             "owner": hornet
         }
@@ -1963,7 +1974,7 @@ def update_hornet_missiles():
                 missile["y"],
                 player_x,
                 player_y
-            ) <= PLAYER_RADIUS + 6
+            ) <= PLAYER_RADIUS + missile["owner"].radius * 0.5
         ):
             player_hp -= (
                 missile["owner"].damage
@@ -16533,6 +16544,9 @@ while running:
                     missile["dy"],
                     missile["dx"]
                 )
+                owner_radius = missile["owner"].radius
+                missile_len = owner_radius * 2.5
+                missile_w = owner_radius * 0.45
                 fx = math.cos(missile_rad)
                 fy = math.sin(missile_rad)
                 side_x = -fy
@@ -16542,16 +16556,20 @@ while running:
                     (0, 0, 0),
                     [
                         (
-                            missile_x + fx * 10,
-                            missile_y + fy * 10
+                            missile_x + fx * missile_len,
+                            missile_y + fy * missile_len
                         ),
                         (
-                            missile_x - fx * 6 + side_x * 4,
-                            missile_y - fy * 6 + side_y * 4
+                            missile_x - fx * missile_len * 0.4
+                            + side_x * missile_w,
+                            missile_y - fy * missile_len * 0.4
+                            + side_y * missile_w
                         ),
                         (
-                            missile_x - fx * 6 - side_x * 4,
-                            missile_y - fy * 6 - side_y * 4
+                            missile_x - fx * missile_len * 0.4
+                            - side_x * missile_w,
+                            missile_y - fy * missile_len * 0.4
+                            - side_y * missile_w
                         )
                     ]
                 )
