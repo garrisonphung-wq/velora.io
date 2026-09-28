@@ -1282,6 +1282,13 @@ def king_chase_or_guard(enemy):
     if player_dead:
         return True
 
+    # Spider kings freeze in place and spin while weaving a web.
+    if getattr(enemy, "king_web_spinning", 0) > 0:
+        enemy.king_web_spinning -= 1
+        enemy.angle = (enemy.angle + 12) % 360
+        enemy.speed = 0
+        return True
+
     dist_to_player = distance(
         enemy.x,
         enemy.y,
@@ -1789,6 +1796,12 @@ def update_king_webs():
     for web in king_webs[:]:
         web["timer"] -= 1
         web["spin"] += 0.3
+        # Webs grow from tiny to full size while the spider spins.
+        if web["radius"] < web["target_radius"]:
+            web["radius"] = min(
+                web["target_radius"],
+                web["radius"] + web["growth_per_frame"]
+            )
         if web["timer"] <= 0:
             king_webs.remove(web)
             continue
@@ -1836,25 +1849,36 @@ def spawn_king_minions():
             if enemy.king_rose_timer >= 30:
                 enemy.king_rose_timer = 0
                 fire_king_stinger_volley(enemy)
-        elif enemy.king_rose_timer >= 480:
-            enemy.king_rose_timer = 0
-            fire_king_rose_volley(enemy)
+        elif type(enemy).__name__ == "Ladybug":
+            if enemy.king_rose_timer >= 480:
+                enemy.king_rose_timer = 0
+                fire_king_rose_volley(enemy)
 
-        # The spider king spins a web every second.
+        # The spider king stops and spins a web every second.
+        # While spinning it can't move, and the web grows under it
+        # until it reaches twice the spider's size.
         if type(enemy).__name__ == "Spider":
             enemy.king_web_timer = (
                 getattr(enemy, "king_web_timer", 0) + 1
             )
-            if enemy.king_web_timer >= KING_WEB_INTERVAL:
+            if (
+                enemy.king_web_timer >= KING_WEB_INTERVAL
+                and getattr(enemy, "king_web_spinning", 0) <= 0
+            ):
                 enemy.king_web_timer = 0
+                # Freeze and spin for 1.5 seconds.
+                enemy.king_web_spinning = 90
+                target_radius = enemy.radius * 2
                 king_webs.append(
                     {
                         "x": enemy.x,
                         "y": enemy.y,
-                        "radius": enemy.radius * 2,
+                        "radius": 4,
+                        "target_radius": target_radius,
+                        "growth_per_frame": target_radius / 90,
                         "timer": KING_WEB_LIFETIME,
                         "surface": build_web_surface(
-                            enemy.radius * 2
+                            target_radius
                         ),
                         "spin": random.uniform(0, 360),
                     }
@@ -15981,6 +16005,16 @@ while running:
                     alpha = int(255 * web["timer"] / 60)
                 web_surf = web["surface"].copy()
                 web_surf.set_alpha(alpha)
+                if web["radius"] < web["target_radius"]:
+                    scale = web["radius"] / web["target_radius"]
+                    new_size = (
+                        max(2, int(web_surf.get_width() * scale)),
+                        max(2, int(web_surf.get_height() * scale))
+                    )
+                    web_surf = pygame.transform.scale(
+                        web_surf,
+                        new_size
+                    )
                 rotated = pygame.transform.rotate(
                     web_surf,
                     web["spin"]
