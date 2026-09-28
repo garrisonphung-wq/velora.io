@@ -1710,7 +1710,8 @@ def update_king_stingers():
 
                 kill_player(_StingerKiller)
 
-            king_stinger_projectiles.remove(stinger)
+            stinger["dying"] = True
+            stinger["shrink"] = 1.0
 
 
 def update_king_roses():
@@ -1958,10 +1959,18 @@ def update_hornet_missiles():
 
     for missile in hornet_missiles[:]:
 
+        # Dying missiles shrink away fast.
+        if missile.get("dying"):
+            missile["shrink"] -= 0.18
+            if missile["shrink"] <= 0:
+                hornet_missiles.remove(missile)
+            continue
+
         missile["timer"] -= 1
 
         if missile["timer"] <= 0:
-            hornet_missiles.remove(missile)
+            missile["dying"] = True
+            missile["shrink"] = 1.0
             continue
 
         missile["x"] += missile["dx"]
@@ -1998,7 +2007,8 @@ def update_hornet_missiles():
 
                 kill_player(_MissileKiller)
 
-            hornet_missiles.remove(missile)
+            missile["dying"] = True
+            missile["shrink"] = 1.0
 
 
 def update_rock_projectiles():
@@ -2008,10 +2018,18 @@ def update_rock_projectiles():
 
     for rock_p in rock_projectiles[:]:
 
+        # Dying rocks shrink away fast.
+        if rock_p.get("dying"):
+            rock_p["shrink"] -= 0.18
+            if rock_p["shrink"] <= 0:
+                rock_projectiles.remove(rock_p)
+            continue
+
         rock_p["timer"] -= 1
 
         if rock_p["timer"] <= 0:
-            rock_projectiles.remove(rock_p)
+            rock_p["dying"] = True
+            rock_p["shrink"] = 1.0
             continue
 
         rock_p["x"] += rock_p["dx"]
@@ -2051,7 +2069,8 @@ def update_rock_projectiles():
 
                 kill_player(_RockKiller)
 
-            rock_projectiles.remove(rock_p)
+            rock_p["dying"] = True
+            rock_p["shrink"] = 1.0
 
 
 def update_king_webs():
@@ -3616,10 +3635,18 @@ class Ladybug:
 
         if self.hp <= 0:
 
-            self.alive = False
+            if getattr(self, "death_registered", False):
+                return
+            self.death_registered = True
+
             cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
+
+            # Die with a fast shrink instead of vanishing.
+            self.dying = True
+            self.shrink_scale = 1.0
+            self.full_radius = self.radius
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -3988,10 +4015,18 @@ class Bee:
 
         if self.hp <= 0:
 
-            self.alive = False
+            if getattr(self, "death_registered", False):
+                return
+            self.death_registered = True
+
             cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
+
+            # Die with a fast shrink instead of vanishing.
+            self.dying = True
+            self.shrink_scale = 1.0
+            self.full_radius = self.radius
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -4513,10 +4548,18 @@ class Spider:
 
         if self.hp <= 0:
 
-            self.alive = False
+            if getattr(self, "death_registered", False):
+                return
+            self.death_registered = True
+
             cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
+
+            # Die with a fast shrink instead of vanishing.
+            self.dying = True
+            self.shrink_scale = 1.0
+            self.full_radius = self.radius
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -4912,10 +4955,18 @@ class Rock:
 
         if self.hp <= 0:
 
-            self.alive = False
+            if getattr(self, "death_registered", False):
+                return
+            self.death_registered = True
+
             cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
+
+            # Die with a fast shrink instead of vanishing.
+            self.dying = True
+            self.shrink_scale = 1.0
+            self.full_radius = self.radius
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -5271,10 +5322,18 @@ class Hornet:
 
         if self.hp <= 0:
 
-            self.alive = False
+            if getattr(self, "death_registered", False):
+                return
+            self.death_registered = True
+
             cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
+
+            # Die with a fast shrink instead of vanishing.
+            self.dying = True
+            self.shrink_scale = 1.0
+            self.full_radius = self.radius
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -5787,10 +5846,18 @@ class BabyAnt:
 
         if self.hp <= 0:
 
-            self.alive = False
+            if getattr(self, "death_registered", False):
+                return
+            self.death_registered = True
+
             cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
+
+            # Die with a fast shrink instead of vanishing.
+            self.dying = True
+            self.shrink_scale = 1.0
+            self.full_radius = self.radius
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -6197,10 +6264,18 @@ class SoldierAnt:
 
         if self.hp <= 0:
 
-            self.alive = False
+            if getattr(self, "death_registered", False):
+                return
+            self.death_registered = True
+
             cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
+
+            # Die with a fast shrink instead of vanishing.
+            self.dying = True
+            self.shrink_scale = 1.0
+            self.full_radius = self.radius
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -6806,10 +6881,18 @@ class WorkerAnt:
 
         if self.hp <= 0:
 
-            self.alive = False
+            if getattr(self, "death_registered", False):
+                return
+            self.death_registered = True
+
             cleanup_king(self)
             register_mob_kill(self)
             drop_mob_loot(self)
+
+            # Die with a fast shrink instead of vanishing.
+            self.dying = True
+            self.shrink_scale = 1.0
+            self.full_radius = self.radius
 
             if self.rarity in ("Celestial", "Omnient"):
 
@@ -16544,7 +16627,8 @@ while running:
                     missile["dy"],
                     missile["dx"]
                 )
-                owner_radius = missile["owner"].radius
+                shrink = missile.get("shrink", 1.0)
+                owner_radius = missile["owner"].radius * shrink
                 missile_len = owner_radius * 0.9
                 missile_w = owner_radius * 0.45
                 fx = math.cos(missile_rad)
@@ -16585,7 +16669,10 @@ while running:
                 -50 <= rock_x <= WIDTH + 50
                 and -50 <= rock_y <= HEIGHT + 50
             ):
-                rock_r = rock_p.get("radius", 8)
+                rock_r = rock_p.get("radius", 8) * rock_p.get(
+                    "shrink",
+                    1.0
+                )
                 rock_pts = [
                     (
                         rock_x + px * rock_r,
@@ -16621,7 +16708,9 @@ while running:
             ):
                 # Dark triangle pointing along its flight angle,
                 # like a stinger petal.
-                stinger_r = stinger.get("radius", 8)
+                stinger_r = stinger.get("radius", 8) * (
+                    stinger.get("shrink", 1.0)
+                )
                 # A chasing stinger faces the direction it flies
                 # (toward the flower); others keep their launch angle.
                 if stinger.get("has_homed"):
