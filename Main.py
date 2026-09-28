@@ -16545,7 +16545,7 @@ while running:
                     missile["dx"]
                 )
                 owner_radius = missile["owner"].radius
-                missile_len = owner_radius * 2.5
+                missile_len = owner_radius * 0.9
                 missile_w = owner_radius * 0.45
                 fx = math.cos(missile_rad)
                 fy = math.sin(missile_rad)
