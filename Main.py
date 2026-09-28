@@ -1498,27 +1498,38 @@ def update_king_stingers():
             king_stinger_projectiles.remove(stinger)
             continue
 
-        # Home in on the flower once, like the king's roses.
+        # Once a stinger "sees" the flower it actively chases it,
+        # re-aiming every frame while the flower stays within its
+        # sight range. If the flower escapes, the stinger flies
+        # straight in its last direction.
+        dist_to_flower = distance(
+            stinger["x"],
+            stinger["y"],
+            player_x,
+            player_y
+        )
+
+        stinger_sees = (
+            not player_dead
+            and dist_to_flower <= KING_STINGER_HOMING_RANGE
+        )
+
         if (
             not stinger["has_homed"]
-            and not player_dead
-            and distance(
-                stinger["x"],
-                stinger["y"],
-                player_x,
-                player_y
-            ) <= KING_STINGER_HOMING_RANGE
+            and stinger_sees
         ):
             stinger["has_homed"] = True
-            home_angle = math.atan2(
+
+        if stinger["has_homed"] and stinger_sees:
+            chase_angle = math.atan2(
                 player_y - stinger["y"],
                 player_x - stinger["x"]
             )
             stinger["dx"] = (
-                math.cos(home_angle) * KING_STINGER_SPEED
+                math.cos(chase_angle) * KING_STINGER_SPEED
             )
             stinger["dy"] = (
-                math.sin(home_angle) * KING_STINGER_SPEED
+                math.sin(chase_angle) * KING_STINGER_SPEED
             )
 
         stinger["x"] += stinger["dx"]
