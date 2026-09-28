@@ -1199,7 +1199,7 @@ def build_web_surface(radius):
             web_outline,
             (cx, cy),
             spokes[-1],
-            2
+            4
         )
 
     # Concentric rings connect between neighboring spokes.
@@ -1225,7 +1225,7 @@ def build_web_surface(radius):
             web_color,
             False,
             ring_points,
-            2
+            4
         )
 
     return web
@@ -1866,16 +1866,16 @@ def spawn_king_minions():
                 and getattr(enemy, "king_web_spinning", 0) <= 0
             ):
                 enemy.king_web_timer = 0
-                # Freeze and spin for 1.5 seconds.
-                enemy.king_web_spinning = 90
-                target_radius = enemy.radius * 2
+                # Freeze and spin for 0.5 seconds.
+                enemy.king_web_spinning = 30
+                target_radius = enemy.radius * 4
                 king_webs.append(
                     {
                         "x": enemy.x,
                         "y": enemy.y,
                         "radius": 4,
                         "target_radius": target_radius,
-                        "growth_per_frame": target_radius / 90,
+                        "growth_per_frame": target_radius / 30,
                         "timer": KING_WEB_LIFETIME,
                         "surface": build_web_surface(
                             target_radius
