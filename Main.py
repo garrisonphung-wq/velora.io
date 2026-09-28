@@ -2012,11 +2012,14 @@ def spawn_king_minions():
 
         enemy.king_minion_timer += 1
 
-        # Kings talk in chat every ~8 seconds.
+        # Kings talk in chat every ~8 seconds (rocks never talk).
         enemy.king_chat_timer = (
             getattr(enemy, "king_chat_timer", 0) + 1
         )
-        if enemy.king_chat_timer >= 480:
+        if (
+            enemy.king_chat_timer >= 480
+            and type(enemy).__name__ != "Rock"
+        ):
             enemy.king_chat_timer = 0
             mob_name = type(enemy).__name__
             king_say(
