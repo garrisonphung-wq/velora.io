@@ -15791,7 +15791,15 @@ while running:
                 # Dark triangle pointing along its flight angle,
                 # like a stinger petal.
                 stinger_r = stinger.get("radius", 8)
-                stinger_rad = math.radians(stinger["angle"])
+                # A chasing stinger faces the direction it flies
+                # (toward the flower); others keep their launch angle.
+                if stinger.get("has_homed"):
+                    stinger_rad = math.atan2(
+                        stinger["dy"],
+                        stinger["dx"]
+                    )
+                else:
+                    stinger_rad = math.radians(stinger["angle"])
                 tip_x = (
                     stinger_x
                     + math.cos(stinger_rad) * stinger_r * 2
