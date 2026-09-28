@@ -2084,13 +2084,14 @@ def spawn_king_minions():
         enemy.king_minion_timer = 0
 
         mob_name = type(enemy).__name__
-        if mob_name not in ("Ladybug", "Spider"):
+        if mob_name not in ("Ladybug", "Spider", "Rock"):
             continue
 
         mob_list = get_king_mob_list(mob_name)
         minion_class = {
             "Ladybug": Ladybug,
             "Spider": Spider,
+            "Rock": Rock,
         }[mob_name]
 
         alive_minions = sum(
@@ -2099,6 +2100,8 @@ def spawn_king_minions():
             if getattr(e, "is_minion", False) and e.alive
         )
         minion_cap = 30 if mob_name == "Spider" else 10
+        if mob_name == "Rock":
+            minion_cap = 5
         if alive_minions >= minion_cap:
             continue
 
