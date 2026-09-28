@@ -5571,7 +5571,7 @@ class Hornet:
             self.angle = (self.angle + 15) % 360
 
             self.shoot_timer += 1
-            if self.shoot_timer >= 12:
+            if self.shoot_timer >= 3:
                 self.shoot_timer = 0
                 fire_hornet_missile(self)
 
