@@ -7711,6 +7711,14 @@ def drop_mob_loot(enemy):
     if not drop_table:
         return
 
+    # King mobs drop petals more often: every drop chance is
+    # boosted by +1.5 percentage points.
+    king_drop_bonus = (
+        1.5
+        if getattr(enemy, "is_king", False)
+        else 0.0
+    )
+
     drops = []
 
     if enemy.rarity != "Common":
@@ -7743,20 +7751,22 @@ def drop_mob_loot(enemy):
             if chosen_rarity is None:
                 chosen_rarity, chosen_chance = rows[0]
 
-            if chosen_chance < 5:
+            boosted_chance = chosen_chance + king_drop_bonus
+            if boosted_chance < 5:
                 # Rare drop: single roll
-                if random.random() * 100 < chosen_chance:
+                if random.random() * 100 < boosted_chance:
                     drops.append((petal, chosen_rarity))
             else:
                 # Normal drop: retry up to 10 times
                 for _ in range(10):
-                    if random.random() * 100 < chosen_chance:
+                    if random.random() * 100 < boosted_chance:
                         drops.append((petal, chosen_rarity))
                         break
     else:
         # For Common mobs, single roll per row (or none)
         for petal, petal_rarity, drop_chance in drop_table:
-            if random.random() * 100 < drop_chance:
+            boosted_chance = drop_chance + king_drop_bonus
+            if random.random() * 100 < boosted_chance:
                 drops.append((petal, petal_rarity))
 
     if not drops:
