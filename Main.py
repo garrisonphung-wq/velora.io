@@ -8857,6 +8857,19 @@ def draw_petal(name, x, y, rarity, size_scale=1.0, flash_timer=0):
                 (draw_x + r * 0.75, draw_y + r * 0.65)
             ]
 
+            # outline slightly larger than the fill
+            outline_points = [
+                (draw_x, draw_y - r - 2),
+                (draw_x - r * 0.75 - 2, draw_y + r * 0.65 + 2),
+                (draw_x + r * 0.75 + 2, draw_y + r * 0.65 + 2)
+            ]
+
+            pygame.draw.polygon(
+                screen,
+                (120, 120, 120),
+                outline_points
+            )
+
             pygame.draw.polygon(
                 screen,
                 (0, 0, 0),
