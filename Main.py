@@ -1149,6 +1149,87 @@ king_rose_projectiles = []
 # Flying bee-king stinger projectiles (damage the flower).
 king_stinger_projectiles = []
 
+# Spider king webs: transparent webs that slow the flower.
+KING_WEB_INTERVAL = 60      # every 1 second
+KING_WEB_LIFETIME = 300     # webs last 5 seconds
+KING_WEB_SLOWDOWN = 0.45    # flower moves at 45% speed inside
+king_webs = []
+player_in_web = False
+
+# Mob list lookup for king minion AI (class name -> list name).
+KING_MOB_LIST_NAMES = {
+    "Ladybug": "ladybugs",
+    "Bee": "bees",
+    "Spider": "spiders",
+}
+
+def get_king_mob_list(mob_name):
+    list_name = KING_MOB_LIST_NAMES.get(mob_name)
+    if list_name is None:
+        return []
+    return globals().get(list_name, [])
+
+
+def build_web_surface(radius):
+    # Build a transparent spider web: 12 radial spokes plus 4
+    # concentric sagging rings, drawn on a SRCALPHA surface.
+    size = int(radius * 2) + 8
+    web = pygame.Surface((size, size), pygame.SRCALPHA)
+    cx = size // 2
+    cy = size // 2
+
+    spoke_count = 12
+    ring_count = 4
+    web_color = (240, 240, 240, 110)
+    web_outline = (255, 255, 255, 160)
+
+    spokes = []
+    for spoke_index in range(spoke_count):
+        a = math.radians(
+            spoke_index * (360 / spoke_count)
+        )
+        spokes.append(
+            (
+                cx + math.cos(a) * radius,
+                cy + math.sin(a) * radius
+            )
+        )
+        pygame.draw.line(
+            web,
+            web_outline,
+            (cx, cy),
+            spokes[-1],
+            2
+        )
+
+    # Concentric rings connect between neighboring spokes.
+    for ring_index in range(1, ring_count + 1):
+        ring_r = radius * ring_index / ring_count
+        ring_points = []
+        for spoke_index in range(spoke_count):
+            a = math.radians(
+                spoke_index * (360 / spoke_count)
+            )
+            # Slight inward sag between spokes.
+            sag = 1.0 - 0.08 * math.sin(
+                ring_index * 1.7 + spoke_index
+            )
+            ring_points.append(
+                (
+                    cx + math.cos(a) * ring_r * sag,
+                    cy + math.sin(a) * ring_r * sag
+                )
+            )
+        pygame.draw.lines(
+            web,
+            web_color,
+            False,
+            ring_points,
+            2
+        )
+
+    return web
+
 # Lines a king posts in chat while it is alive.
 KING_CHAT_LINES = [
     "you dare enter my land?",
@@ -1257,7 +1338,7 @@ def minion_ai(minion):
     # Minion AI for one minion: chase with the king,
     # or orbit and guard it.
 
-    king = kings.get("Ladybug")
+    king = kings.get(type(minion).__name__)
     has_king = (
         king is not None
         and king.alive
@@ -1297,7 +1378,7 @@ def minion_ai(minion):
         )
 
         # Bounce off other minions when they bump while chasing.
-        for other in ladybugs:
+        for other in get_king_mob_list(type(minion).__name__):
             if other is minion:
                 continue
             if not getattr(other, "is_minion", False):
@@ -1375,7 +1456,7 @@ def minion_ai(minion):
         separation = minion.radius * 2.2
         bounce_x = 0.0
         bounce_y = 0.0
-        for other in ladybugs:
+        for other in get_king_mob_list(type(minion).__name__):
             if other is minion:
                 continue
             if not getattr(other, "is_minion", False):
@@ -1699,6 +1780,27 @@ def update_king_roses():
             king_rose_projectiles.remove(rose)
 
 
+def update_king_webs():
+    # Age the spider king's webs and slow the flower inside them.
+    global player_in_web
+
+    player_in_web = False
+
+    for web in king_webs[:]:
+        web["timer"] -= 1
+        web["spin"] += 0.3
+        if web["timer"] <= 0:
+            king_webs.remove(web)
+            continue
+        if distance(
+            web["x"],
+            web["y"],
+            player_x,
+            player_y
+        ) <= web["radius"] + PLAYER_RADIUS:
+            player_in_web = True
+
+
 def spawn_king_minions():
     # Kings summon minions around them and talk in chat.
     if not all_enemies:
@@ -1737,6 +1839,26 @@ def spawn_king_minions():
         elif enemy.king_rose_timer >= 480:
             enemy.king_rose_timer = 0
             fire_king_rose_volley(enemy)
+
+        # The spider king spins a web every second.
+        if type(enemy).__name__ == "Spider":
+            enemy.king_web_timer = (
+                getattr(enemy, "king_web_timer", 0) + 1
+            )
+            if enemy.king_web_timer >= KING_WEB_INTERVAL:
+                enemy.king_web_timer = 0
+                king_webs.append(
+                    {
+                        "x": enemy.x,
+                        "y": enemy.y,
+                        "radius": enemy.radius * 2,
+                        "timer": KING_WEB_LIFETIME,
+                        "surface": build_web_surface(
+                            enemy.radius * 2
+                        ),
+                        "spin": random.uniform(0, 360),
+                    }
+                )
             enemy.king_rose_timer = 0
             if type(enemy).__name__ == "Bee":
                 fire_king_stinger_volley(enemy)
@@ -1748,27 +1870,35 @@ def spawn_king_minions():
 
         enemy.king_minion_timer = 0
 
-        if type(enemy).__name__ != "Ladybug":
+        mob_name = type(enemy).__name__
+        if mob_name not in ("Ladybug", "Spider"):
             continue
+
+        mob_list = get_king_mob_list(mob_name)
+        minion_class = {
+            "Ladybug": Ladybug,
+            "Spider": Spider,
+        }[mob_name]
 
         alive_minions = sum(
             1
-            for e in ladybugs
+            for e in mob_list
             if getattr(e, "is_minion", False) and e.alive
         )
         if alive_minions >= 10:
             continue
 
-        minion = Ladybug()
+        minion = minion_class()
         minion.is_minion = True
         minion.angry = True
         minion.rarity = enemy.rarity
         minion.radius = max(6, int(enemy.radius * 0.35))
-        # A minion has one third of the king's HP
-        # and one third of the king's damage.
+        # A minion has one third of the king's HP and damage,
+        # and chases at three times the king's speed.
         minion.max_hp = max(1, int(enemy.max_hp / 3))
         minion.hp = minion.max_hp
         minion.damage = max(1, int(enemy.damage / 3))
+        minion.max_speed = enemy.max_speed * 3
         minion.king_orbit_slot = alive_minions
         minion.x = (
             enemy.x
@@ -1778,7 +1908,7 @@ def spawn_king_minions():
             enemy.y
             + random.randint(-60, 60)
         )
-        ladybugs.append(minion)
+        mob_list.append(minion)
 
 
 def dev_ban_user(target_name):
@@ -4094,6 +4224,14 @@ class Spider:
 
         self.timer += 1
 
+        # ---------------- KING AI ----------------
+        # The spider king hunts the flower like the other kings:
+        # same chase range and speed, always aggro while king.
+
+        if getattr(self, "is_king", False):
+
+            if king_chase_or_guard(self):
+                return
 
         # ---------------- CHECK PLAYER DISTANCE ----------------
 
@@ -4342,6 +4480,50 @@ class Spider:
             self.radius
         )
 
+        # ---------------- KING CROWN ----------------
+
+        if getattr(self, "is_king", False):
+
+            crown_y = int(sy - self.radius - 16)
+            crown_w = int(self.radius * 1.2)
+            crown_h = int(self.radius * 0.6)
+            crown_left = int(sx - crown_w / 2)
+            crown_right = int(sx + crown_w / 2)
+
+            crown_points = [
+                (crown_left, crown_y + crown_h),
+                (crown_left, crown_y + crown_h * 0.4),
+                (
+                    crown_left + crown_w * 0.25,
+                    crown_y + crown_h * 0.4
+                ),
+                (
+                    int(sx - crown_w * 0.15),
+                    crown_y
+                ),
+                (
+                    int(sx + crown_w * 0.15),
+                    crown_y + crown_h * 0.4
+                ),
+                (
+                    crown_right - crown_w * 0.25,
+                    crown_y + crown_h * 0.4
+                ),
+                (crown_right, crown_y + crown_h * 0.4),
+                (crown_right, crown_y + crown_h)
+            ]
+
+            pygame.draw.polygon(
+                screen,
+                flash_color((255, 200, 0), self.flash_timer),
+                crown_points
+            )
+            pygame.draw.polygon(
+                screen,
+                flash_color((160, 110, 0), self.flash_timer),
+                crown_points,
+                2
+            )
 
         # ---------------- RARITY TEXT ----------------
 
@@ -15058,8 +15240,13 @@ while running:
 
         if not player_dead:
 
-            player_x += move_x * PLAYER_SPEED
-            player_y += move_y * PLAYER_SPEED
+            # Sticky spider king webs slow the flower down.
+            move_speed = PLAYER_SPEED
+            if player_in_web:
+                move_speed *= KING_WEB_SLOWDOWN
+
+            player_x += move_x * move_speed
+            player_y += move_y * move_speed
 
             # small knockback from enemy hits decays with friction so the
             # flower gets pushed a little and then recovers
@@ -15766,6 +15953,35 @@ while running:
                     grass_border,
                     (screen_x, screen_y, GRASS_SIZE, GRASS_SIZE),
                     1
+                )
+
+        # ---------------- KING WEBS ----------------
+        # Transparent spider webs drawn under the mobs.
+
+        for web in king_webs:
+
+            web_x = web["x"] - camera_x
+            web_y = web["y"] - camera_y
+
+            if (
+                -web["radius"] * 2 <= web_x <= WIDTH + web["radius"] * 2
+                and -web["radius"] * 2 <= web_y <= HEIGHT + web["radius"] * 2
+            ):
+                # Fade out during the last second of life.
+                alpha = 255
+                if web["timer"] < 60:
+                    alpha = int(255 * web["timer"] / 60)
+                web_surf = web["surface"].copy()
+                web_surf.set_alpha(alpha)
+                rotated = pygame.transform.rotate(
+                    web_surf,
+                    web["spin"]
+                )
+                screen.blit(
+                    rotated,
+                    rotated.get_rect(
+                        center=(int(web_x), int(web_y))
+                    )
                 )
 
         for ladybug in ladybugs:
@@ -16770,6 +16986,7 @@ while running:
         spawn_king_minions()
         update_king_roses()
         update_king_stingers()
+        update_king_webs()
 
         for i in range(PETAL_SLOTS):
 
