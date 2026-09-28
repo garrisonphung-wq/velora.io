@@ -1840,6 +1840,107 @@ def get_web_slowdown(rarity):
     return max(0.10, slowdown)
 
 
+def fire_rock_volley(rock, is_king):
+    # Rocks shoot a spread of rock projectiles at the flower.
+    # Normal rocks: 5 every 8s. Rock kings: 10 every 2s, with
+    # damage/HP equal to 1/3 of the rock king's.
+    if is_king:
+        count = ROCK_KING_VOLLEY_COUNT
+        damage = max(1, int(rock.damage / 3))
+        projectile_hp = max(1, int(rock.max_hp / 3))
+        radius = max(4, int(rock.radius / 3))
+    else:
+        count = ROCK_VOLLEY_COUNT
+        damage = max(1, int(rock.damage / 3))
+        projectile_hp = max(1, int(rock.max_hp / 3))
+        radius = max(4, int(rock.radius / 3))
+
+    # Aim the spread at the flower: center the volley on the
+    # direction to the flower so the rocks spread out around it.
+    base_angle = math.degrees(
+        math.atan2(
+            player_y - rock.y,
+            player_x - rock.x
+        )
+    )
+
+    for rock_index in range(count):
+        rock_angle = (
+            base_angle
+            + rock_index * (360 / count)
+        )
+        rad = math.radians(rock_angle)
+        rock_projectiles.append(
+            {
+                "x": rock.x,
+                "y": rock.y,
+                "angle": rock_angle,
+                "dx": math.cos(rad) * ROCK_PROJECTILE_SPEED,
+                "dy": math.sin(rad) * ROCK_PROJECTILE_SPEED,
+                "damage": damage,
+                "radius": radius,
+                "hp": projectile_hp,
+                "max_hp": projectile_hp,
+                "is_king_shot": is_king,
+                "timer": ROCK_PROJECTILE_LIFETIME,
+                "owner": rock
+            }
+        )
+
+
+def update_rock_projectiles():
+    # Move rock projectiles and damage the flower on contact.
+    # Petals can destroy them.
+    global player_hp
+
+    for rock_p in rock_projectiles[:]:
+
+        rock_p["timer"] -= 1
+
+        if rock_p["timer"] <= 0:
+            rock_projectiles.remove(rock_p)
+            continue
+
+        rock_p["x"] += rock_p["dx"]
+        rock_p["y"] += rock_p["dy"]
+
+        hit_radius = rock_p.get("radius", 8)
+
+        # Rocks damage the flower.
+        if (
+            not player_dead
+            and distance(
+                rock_p["x"],
+                rock_p["y"],
+                player_x,
+                player_y
+            ) <= PLAYER_RADIUS + hit_radius
+        ):
+            player_hp -= (
+                rock_p["damage"]
+                * MOB_DAMAGE_MULTIPLIER.get(
+                    rock_p["owner"].rarity,
+                    1.0
+                )
+            )
+
+            if player_hp < 0:
+                player_hp = 0
+
+            player_flash_timer = 4
+
+            if player_hp == 0:
+                class _RockKiller:
+                    __class__ = type(rock_p["owner"])
+                    rarity = rock_p["owner"].rarity
+                    x = rock_p["x"]
+                    y = rock_p["y"]
+
+                kill_player(_RockKiller)
+
+            rock_projectiles.remove(rock_p)
+
+
 def update_king_webs():
     # Age the spider king's webs and slow the flower inside them.
     global player_in_web
@@ -1942,9 +2043,13 @@ def spawn_king_minions():
                     }
                 )
 
-        # The spider king spawns minions every 0.5 seconds; other
-        # kings every 3 seconds.
-        minion_interval = 30 if type(enemy).__name__ == "Spider" else 180
+        # The spider and rock kings spawn minions every 0.5 seconds;
+        # other kings every 3 seconds.
+        minion_interval = (
+            30
+            if type(enemy).__name__ in ("Spider", "Rock")
+            else 180
+        )
         if enemy.king_minion_timer < minion_interval:
             continue
 
@@ -4673,6 +4778,10 @@ class Rock:
                 )
             )
 
+        # King flags (set by the /king command) and rock volley timer
+        self.is_king = False
+        self.rock_volley_timer = 0
+
     def take_damage(self, amount):
 
         self.hp -= int(amount)
@@ -4713,7 +4822,87 @@ class Rock:
         if not self.alive:
             return
 
-        pass
+        # Rock minions orbit their king and shoot at the flower
+        # every 0.5 seconds.
+        if getattr(self, "is_minion", False):
+
+            king = kings.get("Rock")
+            if (
+                king is not None
+                and king.alive
+            ):
+                # March around the king's guard ring.
+                king_orbit = max(
+                    70,
+                    int(king.radius * 1.6) + 40
+                )
+                orbit_slot = getattr(
+                    self,
+                    "king_orbit_slot",
+                    0
+                )
+                orbit_angle = (
+                    time.time() * 1.2
+                    + orbit_slot * (2 * math.pi / 5)
+                )
+                target_x = (
+                    king.x
+                    + math.cos(orbit_angle) * king_orbit
+                )
+                target_y = (
+                    king.y
+                    + math.sin(orbit_angle) * king_orbit
+                )
+                dx = target_x - self.x
+                dy = target_y - self.y
+                length = math.sqrt(dx * dx + dy * dy)
+                step = KING_GUARD_SPEED * 2.5
+                if length > step:
+                    self.x += dx / length * step
+                    self.y += dy / length * step
+                else:
+                    self.x = target_x
+                    self.y = target_y
+
+                # Never touch the king: bounce away from him.
+                kd = distance(
+                    self.x,
+                    self.y,
+                    king.x,
+                    king.y
+                )
+                king_min_dist = king.radius + self.radius + 4
+                if 0 < kd < king_min_dist:
+                    overlap = king_min_dist - kd
+                    self.x += (
+                        (self.x - king.x) / kd * overlap
+                    )
+                    self.y += (
+                        (self.y - king.y) / kd * overlap
+                    )
+
+            # Orbiting rocks shoot at the flower every 0.5s.
+            if not player_dead:
+                self.rock_volley_timer += 1
+                if self.rock_volley_timer >= 30:
+                    self.rock_volley_timer = 0
+                    fire_rock_volley(self, False)
+            return
+
+        # Normal rocks volley every 8 seconds; rock kings every 2.
+        if not player_dead:
+            self.rock_volley_timer += 1
+            interval = (
+                ROCK_KING_VOLLEY_INTERVAL
+                if getattr(self, "is_king", False)
+                else ROCK_VOLLEY_INTERVAL
+            )
+            if self.rock_volley_timer >= interval:
+                self.rock_volley_timer = 0
+                fire_rock_volley(
+                    self,
+                    getattr(self, "is_king", False)
+                )
 
 
     def draw(self):
@@ -4795,6 +4984,50 @@ class Rock:
             max(2, int(self.radius * 0.12))
         )
 
+        # ---------------- KING CROWN ----------------
+
+        if getattr(self, "is_king", False):
+
+            crown_y = int(sy - self.radius - 16)
+            crown_w = int(self.radius * 1.2)
+            crown_h = int(self.radius * 0.6)
+            crown_left = int(sx - crown_w / 2)
+            crown_right = int(sx + crown_w / 2)
+
+            crown_points = [
+                (crown_left, crown_y + crown_h),
+                (crown_left, crown_y + crown_h * 0.4),
+                (
+                    crown_left + crown_w * 0.25,
+                    crown_y + crown_h * 0.4
+                ),
+                (
+                    int(sx - crown_w * 0.15),
+                    crown_y
+                ),
+                (
+                    int(sx + crown_w * 0.15),
+                    crown_y + crown_h * 0.4
+                ),
+                (
+                    crown_right - crown_w * 0.25,
+                    crown_y + crown_h * 0.4
+                ),
+                (crown_right, crown_y + crown_h * 0.4),
+                (crown_right, crown_y + crown_h)
+            ]
+
+            pygame.draw.polygon(
+                screen,
+                flash_color((255, 200, 0), self.flash_timer),
+                crown_points
+            )
+            pygame.draw.polygon(
+                screen,
+                flash_color((160, 110, 0), self.flash_timer),
+                crown_points,
+                2
+            )
 
         # ---------------- RARITY TEXT ----------------
 
@@ -16131,6 +16364,32 @@ while running:
 
             worker_ant.draw()
 
+        # ---------------- ROCK PROJECTILES ----------------
+
+        for rock_p in rock_projectiles:
+
+            rock_x = rock_p["x"] - camera_x
+            rock_y = rock_p["y"] - camera_y
+
+            if (
+                -50 <= rock_x <= WIDTH + 50
+                and -50 <= rock_y <= HEIGHT + 50
+            ):
+                rock_r = rock_p.get("radius", 8)
+                pygame.draw.circle(
+                    screen,
+                    (110, 110, 110),
+                    (int(rock_x), int(rock_y)),
+                    rock_r
+                )
+                pygame.draw.circle(
+                    screen,
+                    (70, 70, 70),
+                    (int(rock_x), int(rock_y)),
+                    rock_r,
+                    2
+                )
+
         # ---------------- KING STINGERS ----------------
 
         for stinger in king_stinger_projectiles:
@@ -16841,6 +17100,22 @@ while running:
                                     king_stinger_projectiles.remove(stinger)
                                 hit = True
 
+                        for rock_p in rock_projectiles[:]:
+                            rock_d = distance(
+                                petal_world_x,
+                                petal_world_y,
+                                rock_p["x"],
+                                rock_p["y"]
+                            )
+                            if rock_d < (
+                                petal_range
+                                + rock_p.get("radius", 8)
+                            ):
+                                rock_p["hp"] -= damage
+                                if rock_p["hp"] <= 0:
+                                    rock_projectiles.remove(rock_p)
+                                hit = True
+
                         if hit:
                             if petal_type == "Wing":
                                 petal_cooldowns[i] = PETAL_RELOAD["Wing"]
@@ -17108,6 +17383,7 @@ while running:
         update_king_roses()
         update_king_stingers()
         update_king_webs()
+        update_rock_projectiles()
 
         for i in range(PETAL_SLOTS):
 
