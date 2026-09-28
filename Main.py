@@ -4921,10 +4921,10 @@ class Rock:
                     )
 
             # Orbiting rocks aim and shoot a single rock at the
-            # flower every 0.2 seconds.
+            # flower every 1 second.
             if not player_dead:
                 self.rock_volley_timer += 1
-                if self.rock_volley_timer >= 12:
+                if self.rock_volley_timer >= 60:
                     self.rock_volley_timer = 0
                     aim_angle = math.degrees(
                         math.atan2(
