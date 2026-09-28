@@ -1867,7 +1867,7 @@ def spawn_king_minions():
                 enemy.king_web_timer = 0
                 # Freeze and spin for 0.5 seconds.
                 enemy.king_web_spinning = 30
-                target_radius = enemy.radius * 4
+                target_radius = enemy.radius * 7
                 king_webs.append(
                     {
                         "x": enemy.x,
