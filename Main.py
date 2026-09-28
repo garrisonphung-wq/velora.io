@@ -1179,6 +1179,7 @@ KING_MOB_LIST_NAMES = {
     "Bee": "bees",
     "Spider": "spiders",
     "Rock": "rocks",
+    "Hornet": "hornets",
 }
 
 def get_king_mob_list(mob_name):
@@ -1924,6 +1925,152 @@ def fire_rock_volley(rock, is_king):
         )
 
 
+def hornet_minion_ai(minion):
+    # Hornet king minions: chase with the king; when the king stops
+    # chasing, return to the king and orbit him. While stopped near
+    # the flower they turn 180 degrees and shoot from the rear like
+    # normal hornets.
+
+    king = kings.get("Hornet")
+    has_king = (
+        king is not None
+        and king.alive
+    )
+
+    king_chasing = (
+        has_king
+        and not player_dead
+        and distance(
+            king.x,
+            king.y,
+            player_x,
+            player_y
+        ) <= KING_CHASE_RANGE
+    )
+
+    if king_chasing:
+        target_angle = math.degrees(
+            math.atan2(
+                player_y - minion.y,
+                player_x - minion.x
+            )
+        )
+
+        dist_to_player = distance(
+            minion.x,
+            minion.y,
+            player_x,
+            player_y
+        )
+
+        minion.speed = king.max_speed * 3.1 * 3
+
+        if dist_to_player > 250:
+            # Approach the flower.
+            minion.turn_to(target_angle, 7)
+            rad = math.radians(minion.angle)
+            move_with_collision(
+                minion,
+                math.cos(rad) * minion.speed * 0.15,
+                math.sin(rad) * minion.speed * 0.15
+            )
+        else:
+            # Stopped: whip around fast and fire from the rear.
+            back_angle = (target_angle + 180) % 360
+            minion.turn_to(back_angle, 14)
+
+            minion.shoot_timer += 1
+            if minion.shoot_timer >= minion.missile_cooldown:
+                minion.shoot_timer = 0
+                fire_hornet_missile(minion)
+
+        # Bounce off other hornet minions and the king.
+        for other in hornets:
+            if other is minion:
+                continue
+            if not other.alive:
+                continue
+            d = distance(
+                minion.x,
+                minion.y,
+                other.x,
+                other.y
+            )
+            min_dist = minion.radius + other.radius
+            if 0 < d < min_dist:
+                overlap = (min_dist - d) / 2
+                minion.x += (
+                    (minion.x - other.x) / d * overlap * 2
+                )
+                minion.y += (
+                    (minion.y - other.y) / d * overlap * 2
+                )
+
+        kd = distance(
+            minion.x,
+            minion.y,
+            king.x,
+            king.y
+        )
+        king_min_dist = king.radius + minion.radius
+        if 0 < kd < king_min_dist:
+            overlap = king_min_dist - kd
+            minion.x += (
+                (minion.x - king.x) / kd * overlap * 2
+            )
+            minion.y += (
+                (minion.y - king.y) / kd * overlap * 2
+            )
+        return
+
+    # King stopped chasing (or dead): return to the king and orbit.
+    if has_king:
+        king_orbit = max(
+            70,
+            int(king.radius * 1.6) + 40
+        )
+        orbit_slot = getattr(minion, "king_orbit_slot", 0)
+        orbit_angle = (
+            time.time() * 1.2
+            + orbit_slot * (2 * math.pi / 6)
+        )
+        target_x = (
+            king.x
+            + math.cos(orbit_angle) * king_orbit
+        )
+        target_y = (
+            king.y
+            + math.sin(orbit_angle) * king_orbit
+        )
+        dx = target_x - minion.x
+        dy = target_y - minion.y
+        length = math.sqrt(dx * dx + dy * dy)
+        step = KING_GUARD_SPEED * 2.5
+        if length > step:
+            minion.x += dx / length * step
+            minion.y += dy / length * step
+        else:
+            minion.x = target_x
+            minion.y = target_y
+
+        # Never touch the king.
+        kd = distance(
+            minion.x,
+            minion.y,
+            king.x,
+            king.y
+        )
+        king_min_dist = king.radius + minion.radius + 4
+        if 0 < kd < king_min_dist:
+            overlap = king_min_dist - kd
+            minion.x += (
+                (minion.x - king.x) / kd * overlap
+            )
+            minion.y += (
+                (minion.y - king.y) / kd * overlap
+            )
+
+
 def fire_hornet_missile(hornet):
     # After the hornet whips around, its rear-mounted missile faces
     # the flower. The missile launches from the rear and flies at
@@ -1937,6 +2084,22 @@ def fire_hornet_missile(hornet):
         player_x - hornet.x
     )
 
+    is_king = getattr(hornet, "is_king", False)
+    is_minion = getattr(hornet, "is_minion", False)
+
+    # King missiles deal 1/4 of the king's damage and have 1/4 of
+    # the king's HP so petals can shoot them down.
+    missile_damage = (
+        max(1, int(hornet.damage / 4))
+        if is_king
+        else hornet.damage
+    )
+    missile_hp = (
+        max(1, int(hornet.max_hp / 4))
+        if is_king
+        else max(1, int(hornet.max_hp / 4))
+    )
+
     hornet_missiles.append(
         {
             "x": hornet.x + back_x * hornet.radius,
@@ -1947,6 +2110,9 @@ def fire_hornet_missile(hornet):
             "dy": (
                 math.sin(aim_angle) * HORNET_MISSILE_SPEED
             ),
+            "damage": missile_damage,
+            "hp": missile_hp,
+            "max_hp": missile_hp,
             "timer": HORNET_MISSILE_LIFETIME,
             "owner": hornet
         }
@@ -1986,7 +2152,10 @@ def update_hornet_missiles():
             ) <= PLAYER_RADIUS + missile["owner"].radius * 0.5
         ):
             player_hp -= (
-                missile["owner"].damage
+                missile.get(
+                    "damage",
+                    missile["owner"].damage
+                )
                 * MOB_DAMAGE_MULTIPLIER.get(
                     missile["owner"].rarity,
                     1.0
@@ -2185,13 +2354,15 @@ def spawn_king_minions():
             if type(enemy).__name__ in ("Spider", "Rock")
             else 180
         )
+        # Hornets volley too: king missiles every 0.2s handled in
+        # Hornet.update.
         if enemy.king_minion_timer < minion_interval:
             continue
 
         enemy.king_minion_timer = 0
 
         mob_name = type(enemy).__name__
-        if mob_name not in ("Ladybug", "Spider", "Rock"):
+        if mob_name not in ("Ladybug", "Spider", "Rock", "Hornet"):
             continue
 
         mob_list = get_king_mob_list(mob_name)
@@ -2199,6 +2370,7 @@ def spawn_king_minions():
             "Ladybug": Ladybug,
             "Spider": Spider,
             "Rock": Rock,
+            "Hornet": Hornet,
         }[mob_name]
 
         alive_minions = sum(
@@ -5311,6 +5483,14 @@ class Hornet:
         self.shoot_timer = 0
         self.missile_cooldown = 90
 
+        # King / minion flags (set by the /king command)
+        self.is_king = False
+        self.is_minion = False
+        self.king_minion_timer = 0
+        self.king_chat_timer = 0
+        self.king_rose_timer = 0
+        self.king_orbit_slot = 0
+
 
     def take_damage(self, amount):
 
@@ -5381,6 +5561,25 @@ class Hornet:
 
 
         self.timer += 1
+
+        # ---------------- KING AI ----------------
+        # The hornet king never moves. It spins 15 degrees per
+        # frame and fires missiles every 0.2 seconds.
+
+        if getattr(self, "is_king", False):
+
+            self.angle = (self.angle + 15) % 360
+
+            self.shoot_timer += 1
+            if self.shoot_timer >= 12:
+                self.shoot_timer = 0
+                fire_hornet_missile(self)
+
+            return
+
+        if getattr(self, "is_minion", False):
+            hornet_minion_ai(self)
+            return
 
 
 
@@ -17421,6 +17620,21 @@ while running:
                                 rock_p["hp"] -= damage
                                 if rock_p["hp"] <= 0:
                                     rock_projectiles.remove(rock_p)
+                                hit = True
+
+                        for missile in hornet_missiles[:]:
+                            missile_d = distance(
+                                petal_world_x,
+                                petal_world_y,
+                                missile["x"],
+                                missile["y"]
+                            )
+                            if missile_d < (
+                                petal_range + 10
+                            ):
+                                missile["hp"] -= damage
+                                if missile["hp"] <= 0:
+                                    hornet_missiles.remove(missile)
                                 hit = True
 
                         if hit:
