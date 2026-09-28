@@ -2115,7 +2115,8 @@ def spawn_king_minions():
         minion.max_hp = max(1, int(enemy.max_hp / 3))
         minion.hp = minion.max_hp
         minion.damage = max(1, int(enemy.damage / 3))
-        minion.max_speed = enemy.max_speed * 3
+        if hasattr(enemy, "max_speed"):
+            minion.max_speed = enemy.max_speed * 3
         minion.king_orbit_slot = alive_minions
         minion.x = (
             enemy.x
