@@ -3131,6 +3131,7 @@ class Ladybug:
         self.alive = True
         self.flash_timer = 0
         self.radius = random.randint(20, 35)
+        self.base_radius = self.radius
         self.attack_cooldown = 2
         self.petal_attack_cooldown = 2   # <-- add this
 
@@ -3658,6 +3659,7 @@ class Bee:
         # random size
         self.damage = 100
         self.radius = random.randint(12, 25)
+        self.base_radius = self.radius
         self.rarity = "Common"
 
         # HP
@@ -4184,6 +4186,7 @@ class Spider:
         # size
 
         self.radius = random.randint(18, 25)
+        self.base_radius = self.radius
 
 
 
@@ -4830,6 +4833,7 @@ class Hornet:
         # size
 
         self.radius = random.randint(18, 25)
+        self.base_radius = self.radius
 
         # direction
 
@@ -5733,6 +5737,7 @@ class SoldierAnt:
         # size
 
         self.radius = random.randint(22, 30)
+        self.base_radius = self.radius
 
 
 
@@ -6353,6 +6358,7 @@ class WorkerAnt:
 
         # Size
         self.radius = random.randint(14, 20)
+        self.base_radius = self.radius
 
         # Direction
         self.angle = random.uniform(0, 360)
@@ -12624,6 +12630,21 @@ def enemy_can_see_player(enemy):
 
     if distance_to_player == 0:
         return True
+
+    # Chase/sight range scales with the mob's size: bigger mobs
+    # spot the flower from farther away.
+    if hasattr(enemy, "view_range") and enemy.radius > 0:
+        # view_range was tuned for the default radius, so scale
+        # the radius factor into it.
+        default_radius = getattr(enemy, "base_radius", enemy.radius)
+        sight_range = enemy.view_range * (
+            enemy.radius / default_radius
+        )
+        if distance_to_player > sight_range:
+            return False
+    elif distance_to_player > enemy.radius * 20:
+        # Mobs without a tuned view_range see 20x their size.
+        return False
 
 
     direction = direction.normalize()
