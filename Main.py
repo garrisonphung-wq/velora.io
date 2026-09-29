@@ -2193,14 +2193,17 @@ def update_worker_ant_corn():
             for slot in range(WORKER_CORN_PER_RING):
                 if (ring, slot) in existing:
                     continue
-                corn_hp = max(1, int(king.max_hp / 15))
+                # Corn damage is 1/2 of the king's damage, and its
+                # HP equals that same amount.
+                corn_damage = max(1, int(king.damage / 2))
                 worker_ant_corn.append(
                     {
                         "owner": king,
                         "ring": ring,
                         "slot": slot,
-                        "hp": corn_hp,
-                        "max_hp": corn_hp,
+                        "hp": corn_damage,
+                        "max_hp": corn_damage,
+                        "damage": corn_damage,
                         "radius": 10,
                         "x": king.x,
                         "y": king.y,
@@ -2245,7 +2248,7 @@ def update_worker_ant_corn():
         ):
             if projectile_hits_flower(
                 corn,
-                max(1, king.petal_damage)
+                corn["damage"]
             ):
                 corn["dying"] = True
                 corn["shrink"] = 1.0
@@ -2253,7 +2256,7 @@ def update_worker_ant_corn():
         # Corn damages the flower's petals on contact.
         projectile_hits_petals(
             corn,
-            king.petal_damage,
+            corn["damage"],
             corn["radius"]
         )
 
