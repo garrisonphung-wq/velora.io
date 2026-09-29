@@ -2140,16 +2140,17 @@ def update_soldier_wings():
 
 
 def worker_corn_pos(corn):
-    # World position of a corn on its king's rings.
+    # World position of a corn on its king's rings. Each ring spins
+    # at its own speed (degrees per second).
     king = corn["owner"]
+    ring_speeds = (15, 40, 75)
     corn_orbit = (
         king.radius * 1.8
         + corn["ring"] * (king.radius * 1.1 + 8)
     )
     corn_angle = math.radians(
-        time.time() * 90
+        time.time() * ring_speeds[corn["ring"]]
         + corn["slot"] * (360 / WORKER_CORN_PER_RING)
-        + corn["ring"] * (360 / (WORKER_CORN_RINGS * 2))
     )
     return (
         king.x + math.cos(corn_angle) * corn_orbit,
@@ -17581,6 +17582,29 @@ while running:
                                 kill_player(soldier_ant)
 
                             soldier_ant.attack_cooldown = 2
+
+        for worker_ant in worker_ants:
+
+            # Worker ant king minions push the flower around on
+            # contact (they deal no damage themselves).
+            if (
+                worker_ant.alive
+                and getattr(worker_ant, "is_minion", False)
+                and not player_dead
+            ):
+                d = distance(
+                    player_x,
+                    player_y,
+                    worker_ant.x,
+                    worker_ant.y
+                )
+                if (
+                    d < PLAYER_RADIUS + worker_ant.radius
+                    and player_spawn_cooldown <= 0
+                    and worker_ant.attack_cooldown == 0
+                ):
+                    push_player_from(worker_ant, 6.0)
+                    worker_ant.attack_cooldown = 2
 
         # -------- DRAW --------
 
