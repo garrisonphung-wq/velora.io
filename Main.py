@@ -3950,6 +3950,8 @@ cmd_panel_rect = cmd_panel_target_rect.copy()
 # Start fully offscreen above the top edge.
 cmd_panel_rect.y = -cmd_panel_rect.height - 20
 cmd_panel_slide_velocity = 0.0
+# Scroll offset (in pixels) for the command list.
+cmd_panel_scroll = 0
 
 # ---------------- SETTINGS PANEL ----------------
 
@@ -16052,6 +16054,14 @@ while running:
 
         if event.type == pygame.MOUSEWHEEL:
 
+            if (
+                cmd_panel_open
+                and cmd_panel_rect.collidepoint(
+                    pygame.mouse.get_pos()
+                )
+            ):
+                cmd_panel_scroll -= event.y * 32
+
             if inventory_open:
 
                 inventory_scroll -= event.y
@@ -20088,7 +20098,41 @@ while running:
                 "[action]": (255, 0, 255),
             }
             cmd_max_width = cmd_panel_rect.width - 48
-            cmd_line_y = cmd_panel_rect.y + 44
+            # Clamp scroll so the list can't scroll past its ends.
+            # First measure total content height, then clamp, then draw.
+            cmd_list_top = cmd_panel_rect.y + 44
+            cmd_list_bottom = cmd_panel_rect.bottom - 10
+            cmd_total_height = 0
+            for cmd_line in cmd_lines:
+                words = cmd_line.split()
+                cmd_line_x = cmd_panel_rect.x + 16
+                cmd_total_height += 32
+                for word in words:
+                    prefix_txt = cmd_list_font.render(
+                        "0. " + word, True, (0, 0, 0)
+                    )
+                    if (
+                        cmd_line_x
+                        + prefix_txt.get_width()
+                        > cmd_panel_rect.right - 32
+                    ):
+                        cmd_line_x = cmd_panel_rect.x + 40
+                        cmd_total_height += 24
+                    cmd_line_x += prefix_txt.get_width() + 6
+            cmd_max_scroll = max(0, cmd_total_height - (cmd_list_bottom - cmd_list_top))
+            cmd_panel_scroll = max(0, min(cmd_panel_scroll, cmd_max_scroll))
+            cmd_scroll_off = cmd_panel_scroll
+            # Clip the list so lines scroll under the panel edges.
+            cmd_clip = screen.get_clip()
+            screen.set_clip(
+                pygame.Rect(
+                    cmd_panel_rect.x + 4,
+                    cmd_panel_rect.y + 36,
+                    cmd_panel_rect.width - 8,
+                    cmd_panel_rect.height - 44
+                )
+            )
+            cmd_line_y = cmd_panel_rect.y + 44 - cmd_scroll_off
             for cmd_number, cmd_line in enumerate(cmd_lines, start=1):
                 words = cmd_line.split()
                 cmd_line_x = cmd_panel_rect.x + 16
@@ -20140,6 +20184,43 @@ while running:
                     first_line = False
                 cmd_line_y += 24
                 cmd_line_y += 8
+            screen.set_clip(cmd_clip)
+            # Scrollbar on the right edge of the panel.
+            if cmd_max_scroll > 0:
+                track_rect = pygame.Rect(
+                    cmd_panel_rect.right - 8,
+                    cmd_list_top,
+                    6,
+                    cmd_list_bottom - cmd_list_top
+                )
+                pygame.draw.rect(
+                    screen,
+                    (70, 0, 110),
+                    track_rect,
+                    border_radius=3
+                )
+                track_height = track_rect.height
+                visible_ratio = (cmd_list_bottom - cmd_list_top) / (
+                    cmd_total_height
+                )
+                thumb_height = max(
+                    20, int(track_height * visible_ratio)
+                )
+                thumb_y = track_rect.y + int(
+                    (track_height - thumb_height)
+                    * (cmd_panel_scroll / cmd_max_scroll)
+                )
+                pygame.draw.rect(
+                    screen,
+                    (200, 120, 255),
+                    (
+                        track_rect.x,
+                        thumb_y,
+                        track_rect.width,
+                        thumb_height
+                    ),
+                    border_radius=3
+                )
 
         if settings_panel_rect.y > -settings_panel_rect.height:
             pygame.draw.rect(
