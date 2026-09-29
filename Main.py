@@ -2031,6 +2031,26 @@ def update_baby_ant_rice():
 
         if rice["respawn"] > 0:
             rice["respawn"] -= 1
+            continue
+
+        rice["x"], rice["y"] = baby_ant_rice_pos(rice)
+
+        # Rice also damages the flower on contact (grinding down).
+        if (
+            not player_dead
+            and distance(
+                rice["x"],
+                rice["y"],
+                player_x,
+                player_y
+            ) <= PLAYER_RADIUS + rice.get("radius", 8)
+        ):
+            if projectile_hits_flower(
+                rice,
+                king.damage
+            ):
+                rice["dying"] = True
+                rice["shrink"] = 1.0
 
 
 def fire_soldier_wing(king):
@@ -2193,6 +2213,23 @@ def update_worker_ant_corn():
             continue
 
         corn["x"], corn["y"] = worker_corn_pos(corn)
+
+        # Corn also damages the flower on contact (grinding down).
+        if (
+            not player_dead
+            and distance(
+                corn["x"],
+                corn["y"],
+                player_x,
+                player_y
+            ) <= PLAYER_RADIUS + corn["radius"]
+        ):
+            if projectile_hits_flower(
+                corn,
+                max(1, king.petal_damage)
+            ):
+                corn["dying"] = True
+                corn["shrink"] = 1.0
 
         # Corn damages the flower's petals on contact.
         projectile_hits_petals(
@@ -7026,6 +7063,20 @@ class BabyAnt:
                     self.rarity,
                     size_scale=rice["shrink"]
                 )
+                draw_projectile_hp_bar(
+                    rice_x,
+                    rice_y,
+                    rice.get("radius", 8),
+                    rice["hp"],
+                    rice["max_hp"]
+                )
+                pygame.draw.circle(
+                    screen,
+                    (255, 60, 60),
+                    (int(rice_x), int(rice_y)),
+                    int(rice.get("radius", 8)),
+                    2
+                )
 
             # ---------------- KING CROWN ----------------
 
@@ -8250,6 +8301,20 @@ class WorkerAnt:
                     corn_y - camera_y,
                     self.rarity,
                     size_scale=corn["shrink"]
+                )
+                draw_projectile_hp_bar(
+                    corn_x - camera_x,
+                    corn_y - camera_y,
+                    corn["radius"],
+                    corn["hp"],
+                    corn["max_hp"]
+                )
+                pygame.draw.circle(
+                    screen,
+                    (255, 60, 60),
+                    (int(corn_x - camera_x), int(corn_y - camera_y)),
+                    int(corn["radius"]),
+                    2
                 )
 
         if not getattr(self, "hide_rarity_label", False):
