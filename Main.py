@@ -15876,6 +15876,18 @@ while running:
                                         show_error("Usage: /revive_user [user]")
                                     else:
                                         dev_revive_user(" ".join(args))
+                                elif cmd == "/p.size" and acc_name_text.lower() == "devguard":
+                                    # /p.size [small or big] - pick your
+                                    # flower size
+                                    args = parts[1:]
+                                    if len(args) < 1 or args[0].lower() not in ("small", "big"):
+                                        show_error("Usage: /p.size [small or big]")
+                                    elif args[0].lower() == "small":
+                                        PLAYER_RADIUS = 12
+                                        show_error("Small size ON")
+                                    else:
+                                        PLAYER_RADIUS = 25
+                                        show_error("Big size ON")
                                 elif cmd == "/rarity_to" and acc_name_text.lower() == "devguard":
                                     # /rarity_to [rarity] - change the
                                     # rarity of the enemy under the mouse
@@ -15968,6 +15980,7 @@ while running:
                                     "/unfreeze",
                                     "/p.ghost",
                                     "/revive_user",
+                                    "/p.size",
                                     "/rarity_to",
                                     "/s.enemy_increase",
                                     "/s.enemy_decrease"
@@ -20444,6 +20457,7 @@ while running:
                 "/freez_enemies [seconds]",
                 "/unfreeze",
                 "/p.ghost [y or n]",
+                "/p.size [small or big]",
                 "/revive_user [user]",
                 "/rarity_to [rarity]",
                 "/s.enemy_increase [amount]",
@@ -20465,6 +20479,8 @@ while running:
                 "[y": (0, 255, 128),
                 "or": (0, 255, 128),
                 "n]": (0, 255, 128),
+                "[small": (255, 160, 60),
+                "big]": (255, 160, 60),
             }
             cmd_max_width = cmd_panel_rect.width - 48
             # Clamp scroll so the list can't scroll past its ends.
