@@ -694,9 +694,21 @@ def resize_petal_lists():
         light_alive.pop()
 
 
+def find_petal_name(text):
+    # Find a petal by name, ignoring case and spaces so "antegg"
+    # resolves to "Ant Egg" too.
+    cleaned = text.lower().replace(" ", "")
+    for name in PETAL_HP:
+        if name.lower().replace(" ", "") == cleaned:
+            return name
+    return None
+
+
 def dev_equip_petal(rarity, petal_name, slot_index):
     # Replace the petal in a single slot (1-based)
-    petal_name = petal_name.capitalize()
+    # Match case-insensitively so multi-word names like
+    # "ant egg" resolve to "Ant Egg".
+    petal_name = find_petal_name(petal_name) or petal_name
     rarity = rarity.capitalize()
     if petal_name not in PETAL_HP:
         show_error(
@@ -745,7 +757,7 @@ def dev_equip_petal(rarity, petal_name, slot_index):
 
 def dev_equip_all_petal(rarity, petal_name):
     # Replace every petal slot with the given petal/rarity
-    petal_name = petal_name.capitalize()
+    petal_name = find_petal_name(petal_name) or petal_name
     rarity = rarity.capitalize()
     if petal_name not in PETAL_HP:
         show_error(
@@ -15829,10 +15841,9 @@ while running:
                                         # Support multi-word petal names (e.g. "Baby Ant")
                                         petal_name = None
                                         if slot_index is not None:
-                                            for name in PETAL_HP:
-                                                if name.lower() == " ".join(args[1:-1]).lower():
-                                                    petal_name = name
-                                                    break
+                                            petal_name = find_petal_name(
+                                                " ".join(args[1:-1])
+                                            )
                                         if slot_index is None:
                                             show_error("Petal slot must be a number")
                                         elif petal_name is None:
@@ -15846,11 +15857,9 @@ while running:
                                         show_error("Usage: /all_equip [rarity] [petal]")
                                     else:
                                         rarity = args[0]
-                                        petal_name = None
-                                        for name in PETAL_HP:
-                                            if name.lower() == " ".join(args[1:]).lower():
-                                                petal_name = name
-                                                break
+                                        petal_name = find_petal_name(
+                                            " ".join(args[1:])
+                                        )
                                         if petal_name is None:
                                             show_error(f"Invalid petal type. Valid: {', '.join(PETAL_HP.keys())}")
                                         elif dev_equip_all_petal(rarity, petal_name):
@@ -15908,10 +15917,9 @@ while running:
                                             amount = None
                                         petal_name = None
                                         if amount is not None:
-                                            for name in PETAL_HP:
-                                                if name.lower() == " ".join(args[2:-1]).lower():
-                                                    petal_name = name
-                                                    break
+                                            petal_name = find_petal_name(
+                                                " ".join(args[2:-1])
+                                            )
                                         if amount is None:
                                             show_error("Amount must be a number")
                                         elif petal_name is None:
@@ -15932,10 +15940,9 @@ while running:
                                             amount = None
                                         petal_name = None
                                         if amount is not None:
-                                            for name in PETAL_HP:
-                                                if name.lower() == " ".join(args[1:-2]).lower():
-                                                    petal_name = name
-                                                    break
+                                            petal_name = find_petal_name(
+                                                " ".join(args[1:-2])
+                                            )
                                         if amount is None:
                                             show_error("Amount must be a number")
                                         elif petal_name is None:
