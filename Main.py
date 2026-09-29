@@ -2143,7 +2143,7 @@ def worker_corn_pos(corn):
     # World position of a corn on its king's rings. Each ring spins
     # at its own speed (degrees per second).
     king = corn["owner"]
-    ring_speeds = (15, 40, 75)
+    ring_speeds = (45, 80, 115)
     corn_orbit = (
         king.radius * 1.8
         + corn["ring"] * (king.radius * 1.1 + 8)
