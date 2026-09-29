@@ -625,6 +625,15 @@ petal_respawn_timer = []
 
 petal_respawn_text_timer = []
 
+# Per-slot deploy progress (0..1). When a petal respawns it starts
+# at the flower's position and slides out to its orbit slot.
+petal_deploy = []
+
+def petal_orbit_distance(i, extra=0):
+    # Orbit distance of a petal, scaled by its deploy progress so
+    # freshly respawned petals slide out from the flower.
+    return (petal_distance + extra) * petal_deploy[i]
+
 def resize_petal_lists():
     # Reset petal_alive based on petal_slots filled status
     while len(petal_alive) < len(petal_slots):
@@ -667,6 +676,10 @@ def resize_petal_lists():
         petal_respawn_text_timer.append(0)
     while len(petal_respawn_text_timer) > PETAL_SLOTS:
         petal_respawn_text_timer.pop()
+    while len(petal_deploy) < PETAL_SLOTS:
+        petal_deploy.append(1.0)
+    while len(petal_deploy) > PETAL_SLOTS:
+        petal_deploy.pop()
     while len(light_cooldowns) < PETAL_SLOTS:
         light_cooldowns.append([])
     while len(light_cooldowns) > PETAL_SLOTS:
@@ -1813,12 +1826,12 @@ def projectile_hits_petals(projectile, damage, hit_radius):
                 light_x = (
                     player_x
                     + math.cos(light_angle)
-                    * (petal_distance + petal_distance_extra)
+                    * petal_orbit_distance(i)
                 )
                 light_y = (
                     player_y
                     + math.sin(light_angle)
-                    * (petal_distance + petal_distance_extra)
+                    * petal_orbit_distance(i)
                 )
                 if distance(
                     projectile["x"],
@@ -1839,12 +1852,12 @@ def projectile_hits_petals(projectile, damage, hit_radius):
             petal_world_x = (
                 player_x
                 + math.cos(angle)
-                * (petal_distance + petal_distance_extra)
+                * petal_orbit_distance(i, petal_distance_extra)
             )
             petal_world_y = (
                 player_y
                 + math.sin(angle)
-                * (petal_distance + petal_distance_extra)
+                * petal_orbit_distance(i, petal_distance_extra)
             )
             if petal_alive[i] and distance(
                 projectile["x"],
@@ -17060,6 +17073,13 @@ while running:
 
         for i in range(PETAL_SLOTS):
 
+            # Respawning petals slide out from the flower.
+            if petal_alive[i] and petal_deploy[i] < 1.0:
+                petal_deploy[i] = min(
+                    1.0,
+                    petal_deploy[i] + 0.08
+                )
+
             if (
                 not petal_alive[i]
                 and not player_dead
@@ -17074,6 +17094,7 @@ while running:
 
                     petal_alive[i] = True
                     petal_hp[i] = petal_max_hp[i]
+                    petal_deploy[i] = 0.0
 
                     if i < len(petal_slots) and petal_slots[i]["petal"] == "Light":
                         light_count = get_petal_count("Light", petal_slots[i]["rarity"])
@@ -18036,11 +18057,13 @@ while running:
                     )
                     x = (
                         WIDTH // 2
-                        + math.cos(angle) * petal_distance
+                        + math.cos(angle)
+                        * petal_orbit_distance(i)
                     )
                     y = (
                         HEIGHT // 2
-                        + math.sin(angle) * petal_distance
+                        + math.sin(angle)
+                        * petal_orbit_distance(i)
                     )
 
                     orbit_angle = petal_angle
@@ -18070,12 +18093,12 @@ while running:
                 x = (
                     WIDTH // 2
                     + math.cos(angle)
-                    * (petal_distance + moon_extra_orbit)
+                    * petal_orbit_distance(i, moon_extra_orbit)
                 )
                 y = (
                     HEIGHT // 2
                     + math.sin(angle)
-                    * (petal_distance + moon_extra_orbit)
+                    * petal_orbit_distance(i, moon_extra_orbit)
                 )
 
                 orbit_angle = petal_angle
@@ -18172,17 +18195,17 @@ while running:
                 petal_world_x = (
                     player_x
                     + math.cos(angle)
-                    * (
-                        petal_distance
-                        + (40 if petal_slots[i]["petal"] == "Moon" else 0)
+                    * petal_orbit_distance(
+                        i,
+                        40 if petal_slots[i]["petal"] == "Moon" else 0
                     )
                 )
                 petal_world_y = (
                     player_y
                     + math.sin(angle)
-                    * (
-                        petal_distance
-                        + (40 if petal_slots[i]["petal"] == "Moon" else 0)
+                    * petal_orbit_distance(
+                        i,
+                        40 if petal_slots[i]["petal"] == "Moon" else 0
                     )
                 )
 
@@ -18226,14 +18249,15 @@ while running:
                             if light_cooldowns[i][li] <= 0:
                                 light_alive[i][li] = True
                                 light_hp[i][li] = petal_max_hp[i]
+                                petal_deploy[i] = 0.0
 
                         if not light_alive[i][li]:
                             continue
 
                         # Calculate light position
                         light_angle = petal_angle + element_index * angle_increment
-                        light_x = player_x + math.cos(math.radians(light_angle)) * petal_distance
-                        light_y = player_y + math.sin(math.radians(light_angle)) * petal_distance
+                        light_x = player_x + math.cos(math.radians(light_angle)) * petal_orbit_distance(i)
+                        light_y = player_y + math.sin(math.radians(light_angle)) * petal_orbit_distance(i)
 
                         if light_cooldowns[i][li] == 0:
                             for enemy in all_enemies:
@@ -18492,11 +18516,11 @@ while running:
                             bar_width = 20
                             bar_height = 4
                             hp_percent = light_hp[i][li] / petal_max_hp[i]
-                            bar_orbit = petal_distance
+                            bar_orbit = petal_orbit_distance(
+                                i,
+                                40 if petal_slots[i]["petal"] == "Moon" else 0
+                            )
                             bar_petal_r = PETAL_RADIUS
-                            if petal_slots[i]["petal"] == "Moon":
-                                bar_orbit += 40
-                                bar_petal_r = int(PETAL_RADIUS * 4)
                             light_angle = math.radians(
                                 petal_angle + (slot_start_index + li) * angle_increment
                             )
@@ -18532,12 +18556,11 @@ while running:
                         petal_max_hp[i]
                     )
 
-                    bar_orbit = petal_distance
+                    bar_orbit = petal_orbit_distance(
+                        i,
+                        40 if petal_slots[i]["petal"] == "Moon" else 0
+                    )
                     bar_petal_r = PETAL_RADIUS
-
-                    if petal_slots[i]["petal"] == "Moon":
-                        bar_orbit += 40
-                        bar_petal_r = int(PETAL_RADIUS * 4)
 
                     pygame.draw.rect(
                         screen,
@@ -18761,12 +18784,12 @@ while running:
             moon_x = (
                 player_x
                 + math.cos(moon_angle)
-                * (petal_distance + 40)
+                * petal_orbit_distance(i, 40)
             )
             moon_y = (
                 player_y
                 + math.sin(moon_angle)
-                * (petal_distance + 40)
+                * petal_orbit_distance(i, 40)
             )
             moon_hitbox = PETAL_RADIUS * 4
 
@@ -18896,10 +18919,10 @@ while running:
                             petal_angle + element_index * angle_increment
                         )
                         l_x = int(
-                            player_center_x + math.cos(angle) * petal_distance
+                            player_center_x + math.cos(angle) * petal_orbit_distance(i)
                         )
                         l_y = int(
-                            player_center_y + math.sin(angle) * petal_distance
+                            player_center_y + math.sin(angle) * petal_orbit_distance(i)
                         )
                         pygame.draw.circle(
                             screen,
@@ -18926,12 +18949,12 @@ while running:
                     hp_x = int(
                         player_center_x
                         + math.cos(angle)
-                        * (petal_distance + moon_extra_orbit)
+                        * petal_orbit_distance(i, moon_extra_orbit)
                     )
                     hp_y = int(
                         player_center_y
                         + math.sin(angle)
-                        * (petal_distance + moon_extra_orbit)
+                        * petal_orbit_distance(i, moon_extra_orbit)
                     )
                     petal_range_draw = (
                         int(PETAL_RADIUS * petal_size_scale)
