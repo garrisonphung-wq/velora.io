@@ -2513,7 +2513,7 @@ def spawn_king_minions():
         if mob_name == "Rock":
             minion_cap = 5
         if mob_name == "BabyAnt":
-            minion_cap = 40
+            minion_cap = 20
         if alive_minions >= minion_cap:
             continue
 
@@ -6239,7 +6239,7 @@ class BabyAnt:
 
         if getattr(self, "is_minion", False):
 
-            generic_minion_ai(self)
+            minion_ai(self)
             return
 
 
