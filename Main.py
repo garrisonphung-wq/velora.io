@@ -1769,6 +1769,100 @@ def draw_projectile_hp_bar(sx, sy, radius, hp, max_hp):
     )
 
 
+def projectile_hits_petals(projectile, damage, hit_radius):
+    # Enemy projectiles also chip away at the flower's petals when
+    # they touch them, the same way mobs do.
+    total_elements = 0
+    for i in range(PETAL_SLOTS):
+        if not petal_alive[i]:
+            continue
+        if petal_slots[i]["petal"] == "Light":
+            total_elements += get_petal_count(
+                "Light",
+                petal_slots[i]["rarity"]
+            )
+        else:
+            total_elements += 1
+    if total_elements <= 0:
+        return
+
+    angle_increment = 360 / total_elements
+    element_index = 0
+
+    for i in range(PETAL_SLOTS):
+        if not petal_alive[i]:
+            continue
+
+        petal_type = petal_slots[i]["petal"]
+        petal_distance_extra = (
+            40 if petal_slots[i]["petal"] == "Moon" else 0
+        )
+
+        if petal_type == "Light":
+            light_count = get_petal_count(
+                "Light",
+                petal_slots[i]["rarity"]
+            )
+            for li in range(light_count):
+                if not light_alive[i][li]:
+                    continue
+                light_angle = math.radians(
+                    petal_angle
+                    + (element_index + li) * angle_increment
+                )
+                light_x = (
+                    player_x
+                    + math.cos(light_angle)
+                    * (petal_distance + petal_distance_extra)
+                )
+                light_y = (
+                    player_y
+                    + math.sin(light_angle)
+                    * (petal_distance + petal_distance_extra)
+                )
+                if distance(
+                    projectile["x"],
+                    projectile["y"],
+                    light_x,
+                    light_y
+                ) <= PETAL_RADIUS + hit_radius:
+                    light_hp[i][li] -= damage
+                    if light_hp[i][li] <= 0:
+                        light_alive[i][li] = False
+                        light_cooldowns[i][li] = (
+                            PETAL_RELOAD["Light"]
+                        )
+        else:
+            angle = math.radians(
+                petal_angle + element_index * angle_increment
+            )
+            petal_world_x = (
+                player_x
+                + math.cos(angle)
+                * (petal_distance + petal_distance_extra)
+            )
+            petal_world_y = (
+                player_y
+                + math.sin(angle)
+                * (petal_distance + petal_distance_extra)
+            )
+            if petal_alive[i] and distance(
+                projectile["x"],
+                projectile["y"],
+                petal_world_x,
+                petal_world_y
+            ) <= PETAL_RADIUS + hit_radius:
+                petal_hp[i] -= damage
+                if petal_hp[i] <= 0:
+                    petal_hp[i] = 0
+                    petal_alive[i] = False
+                    petal_respawn_timer[i] = PETAL_RELOAD[
+                        petal_slots[i]["petal"]
+                    ]
+
+        element_index += 1
+
+
 def update_king_stingers():
     # Move the bee king's stingers; they home toward the flower once
     # and damage it on contact. Petals can destroy them.
@@ -1818,6 +1912,13 @@ def update_king_stingers():
 
         stinger["x"] += stinger["dx"]
         stinger["y"] += stinger["dy"]
+
+        # Stingers chip the flower's petals too.
+        projectile_hits_petals(
+            stinger,
+            stinger["damage"],
+            stinger.get("radius", 8)
+        )
 
         stinger_hit_radius = stinger.get("radius", 8)
 
@@ -1966,6 +2067,13 @@ def update_soldier_wings():
         wing["x"] += wing["dx"]
         wing["y"] += wing["dy"]
 
+        # The giant wing chips the flower's petals too.
+        projectile_hits_petals(
+            wing,
+            wing.get("damage", 10),
+            wing.get("radius", 8)
+        )
+
         # Damage the flower on contact (and grind down against it).
         if (
             not player_dead
@@ -2019,6 +2127,13 @@ def update_king_roses():
 
         rose["x"] += rose["dx"]
         rose["y"] += rose["dy"]
+
+        # Roses chip the flower's petals too.
+        projectile_hits_petals(
+            rose,
+            rose["damage"],
+            rose.get("radius", 8)
+        )
 
         hit_something = False
 
@@ -2514,6 +2629,16 @@ def update_hornet_missiles():
         missile["x"] += missile["dx"]
         missile["y"] += missile["dy"]
 
+        # Missiles chip the flower's petals too.
+        projectile_hits_petals(
+            missile,
+            missile.get(
+                "damage",
+                missile["owner"].damage
+            ),
+            missile["owner"].radius * 0.5
+        )
+
         if (
             not player_dead
             and distance(
@@ -2557,6 +2682,13 @@ def update_rock_projectiles():
 
         rock_p["x"] += rock_p["dx"]
         rock_p["y"] += rock_p["dy"]
+
+        # Rocks chip the flower's petals too.
+        projectile_hits_petals(
+            rock_p,
+            rock_p["damage"],
+            rock_p.get("radius", 8)
+        )
 
         hit_radius = rock_p.get("radius", 8)
 
