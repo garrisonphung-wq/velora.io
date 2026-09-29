@@ -3302,8 +3302,8 @@ def flower_minion_ai(minion):
 def spawn_flower_minion(slot_index):
     # Hatch a yellow SoldierAnt minion from an alive Ant Egg petal.
     egg_rarity = petal_slots[slot_index]["rarity"]
-    if egg_rarity not in RARITY_COLORS:
-        egg_rarity = "Common"
+    if egg_rarity not in MOB_HP_MULTIPLIER:
+        egg_rarity = "Celestial"
 
     minion = SoldierAnt()
     minion.is_minion = True
@@ -3312,11 +3312,10 @@ def spawn_flower_minion(slot_index):
     minion.king_orbit_slot = sum(
         1 for m in flower_minions if m.alive
     )
+    # Same base HP and damage as an enemy soldier ant, scaled by
+    # the egg petal's rarity with the mob multipliers.
     minion.rarity = egg_rarity
-    # A flower minion has one third of the flower's HP and damage.
-    minion.max_hp = max(1, int(PLAYER_MAX_HP / 3))
-    minion.damage = max(1, int(PLAYER_MAX_HP / 3))
-    minion.hp = minion.max_hp
+    apply_enemy_rarity_stats(minion)
     minion.x = player_x + random.randint(-60, 60)
     minion.y = player_y + random.randint(-60, 60)
     flower_minions.append(minion)
