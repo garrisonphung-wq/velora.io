@@ -15884,9 +15884,11 @@ while running:
                                         show_error("Usage: /p.size [small or big]")
                                     elif args[0].lower() == "small":
                                         PLAYER_RADIUS = 12
+                                        PETAL_RADIUS = 6
                                         show_error("Small size ON")
                                     else:
                                         PLAYER_RADIUS = 25
+                                        PETAL_RADIUS = 12
                                         show_error("Big size ON")
                                 elif cmd == "/rarity_to" and acc_name_text.lower() == "devguard":
                                     # /rarity_to [rarity] - change the
@@ -19829,6 +19831,17 @@ while running:
         if player_rot_angle != 0:
             face_surf = pygame.transform.rotate(face_surf, -player_rot_angle)
 
+        # Shrink or grow the face to match the picked flower size.
+        if PLAYER_RADIUS != 25:
+            face_scale = PLAYER_RADIUS / 25
+            face_surf = pygame.transform.smoothscale(
+                face_surf,
+                (
+                    max(1, int(42 * face_scale)),
+                    max(1, int(42 * face_scale))
+                )
+            )
+
         if player_ghost:
             face_surf.set_alpha(90)
 
@@ -19963,6 +19976,15 @@ while running:
                 math.radians(160),
                 2
             )
+            if PLAYER_RADIUS != 25:
+                face_scale = PLAYER_RADIUS / 25
+                face_surf = pygame.transform.smoothscale(
+                    face_surf,
+                    (
+                        max(1, int(42 * face_scale)),
+                        max(1, int(42 * face_scale))
+                    )
+                )
             screen.blit(
                 face_surf,
                 face_surf.get_rect(center=(fcx, fcy))
