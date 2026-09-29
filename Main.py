@@ -15819,6 +15819,10 @@ while running:
                                             show_error("Amount must be a number")
                                         else:
                                             dev_freeze_enemies(seconds)
+                                elif cmd == "/unfreeze" and acc_name_text.lower() == "devguard":
+                                    # /unfreeze - unfreeze all enemies
+                                    enemies_frozen_timer = 0
+                                    show_error("Enemies unfrozen")
                                 elif cmd == "/rarity_to" and acc_name_text.lower() == "devguard":
                                     # /rarity_to [rarity] - change the
                                     # rarity of the enemy under the mouse
@@ -15908,6 +15912,7 @@ while running:
                                     "/king",
                                     "/spawn_enemy",
                                     "/freez_enemies",
+                                    "/unfreeze",
                                     "/rarity_to",
                                     "/s.enemy_increase",
                                     "/s.enemy_decrease"
@@ -20246,6 +20251,7 @@ while running:
                 "/stats",
                 "/whisper [user] [message]",
                 "/freez_enemies [seconds]",
+                "/unfreeze",
                 "/rarity_to [rarity]",
                 "/s.enemy_increase [amount]",
                 "/s.enemy_decrease [amount]"
