@@ -17342,6 +17342,14 @@ while running:
                     missile["hp"],
                     missile["max_hp"]
                 )
+                # Hitbox outline.
+                pygame.draw.circle(
+                    screen,
+                    (255, 60, 60),
+                    (int(missile_x), int(missile_y)),
+                    int(missile["owner"].radius * 0.5),
+                    2
+                )
 
         # ---------------- ROCK PROJECTILES ----------------
 
@@ -17385,6 +17393,14 @@ while running:
                     rock_p.get("radius", 8),
                     rock_p["hp"],
                     rock_p["max_hp"]
+                )
+                # Hitbox outline.
+                pygame.draw.circle(
+                    screen,
+                    (255, 60, 60),
+                    (int(rock_x), int(rock_y)),
+                    int(rock_p.get("radius", 8)),
+                    2
                 )
 
         # ---------------- KING STINGERS ----------------
@@ -17444,6 +17460,14 @@ while running:
                     stinger["hp"],
                     stinger["max_hp"]
                 )
+                # Hitbox outline.
+                pygame.draw.circle(
+                    screen,
+                    (255, 60, 60),
+                    (int(stinger_x), int(stinger_y)),
+                    int(stinger.get("radius", 8)),
+                    2
+                )
 
         # ---------------- KING ROSES ----------------
 
@@ -17477,6 +17501,14 @@ while running:
                     rose.get("radius", 8),
                     rose["hp"],
                     rose["max_hp"]
+                )
+                # Hitbox outline.
+                pygame.draw.circle(
+                    screen,
+                    (255, 60, 60),
+                    (int(rose_x), int(rose_y)),
+                    int(rose.get("radius", 8)),
+                    2
                 )
 
         # ---------------- SOLDIER KING WINGS ----------------
@@ -17559,6 +17591,14 @@ while running:
                     wing.get("radius", 8),
                     wing["hp"],
                     wing["max_hp"]
+                )
+                # Hitbox outline.
+                pygame.draw.circle(
+                    screen,
+                    (255, 60, 60),
+                    (int(wing_x), int(wing_y)),
+                    int(wing.get("radius", 8) * 0.7),
+                    2
                 )
 
         for pickup in PICKUP_LIST:
