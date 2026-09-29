@@ -3198,7 +3198,7 @@ def flower_minion_ai(minion):
         and target.alive
         and not getattr(target, "dying", False)
     ):
-        # Charge the spotted enemy at high speed.
+        # Charge the spotted enemy at two times the flower's speed.
         target_angle = math.degrees(
             math.atan2(
                 target.y - minion.y,
@@ -3206,12 +3206,12 @@ def flower_minion_ai(minion):
             )
         )
         minion.turn_to(target_angle, 6)
-        minion.speed = minion.max_speed * 3
+        minion.speed = PLAYER_SPEED * 2
         rad = math.radians(minion.angle)
         move_with_collision(
             minion,
-            math.cos(rad) * minion.speed * 0.15,
-            math.sin(rad) * minion.speed * 0.15
+            math.cos(rad) * minion.speed,
+            math.sin(rad) * minion.speed
         )
         return
 
