@@ -17610,16 +17610,10 @@ while running:
 
         for worker_ant in worker_ants:
 
-            # Worker ant kings and their minions push the flower
-            # around on contact (they deal no damage themselves).
-            if (
-                worker_ant.alive
-                and (
-                    getattr(worker_ant, "is_minion", False)
-                    or getattr(worker_ant, "is_king", False)
-                )
-                and not player_dead
-            ):
+            # All worker ants damage and push the flower on
+            # contact (like the other ants).
+            if worker_ant.alive and not player_dead:
+
                 d = distance(
                     player_x,
                     player_y,
@@ -17631,7 +17625,21 @@ while running:
                     and player_spawn_cooldown <= 0
                     and worker_ant.attack_cooldown == 0
                 ):
-                    push_player_from(worker_ant, 6.0)
+                    player_hp -= (
+                        worker_ant.damage *
+                        MOB_DAMAGE_MULTIPLIER[worker_ant.rarity]
+                    )
+
+                    if player_hp < 0:
+                        player_hp = 0
+
+                    player_flash_timer = 4
+
+                    push_player_from(worker_ant)
+
+                    if player_hp == 0:
+                        kill_player(worker_ant)
+
                     worker_ant.attack_cooldown = 2
 
         # -------- DRAW --------
@@ -18531,6 +18539,10 @@ while running:
                                                 "petal_damage",
                                                 enemy.damage
                                             )
+                                            * MOB_DAMAGE_MULTIPLIER.get(
+                                                enemy.rarity,
+                                                1.0
+                                            )
                                         )
                                         if light_hp[i][li] <= 0:
                                             light_alive[i][li] = False
@@ -18598,13 +18610,18 @@ while running:
                                 # enemy damages petal
                                 if enemy.attack_cooldown == 0:
 
-                                    # Worker ants (and similar harmless
-                                    # mobs) can still damage petals.
+                                    # Mobs damage petals, scaled by
+                                    # rarity so high-rarity mobs
+                                    # one-shot them.
                                     petal_hp[i] -= (
                                         getattr(
                                             enemy,
                                             "petal_damage",
                                             enemy.damage
+                                        )
+                                        * MOB_DAMAGE_MULTIPLIER.get(
+                                            enemy.rarity,
+                                            1.0
                                         )
                                     )
                                     petal_flash_timers[i] = 4
