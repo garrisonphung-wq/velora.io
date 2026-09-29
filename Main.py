@@ -1689,6 +1689,74 @@ def fire_king_stinger_volley(king):
         )
 
 
+def projectile_hits_flower(projectile, damage):
+    # Enemy projectiles don't pop instantly when they touch the
+    # flower. They grind against it, losing HP over time, and they
+    # only die when their HP bar actually reaches 0.
+    global player_hp
+
+    # Drain the projectile's HP while it touches the flower
+    # (about 1 second of contact to wear it down fully).
+    projectile["hp"] -= max(
+        1,
+        projectile.get("max_hp", 1) // 60
+    )
+
+    # Damage the flower in pulses instead of every frame.
+    projectile["touch_timer"] = (
+        projectile.get("touch_timer", 0) - 1
+    )
+    if projectile["touch_timer"] <= 0:
+        projectile["touch_timer"] = 30
+        player_hp -= (
+            damage
+            * MOB_DAMAGE_MULTIPLIER.get(
+                projectile["owner"].rarity,
+                1.0
+            )
+        )
+
+        if player_hp < 0:
+            player_hp = 0
+
+        if player_hp == 0:
+            class _ProjectileKiller:
+                __class__ = type(projectile["owner"])
+                rarity = projectile["owner"].rarity
+                x = projectile["x"]
+                y = projectile["y"]
+
+            kill_player(_ProjectileKiller)
+
+    return projectile["hp"] <= 0
+
+
+def draw_projectile_hp_bar(sx, sy, radius, hp, max_hp):
+    # Small HP bar above an enemy projectile so the drain is
+    # visible while it grinds against the flower.
+    if max_hp <= 0 or hp >= max_hp:
+        return
+    bar_width = max(20, int(radius * 1.6))
+    bar_height = 4
+    bar_x = int(sx - bar_width / 2)
+    bar_y = int(sy - radius - 12)
+    pygame.draw.rect(
+        screen,
+        (80, 80, 80),
+        (bar_x, bar_y, bar_width, bar_height)
+    )
+    pygame.draw.rect(
+        screen,
+        (0, 255, 0),
+        (
+            bar_x,
+            bar_y,
+            int(bar_width * max(0.0, hp / max_hp)),
+            bar_height
+        )
+    )
+
+
 def update_king_stingers():
     # Move the bee king's stingers; they home toward the flower once
     # and damage it on contact. Petals can destroy them.
@@ -1741,7 +1809,7 @@ def update_king_stingers():
 
         stinger_hit_radius = stinger.get("radius", 8)
 
-        # Stingers damage the flower.
+        # Stingers damage the flower (and grind down against it).
         if (
             not player_dead
             and distance(
@@ -1751,30 +1819,12 @@ def update_king_stingers():
                 player_y
             ) <= PLAYER_RADIUS + stinger_hit_radius
         ):
-            player_hp -= (
+            if projectile_hits_flower(
+                stinger,
                 stinger["damage"]
-                * MOB_DAMAGE_MULTIPLIER.get(
-                    stinger["owner"].rarity,
-                    1.0
-                )
-            )
-
-            if player_hp < 0:
-                player_hp = 0
-
-            player_flash_timer = 4
-
-            if player_hp == 0:
-                class _StingerKiller:
-                    __class__ = type(stinger["owner"])
-                    rarity = stinger["owner"].rarity
-                    x = stinger["x"]
-                    y = stinger["y"]
-
-                kill_player(_StingerKiller)
-
-            stinger["dying"] = True
-            stinger["shrink"] = 1.0
+            ):
+                stinger["dying"] = True
+                stinger["shrink"] = 1.0
 
 
 def baby_ant_rice_pos(rice):
@@ -1904,7 +1954,7 @@ def update_soldier_wings():
         wing["x"] += wing["dx"]
         wing["y"] += wing["dy"]
 
-        # Damage the flower on contact.
+        # Damage the flower on contact (and grind down against it).
         if (
             not player_dead
             and distance(
@@ -1914,15 +1964,12 @@ def update_soldier_wings():
                 player_y
             ) <= PLAYER_RADIUS + wing["radius"] * 0.7
         ):
-            player_hp -= (
+            if projectile_hits_flower(
+                wing,
                 wing.get("damage", 10)
-                * MOB_DAMAGE_MULTIPLIER.get(
-                    wing["owner"].rarity,
-                    1.0
-                )
-            )
-            wing["dying"] = True
-            wing["shrink"] = 1.0
+            ):
+                wing["dying"] = True
+                wing["shrink"] = 1.0
 
 
 def update_king_roses():
@@ -1965,7 +2012,7 @@ def update_king_roses():
 
         rose_hit_radius = rose.get("radius", 8)
 
-        # Roses damage the flower.
+        # Roses damage the flower (and grind down against it).
         if (
             not player_dead
             and distance(
@@ -1975,31 +2022,11 @@ def update_king_roses():
                 player_y
             ) <= PLAYER_RADIUS + rose_hit_radius
         ):
-            player_hp -= (
+            if projectile_hits_flower(
+                rose,
                 rose["damage"]
-                * MOB_DAMAGE_MULTIPLIER.get(
-                    rose["owner"].rarity,
-                    1.0
-                )
-            )
-
-            if player_hp < 0:
-                player_hp = 0
-
-            player_flash_timer = 4
-
-            if player_hp == 0:
-                # Killed by the king's rose: fake "enemy" carrying the
-                # king's class/rarity for the death screen.
-                class _RoseKiller:
-                    __class__ = type(rose["owner"])
-                    rarity = rose["owner"].rarity
-                    x = rose["x"]
-                    y = rose["y"]
-
-                kill_player(_RoseKiller)
-
-            hit_something = True
+            ):
+                hit_something = True
 
         # Roses heal ladybugs on contact. Minions get healed and
         # the rose bounces away from them. Regular ladybugs absorb
@@ -2484,33 +2511,15 @@ def update_hornet_missiles():
                 player_y
             ) <= PLAYER_RADIUS + missile["owner"].radius * 0.5
         ):
-            player_hp -= (
+            if projectile_hits_flower(
+                missile,
                 missile.get(
                     "damage",
                     missile["owner"].damage
                 )
-                * MOB_DAMAGE_MULTIPLIER.get(
-                    missile["owner"].rarity,
-                    1.0
-                )
-            )
-
-            if player_hp < 0:
-                player_hp = 0
-
-            player_flash_timer = 4
-
-            if player_hp == 0:
-                class _MissileKiller:
-                    __class__ = type(missile["owner"])
-                    rarity = missile["owner"].rarity
-                    x = missile["x"]
-                    y = missile["y"]
-
-                kill_player(_MissileKiller)
-
-            missile["dying"] = True
-            missile["shrink"] = 1.0
+            ):
+                missile["dying"] = True
+                missile["shrink"] = 1.0
 
 
 def update_rock_projectiles():
@@ -2539,7 +2548,7 @@ def update_rock_projectiles():
 
         hit_radius = rock_p.get("radius", 8)
 
-        # Rocks damage the flower.
+        # Rocks damage the flower (and grind down against it).
         if (
             not player_dead
             and distance(
@@ -2549,30 +2558,12 @@ def update_rock_projectiles():
                 player_y
             ) <= PLAYER_RADIUS + hit_radius
         ):
-            player_hp -= (
+            if projectile_hits_flower(
+                rock_p,
                 rock_p["damage"]
-                * MOB_DAMAGE_MULTIPLIER.get(
-                    rock_p["owner"].rarity,
-                    1.0
-                )
-            )
-
-            if player_hp < 0:
-                player_hp = 0
-
-            player_flash_timer = 4
-
-            if player_hp == 0:
-                class _RockKiller:
-                    __class__ = type(rock_p["owner"])
-                    rarity = rock_p["owner"].rarity
-                    x = rock_p["x"]
-                    y = rock_p["y"]
-
-                kill_player(_RockKiller)
-
-            rock_p["dying"] = True
-            rock_p["shrink"] = 1.0
+            ):
+                rock_p["dying"] = True
+                rock_p["shrink"] = 1.0
 
 
 def update_king_webs():
@@ -2741,7 +2732,11 @@ def spawn_king_minions():
         minion.is_minion = True
         minion.angry = True
         minion.rarity = enemy.rarity
-        minion.radius = max(6, int(enemy.radius * 0.35))
+        # The soldier ant king's minion is 2x bigger than the king.
+        if mob_name == "SoldierAnt":
+            minion.radius = enemy.radius * 2
+        else:
+            minion.radius = max(6, int(enemy.radius * 0.35))
         # A minion has one third of the king's HP and damage,
         # and chases at three times the king's speed.
         if mob_name == "BabyAnt":
@@ -17328,6 +17323,13 @@ while running:
                         )
                     ]
                 )
+                draw_projectile_hp_bar(
+                    missile_x,
+                    missile_y,
+                    missile["owner"].radius * 0.5,
+                    missile["hp"],
+                    missile["max_hp"]
+                )
 
         # ---------------- ROCK PROJECTILES ----------------
 
@@ -17364,6 +17366,13 @@ while running:
                     (70, 70, 70),
                     rock_pts,
                     2
+                )
+                draw_projectile_hp_bar(
+                    rock_x,
+                    rock_y,
+                    rock_p.get("radius", 8),
+                    rock_p["hp"],
+                    rock_p["max_hp"]
                 )
 
         # ---------------- KING STINGERS ----------------
@@ -17416,6 +17425,13 @@ while running:
                         )
                     ]
                 )
+                draw_projectile_hp_bar(
+                    stinger_x,
+                    stinger_y,
+                    stinger.get("radius", 8),
+                    stinger["hp"],
+                    stinger["max_hp"]
+                )
 
         # ---------------- KING ROSES ----------------
 
@@ -17442,6 +17458,13 @@ while running:
                     (int(rose_x), int(rose_y)),
                     rose_r,
                     2
+                )
+                draw_projectile_hp_bar(
+                    rose_x,
+                    rose_y,
+                    rose.get("radius", 8),
+                    rose["hp"],
+                    rose["max_hp"]
                 )
 
         # ---------------- SOLDIER KING WINGS ----------------
@@ -17517,6 +17540,13 @@ while running:
                     True,
                     points,
                     2
+                )
+                draw_projectile_hp_bar(
+                    wing_x,
+                    wing_y,
+                    wing.get("radius", 8),
+                    wing["hp"],
+                    wing["max_hp"]
                 )
 
         for pickup in PICKUP_LIST:
