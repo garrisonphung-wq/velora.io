@@ -1371,6 +1371,30 @@ def cleanup_king(enemy):
                 worker_ant_corn.remove(corn)
 
 
+def dev_revive_user(target_name):
+    # Instantly revive a dead player. Since the game runs on one
+    # machine, the only player that can be revived is the logged-in
+    # one.
+    target_key = None
+    for existing_name in player_accounts:
+        if existing_name.lower() == target_name.lower():
+            target_key = existing_name
+            break
+    if target_key is None:
+        show_error(f"{target_name} does not exist")
+        return False
+    if target_key != acc_name_text:
+        show_error(f"{target_key} is not playing right now")
+        return False
+    if not player_dead:
+        show_error(f"{target_key} is not dead")
+        return False
+
+    respawn_player()
+    show_error(f"Revived {target_key}")
+    return True
+
+
 def dev_freeze_enemies(seconds):
     # Freeze every enemy's AI movement for the given seconds.
     global enemies_frozen_timer
@@ -15844,6 +15868,14 @@ while running:
                                     else:
                                         player_ghost = False
                                         show_error("Ghost mode OFF")
+                                elif cmd == "/revive_user" and acc_name_text.lower() == "devguard":
+                                    # /revive_user [user] - instantly
+                                    # revive a dead player
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /revive_user [user]")
+                                    else:
+                                        dev_revive_user(" ".join(args))
                                 elif cmd == "/rarity_to" and acc_name_text.lower() == "devguard":
                                     # /rarity_to [rarity] - change the
                                     # rarity of the enemy under the mouse
@@ -15935,6 +15967,7 @@ while running:
                                     "/freez_enemies",
                                     "/unfreeze",
                                     "/p.ghost",
+                                    "/revive_user",
                                     "/rarity_to",
                                     "/s.enemy_increase",
                                     "/s.enemy_decrease"
@@ -20411,6 +20444,7 @@ while running:
                 "/freez_enemies [seconds]",
                 "/unfreeze",
                 "/p.ghost [y or n]",
+                "/revive_user [user]",
                 "/rarity_to [rarity]",
                 "/s.enemy_increase [amount]",
                 "/s.enemy_decrease [amount]"
