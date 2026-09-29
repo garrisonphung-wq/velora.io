@@ -1179,7 +1179,7 @@ soldier_wing_projectiles = []
 # Worker ant king's defensive corn: 3 circles of 6 corn around the
 # king. Killable by the flower's petals, and they damage the
 # flower's petals on contact.
-WORKER_CORN_RINGS = 3
+WORKER_CORN_RINGS = 7
 WORKER_CORN_PER_RING = 6
 WORKER_CORN_RESPAWN = 120
 worker_ant_corn = []
@@ -2141,7 +2141,7 @@ def update_soldier_wings():
 
 def worker_corn_ring_count(king):
     # How many corn rings a worker ant king gets, by rarity:
-    # Common-Unusual: 1, Rare-Legendary: 2, Mythic and above: 3.
+    # one extra ring every 2 rarity tiers, capped at 7.
     rarity_order = [
         "Common", "Unusual", "Rare", "Epic", "Legendary",
         "Mythic", "Ultra", "Super", "Omega", "Unique",
@@ -2151,14 +2151,16 @@ def worker_corn_ring_count(king):
     tier = 0
     if king.rarity in rarity_order:
         tier = rarity_order.index(king.rarity)
-    return max(1, min(WORKER_CORN_RINGS, 1 + tier // 3))
+    return max(1, min(WORKER_CORN_RINGS, 1 + tier // 2))
 
 
 def worker_corn_pos(corn):
     # World position of a corn on its king's rings. Each ring spins
     # at its own speed (degrees per second).
     king = corn["owner"]
-    ring_speeds = (45, 80, 115)
+    ring_speeds = (
+        45, 80, 115, 150, 185, 220, 255
+    )
     corn_orbit = (
         king.radius * 1.8
         + corn["ring"] * (king.radius * 1.1 + 8)
