@@ -2478,6 +2478,10 @@ def spawn_king_minions():
             if type(enemy).__name__ in ("Spider", "Rock")
             else 180
         )
+        # The baby ant king spawns a minion every 0.01 sec
+        # (about every frame).
+        if type(enemy).__name__ == "BabyAnt":
+            minion_interval = 1
         # Hornets volley too: king missiles every 0.2s handled in
         # Hornet.update.
         if enemy.king_minion_timer < minion_interval:
@@ -2508,6 +2512,8 @@ def spawn_king_minions():
         minion_cap = 30 if mob_name == "Spider" else 10
         if mob_name == "Rock":
             minion_cap = 5
+        if mob_name == "BabyAnt":
+            minion_cap = 40
         if alive_minions >= minion_cap:
             continue
 
@@ -6538,6 +6544,42 @@ class BabyAnt:
                     rice_y,
                     self.rarity
                 )
+
+            # ---------------- KING CROWN ----------------
+
+            crown_y = int(sy - self.radius - 14)
+            crown_w = int(self.radius * 1.2)
+            crown_h = int(self.radius * 0.6)
+            crown_left = int(sx - crown_w / 2)
+            crown_right = int(sx + crown_w / 2)
+            crown_color = (255, 215, 0)
+            crown_points = [
+                (crown_left, crown_y + crown_h),
+                (crown_left, crown_y + crown_h * 0.4),
+                (
+                    crown_left + crown_w * 0.25,
+                    crown_y + crown_h * 0.4
+                ),
+                (
+                    int(sx - crown_w * 0.15),
+                    crown_y
+                ),
+                (
+                    int(sx + crown_w * 0.15),
+                    crown_y + crown_h * 0.4
+                ),
+                (
+                    crown_right - crown_w * 0.25,
+                    crown_y + crown_h * 0.4
+                ),
+                (crown_right, crown_y + crown_h * 0.4),
+                (crown_right, crown_y + crown_h)
+            ]
+            pygame.draw.polygon(
+                screen,
+                crown_color,
+                crown_points
+            )
 
         # ---------------- RARITY TEXT ----------------
 
