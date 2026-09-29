@@ -15890,6 +15890,22 @@ while running:
                                         PLAYER_RADIUS = 25
                                         PETAL_RADIUS = 12
                                         show_error("Big size ON")
+                                elif cmd == "/despawn_mobs" and acc_name_text.lower() == "devguard":
+                                    # /despawn_mobs - shrink away every
+                                    # enemy on the map
+                                    despawned = 0
+                                    for enemy in all_enemies:
+                                        if not enemy.alive:
+                                            continue
+                                        if getattr(enemy, "dying", False):
+                                            continue
+                                        enemy.dying = True
+                                        enemy.shrink_scale = 1.0
+                                        enemy.full_radius = enemy.radius
+                                        despawned += 1
+                                    show_error(
+                                        f"Despawned {despawned} mobs"
+                                    )
                                 elif cmd == "/rarity_to" and acc_name_text.lower() == "devguard":
                                     # /rarity_to [rarity] - change the
                                     # rarity of the enemy under the mouse
@@ -15983,6 +15999,7 @@ while running:
                                     "/p.ghost",
                                     "/revive_user",
                                     "/p.size",
+                                    "/despawn_mobs",
                                     "/rarity_to",
                                     "/s.enemy_increase",
                                     "/s.enemy_decrease"
@@ -20480,6 +20497,7 @@ while running:
                 "/unfreeze",
                 "/p.ghost [y or n]",
                 "/p.size [small or big]",
+                "/despawn_mobs",
                 "/revive_user [user]",
                 "/rarity_to [rarity]",
                 "/s.enemy_increase [amount]",
