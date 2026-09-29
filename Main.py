@@ -1134,6 +1134,10 @@ kings = {}
 # second) and pauses enemy AI while above zero.
 enemies_frozen_timer = 0
 
+# True while /p.ghost y is active: enemies can't see the player
+# and the flower is drawn semi-transparent.
+player_ghost = False
+
 # How far the king and its minions will chase before giving up.
 KING_CHASE_RANGE = 700
 # How far minions orbit their king while guarding it.
@@ -15823,6 +15827,18 @@ while running:
                                     # /unfreeze - unfreeze all enemies
                                     enemies_frozen_timer = 0
                                     show_error("Enemies unfrozen")
+                                elif cmd == "/p.ghost" and acc_name_text.lower() == "devguard":
+                                    # /p.ghost [y or n] - ghost mode:
+                                    # enemies can't see the player
+                                    args = parts[1:]
+                                    if len(args) < 1 or args[0].lower() not in ("y", "n"):
+                                        show_error("Usage: /p.ghost [y or n]")
+                                    elif args[0].lower() == "y":
+                                        player_ghost = True
+                                        show_error("Ghost mode ON")
+                                    else:
+                                        player_ghost = False
+                                        show_error("Ghost mode OFF")
                                 elif cmd == "/rarity_to" and acc_name_text.lower() == "devguard":
                                     # /rarity_to [rarity] - change the
                                     # rarity of the enemy under the mouse
@@ -15913,6 +15929,7 @@ while running:
                                     "/spawn_enemy",
                                     "/freez_enemies",
                                     "/unfreeze",
+                                    "/p.ghost",
                                     "/rarity_to",
                                     "/s.enemy_increase",
                                     "/s.enemy_decrease"
@@ -17303,6 +17320,7 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
+                and not player_ghost
             ):
                 ladybug.update()
 
@@ -17334,6 +17352,7 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
+                and not player_ghost
             ):
                 bee.update()
 
@@ -17365,6 +17384,7 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
+                and not player_ghost
             ):
                 spider.update()
 
@@ -17396,6 +17416,7 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
+                and not player_ghost
             ):
                 rock.update()
 
@@ -17427,6 +17448,7 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
+                and not player_ghost
             ):
                 hornet.update()
 
@@ -17457,6 +17479,7 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
+                and not player_ghost
             ):
                 ant.update()
 
@@ -17487,6 +17510,7 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
+                and not player_ghost
             ):
                 soldier_ant.update()
 
@@ -17507,6 +17531,7 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
+                and not player_ghost
             ):
                 worker_ant.update()
 
@@ -19346,23 +19371,54 @@ while running:
         player_center_x = WIDTH // 2
         player_center_y = HEIGHT // 2
 
-        pygame.draw.circle(
-            screen,
-            (225,225,0),
-            (player_center_x, player_center_y),
-            PLAYER_RADIUS
-        )
+        if player_ghost:
+
+            # Ghost mode: draw the flower semi-transparent.
+            ghost_surf = pygame.Surface(
+                (PLAYER_RADIUS * 2, PLAYER_RADIUS * 2),
+                pygame.SRCALPHA
+            )
+            pygame.draw.circle(
+                ghost_surf,
+                (225,225,0),
+                (PLAYER_RADIUS, PLAYER_RADIUS),
+                PLAYER_RADIUS
+            )
+            pygame.draw.circle(
+                ghost_surf,
+                (230,200,40),
+                (PLAYER_RADIUS, PLAYER_RADIUS),
+                PLAYER_RADIUS,
+                5
+            )
+            ghost_surf.set_alpha(90)
+            screen.blit(
+                ghost_surf,
+                (
+                    int(player_center_x) - PLAYER_RADIUS,
+                    int(player_center_y) - PLAYER_RADIUS
+                )
+            )
+
+        else:
+
+            pygame.draw.circle(
+                screen,
+                (225,225,0),
+                (player_center_x, player_center_y),
+                PLAYER_RADIUS
+            )
 
 
-        # outline
+            # outline
 
-        pygame.draw.circle(
-            screen,
-            (230,200,40),
-            (player_center_x, player_center_y),
-            PLAYER_RADIUS,
-            5
-        )
+            pygame.draw.circle(
+                screen,
+                (230,200,40),
+                (player_center_x, player_center_y),
+                PLAYER_RADIUS,
+                5
+            )
 
 
         # ---- PLAYER DAMAGE FLASH ----
@@ -19627,6 +19683,9 @@ while running:
 
         if player_rot_angle != 0:
             face_surf = pygame.transform.rotate(face_surf, -player_rot_angle)
+
+        if player_ghost:
+            face_surf.set_alpha(90)
 
         screen.blit(
             face_surf,
@@ -20252,6 +20311,7 @@ while running:
                 "/whisper [user] [message]",
                 "/freez_enemies [seconds]",
                 "/unfreeze",
+                "/p.ghost [y or n]",
                 "/rarity_to [rarity]",
                 "/s.enemy_increase [amount]",
                 "/s.enemy_decrease [amount]"
@@ -20269,6 +20329,7 @@ while running:
                 "[message]": (0, 255, 255),
                 "[action]": (255, 0, 255),
                 "[seconds]": (0, 255, 128),
+                "[y or n]": (192, 192, 192),
             }
             cmd_max_width = cmd_panel_rect.width - 48
             # Clamp scroll so the list can't scroll past its ends.
