@@ -15474,6 +15474,25 @@ while running:
                                         )
                                     else:
                                         show_error("The chat does not allow bad words")
+                                elif cmd == "/whisper":
+                                    # /whisper [user] [message] - private
+                                    # message only between the two players
+                                    args = parts[1:]
+                                    if len(args) < 2:
+                                        show_error("Usage: /whisper [user] [message]")
+                                    elif acc_name_text in muted_users:
+                                        show_error("You are muted and can't chat")
+                                    elif not is_bad_word(" ".join(args[1:])):
+                                        whisper_target = args[0]
+                                        chat_messages.append(
+                                            (
+                                                f"* {acc_name_text} (whisper to {whisper_target})",
+                                                " ".join(args[1:]),
+                                                time.time()
+                                            )
+                                        )
+                                    else:
+                                        show_error("The chat does not allow bad words")
                                 elif cmd == "/stats":
                                     # /stats - show your own stats
                                     total_petals = sum(
@@ -20028,7 +20047,8 @@ while running:
                 "/full_heal_user [user]",
                 "/king",
                 "/me [action]",
-                "/stats"
+                "/stats",
+                "/whisper [user] [message]"
             ]
             # Color the bracketed argument words in the list.
             cmd_word_colors = {
