@@ -1152,6 +1152,9 @@ player_ghost = False
 
 # How far the king and its minions will chase before giving up.
 KING_CHASE_RANGE = 700
+
+# How far from the flower flower minions can spot enemies to hunt.
+FLOWER_MINION_SIGHT = 600
 # How far minions orbit their king while guarding it.
 KING_GUARD_ORBIT = 70
 KING_GUARD_SPEED = 3.2
@@ -3186,6 +3189,34 @@ def flower_minion_ai(minion):
     # Flower minions (from Ant Egg petals) orbit the flower using
     # the same guard-ring behavior as king minions: they always
     # march forward around the ring and never walk backward.
+    # When an enemy is near the flower the minion leaves the ring
+    # and charges it instead.
+    target = getattr(minion, "target_enemy", None)
+
+    if (
+        target is not None
+        and target.alive
+        and not getattr(target, "dying", False)
+    ):
+        # Charge the spotted enemy at high speed.
+        target_angle = math.degrees(
+            math.atan2(
+                target.y - minion.y,
+                target.x - minion.x
+            )
+        )
+        minion.turn_to(target_angle, 6)
+        minion.speed = minion.max_speed * 3
+        rad = math.radians(minion.angle)
+        move_with_collision(
+            minion,
+            math.cos(rad) * minion.speed * 0.15,
+            math.sin(rad) * minion.speed * 0.15
+        )
+        return
+
+    minion.target_enemy = None
+
     if player_dead:
         minion.speed = 0
         return
@@ -3293,6 +3324,35 @@ def spawn_flower_minion(slot_index):
 
 def update_flower_minions():
     # Hatch, move and fight with the Ant Egg minions.
+
+    # 0) Spot enemies near the flower and split the minions across
+    # them: minion N hunts enemy N, wrapping around when there are
+    # more minions than enemies.
+    sight_enemies = [
+        e
+        for e in all_enemies
+        if e.alive
+        and not getattr(e, "dying", False)
+        and distance(
+            player_x,
+            player_y,
+            e.x,
+            e.y
+        ) <= FLOWER_MINION_SIGHT
+    ]
+    hunting_minions = [
+        m
+        for m in flower_minions
+        if m.alive and not getattr(m, "dying", False)
+    ]
+    for minion_index, minion in enumerate(hunting_minions):
+        if sight_enemies:
+            minion.target_enemy = sight_enemies[
+                minion_index % len(sight_enemies)
+            ]
+        else:
+            minion.target_enemy = None
+
     # 1) Spawn minions for every alive Ant Egg petal slot: how many
     # minions hatch depends on the egg's petal count (parts).
     for i in range(PETAL_SLOTS):
