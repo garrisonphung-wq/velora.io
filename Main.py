@@ -3190,7 +3190,7 @@ def flower_minion_ai(minion):
         minion.speed = 0
         return
 
-    orbit = KING_GUARD_ORBIT + PLAYER_RADIUS
+    orbit = 150 + PLAYER_RADIUS
     cur_angle = math.atan2(
         minion.y - player_y,
         minion.x - player_x
@@ -7849,6 +7849,19 @@ class SoldierAnt:
         body_width = self.radius * 1.2
         body_height = self.radius * 0.8
 
+        # Yellow flower minions are recolored golden yellow instead
+        # of the usual dark gray soldier ant.
+        def ant_color(base):
+            if getattr(self, "yellow_minion", False):
+                return {
+                    (62, 62, 62): (250, 210, 50),
+                    (22, 22, 22): (180, 130, 20),
+                    (48, 48, 48): (235, 195, 45),
+                    (78, 78, 78): (255, 235, 110),
+                    (40, 40, 40): (170, 120, 20),
+                }.get(base, base)
+            return flash_color(base, self.flash_timer)
+
 
 
         # ---------------- OVAL BODY (BACK) ----------------
@@ -7864,7 +7877,7 @@ class SoldierAnt:
 
         pygame.draw.ellipse(
             body_surface,
-            flash_color((62, 62, 62), self.flash_timer),
+            ant_color((62, 62, 62)),
             (
                 0,
                 0,
@@ -7874,7 +7887,7 @@ class SoldierAnt:
         )
         pygame.draw.ellipse(
             body_surface,
-            flash_color((22, 22, 22), self.flash_timer),
+            ant_color((22, 22, 22)),
             (
                 0,
                 0,
@@ -7969,7 +7982,7 @@ class SoldierAnt:
 
         pygame.draw.circle(
             screen,
-            flash_color((48, 48, 48), self.flash_timer),
+            ant_color((48, 48, 48)),
             (
                 int(head_x),
                 int(head_y)
@@ -7980,7 +7993,7 @@ class SoldierAnt:
         # Soft gray center highlight like the reference image.
         pygame.draw.circle(
             screen,
-            flash_color((78, 78, 78), self.flash_timer),
+            ant_color((78, 78, 78)),
             (
                 int(head_x),
                 int(head_y)
@@ -8030,7 +8043,7 @@ class SoldierAnt:
 
         draw_clean_line(
             screen,
-            flash_color((40,40,40), self.flash_timer),
+            ant_color((40, 40, 40)),
             (
                 mouth_start_x + side_x * (5 + right_jaw_motion),
                 mouth_start_y + side_y * (5 + right_jaw_motion)
@@ -8046,7 +8059,7 @@ class SoldierAnt:
 
         draw_clean_line(
             screen,
-            flash_color((40,40,40), self.flash_timer),
+            ant_color((40, 40, 40)),
             (
                 mouth_start_x - side_x * (5 + left_jaw_motion),
                 mouth_start_y - side_y * (5 + left_jaw_motion)
@@ -18368,27 +18381,8 @@ while running:
 
             minion.draw()
 
-            # Yellow tint: a translucent yellow circle over the mob.
-            m_r = max(1, int(minion.radius))
-            overlay = pygame.Surface(
-                (m_r * 2, m_r * 2),
-                pygame.SRCALPHA
-            )
-            pygame.draw.circle(
-                overlay,
-                (255, 235, 0, 130),
-                (m_r, m_r),
-                m_r
-            )
-            screen.blit(
-                overlay,
-                (
-                    int(minion.x - camera_x - m_r),
-                    int(minion.y - camera_y - m_r)
-                )
-            )
-
             # Small HP bar above the minion.
+            m_r = max(1, int(minion.radius))
             hp_ratio = max(0, minion.hp / minion.max_hp)
             bar_w = m_r * 2
             bar_h = 5
