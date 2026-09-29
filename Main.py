@@ -3170,6 +3170,202 @@ def spawn_king_minions():
         mob_list.append(minion)
 
 
+def flower_minion_ai(minion):
+    # Flower minions (from Ant Egg petals) orbit the flower using
+    # the same guard-ring behavior as king minions: they always
+    # march forward around the ring and never walk backward.
+    if player_dead:
+        minion.speed = 0
+        return
+
+    orbit = KING_GUARD_ORBIT + PLAYER_RADIUS
+    cur_angle = math.atan2(
+        minion.y - player_y,
+        minion.x - player_x
+    )
+    orbit_slot = getattr(minion, "king_orbit_slot", 0)
+    orbit_angle = (
+        time.time() * 1.2
+        + orbit_slot * (2 * math.pi / 10)
+    )
+
+    # Always march forward around the ring, speeding up when the
+    # minion falls behind its slot.
+    angle_behind = (
+        (orbit_angle - cur_angle)
+        % (2 * math.pi)
+    )
+    angle_step = 0.02 + min(angle_behind, 1.5) * 0.03
+    new_angle = cur_angle + angle_step
+
+    target_x = (
+        player_x
+        + math.cos(new_angle) * orbit
+    )
+    target_y = (
+        player_y
+        + math.sin(new_angle) * orbit
+    )
+
+    dx = target_x - minion.x
+    dy = target_y - minion.y
+    length = math.sqrt(dx * dx + dy * dy)
+    step = KING_GUARD_SPEED * 2.5
+
+    # Overlapping minions slow each other down and bounce apart.
+    separation = minion.radius * 2.2
+    bounce_x = 0.0
+    bounce_y = 0.0
+    for other in flower_minions:
+        if other is minion:
+            continue
+        if not other.alive:
+            continue
+        d = distance(
+            minion.x,
+            minion.y,
+            other.x,
+            other.y
+        )
+        if 0 < d < separation:
+            closeness = 1.0 - (d / separation)
+            step *= 1.0 - closeness * 0.9
+            min_dist = minion.radius + other.radius
+            if d < min_dist:
+                overlap = (min_dist - d) / 2
+                bounce_x += (
+                    (minion.x - other.x) / d * overlap
+                )
+                bounce_y += (
+                    (minion.y - other.y) / d * overlap
+                )
+
+    if length > step:
+        minion.x += dx / length * step
+        minion.y += dy / length * step
+    else:
+        minion.x = target_x
+        minion.y = target_y
+
+    if bounce_x or bounce_y:
+        minion.x += bounce_x * 2
+        minion.y += bounce_y * 2
+
+    # Face the direction of travel around the ring.
+    minion.angle = math.degrees(new_angle + math.pi / 2)
+    minion.speed = 0
+
+
+def spawn_flower_minion(slot_index):
+    # Hatch a yellow SoldierAnt minion from an alive Ant Egg petal.
+    egg_rarity = petal_slots[slot_index]["rarity"]
+    if egg_rarity not in RARITY_COLORS:
+        egg_rarity = "Common"
+
+    minion = SoldierAnt()
+    minion.is_minion = True
+    minion.yellow_minion = True
+    minion.egg_slot = slot_index
+    minion.king_orbit_slot = len(flower_minions)
+    minion.rarity = egg_rarity
+    # A flower minion has one third of the flower's HP and damage.
+    minion.max_hp = max(1, int(PLAYER_MAX_HP / 3))
+    minion.damage = max(1, int(PLAYER_MAX_HP / 3))
+    minion.hp = minion.max_hp
+    minion.x = player_x + random.randint(-60, 60)
+    minion.y = player_y + random.randint(-60, 60)
+    flower_minions.append(minion)
+
+
+def update_flower_minions():
+    # Hatch, move and fight with the Ant Egg minions.
+    # 1) Spawn a minion for every alive Ant Egg petal slot.
+    for i in range(PETAL_SLOTS):
+        if (
+            petal_slots[i]["filled"]
+            and petal_slots[i]["petal"] == "Ant Egg"
+            and petal_alive[i]
+        ):
+            already = any(
+                getattr(m, "egg_slot", None) == i and m.alive
+                for m in flower_minions
+            )
+            if not already:
+                spawn_flower_minion(i)
+
+    # 2) Update every minion: orbit, fight, die.
+    for minion in flower_minions[:]:
+        if not minion.alive:
+            flower_minions.remove(minion)
+            continue
+
+        if getattr(minion, "dying", False):
+            minion.shrink_scale -= 0.08
+            if minion.shrink_scale <= 0:
+                minion.shrink_scale = 0
+                minion.dying = False
+                minion.alive = False
+            else:
+                minion.radius = (
+                    minion.full_radius * minion.shrink_scale
+                )
+            continue
+
+        # If the slot no longer holds the egg, despawn the minion.
+        slot = getattr(minion, "egg_slot", None)
+        if (
+            slot is None
+            or not petal_slots[slot]["filled"]
+            or petal_slots[slot]["petal"] != "Ant Egg"
+        ):
+            minion.dying = True
+            minion.shrink_scale = 1.0
+            minion.full_radius = minion.radius
+            continue
+
+        flower_minion_ai(minion)
+
+        if minion.attack_cooldown > 0:
+            minion.attack_cooldown -= 1
+        if minion.flash_timer > 0:
+            minion.flash_timer -= 1
+
+        # Fight: bumping an enemy deals minion damage to it and
+        # enemy damage back to the minion.
+        for enemy in all_enemies:
+            if not enemy.alive:
+                continue
+            if getattr(enemy, "dying", False):
+                continue
+            d = distance(
+                minion.x,
+                minion.y,
+                enemy.x,
+                enemy.y
+            )
+            if 0 < d < minion.radius + enemy.radius:
+                if minion.attack_cooldown <= 0:
+                    minion.attack_cooldown = 30
+                    enemy.take_damage(minion.damage)
+                    dmg = (
+                        enemy.damage
+                        * MOB_DAMAGE_MULTIPLIER[enemy.rarity]
+                    )
+                    minion.hp -= dmg
+                    minion.flash_timer = 4
+                    if minion.hp <= 0:
+                        # The minion dies: its egg is consumed and
+                        # reloads like a destroyed petal.
+                        minion.dying = True
+                        minion.shrink_scale = 1.0
+                        minion.full_radius = minion.radius
+                        petal_alive[slot] = False
+                        petal_respawn_timer[slot] = PETAL_RELOAD[
+                            "Ant Egg"
+                        ]
+                break
+
+
 def dev_ban_user(target_name):
     # Delete a user's account and saved player data.
     # Accounts allowed to ban:
@@ -14601,6 +14797,10 @@ baby_ants = []
 soldier_ants = []
 worker_ants = []
 
+# Friendly minions hatched from Ant Egg petals. They live outside
+# the enemy lists so petals and enemy AI never target them.
+flower_minions = []
+
 def draw_login_screen():
 
     screen.fill((20,20,30))
@@ -18155,6 +18355,56 @@ while running:
 
             worker_ant.draw()
 
+        # ---------------- FLOWER MINIONS ----------------
+
+        for minion in flower_minions:
+
+            minion.draw()
+
+            # Yellow tint: a translucent yellow circle over the mob.
+            m_r = max(1, int(minion.radius))
+            overlay = pygame.Surface(
+                (m_r * 2, m_r * 2),
+                pygame.SRCALPHA
+            )
+            pygame.draw.circle(
+                overlay,
+                (255, 235, 0, 130),
+                (m_r, m_r),
+                m_r
+            )
+            screen.blit(
+                overlay,
+                (
+                    int(minion.x - camera_x - m_r),
+                    int(minion.y - camera_y - m_r)
+                )
+            )
+
+            # Small HP bar above the minion.
+            hp_ratio = max(0, minion.hp / minion.max_hp)
+            bar_w = m_r * 2
+            bar_h = 5
+            bar_x = int(minion.x - camera_x - m_r)
+            bar_y = int(minion.y - camera_y - m_r - 12)
+            pygame.draw.rect(
+                screen,
+                (60, 60, 60),
+                (bar_x, bar_y, bar_w, bar_h),
+                border_radius=2
+            )
+            pygame.draw.rect(
+                screen,
+                (80, 220, 100),
+                (
+                    bar_x,
+                    bar_y,
+                    max(0, int(bar_w * hp_ratio)),
+                    bar_h
+                ),
+                border_radius=2
+            )
+
         # ---------------- HORNET MISSILES ----------------
 
         for missile in hornet_missiles:
@@ -19464,6 +19714,7 @@ while running:
                     )
 
         spawn_king_minions()
+        update_flower_minions()
         update_king_roses()
         update_king_stingers()
         update_baby_ant_rice()
