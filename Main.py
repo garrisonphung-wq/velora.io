@@ -1176,6 +1176,14 @@ SOLDIER_WING_SPEED = 4
 SOLDIER_WING_LIFETIME = 900
 soldier_wing_projectiles = []
 
+# Worker ant king's defensive corn: 3 circles of 6 corn around the
+# king. Killable by the flower's petals, and they damage the
+# flower's petals on contact.
+WORKER_CORN_RINGS = 3
+WORKER_CORN_PER_RING = 6
+WORKER_CORN_RESPAWN = 120
+worker_ant_corn = []
+
 # Hornet missiles: fired backward from the hornet's rear when it
 # stops near the flower, then they fly at the flower.
 HORNET_MISSILE_SPEED = 6
@@ -1209,6 +1217,7 @@ KING_MOB_LIST_NAMES = {
     "Hornet": "hornets",
     "BabyAnt": "baby_ants",
     "SoldierAnt": "soldier_ants",
+    "WorkerAnt": "worker_ants",
 }
 
 def get_king_mob_list(mob_name):
@@ -1347,6 +1356,11 @@ def cleanup_king(enemy):
             if wing.get("owner") is enemy:
                 wing["dying"] = True
                 wing["shrink"] = 1.0
+
+        # The worker ant king's corn dies with the king.
+        for corn in worker_ant_corn[:]:
+            if corn.get("owner") is enemy:
+                worker_ant_corn.remove(corn)
 
 
 def dev_make_king(enemy):
@@ -2105,6 +2119,89 @@ def update_soldier_wings():
                 wing["shrink"] = 1.0
 
 
+def worker_corn_pos(corn):
+    # World position of a corn on its king's rings.
+    king = corn["owner"]
+    corn_orbit = (
+        king.radius * 1.8
+        + corn["ring"] * (king.radius * 1.1 + 8)
+    )
+    corn_angle = math.radians(
+        time.time() * 90
+        + corn["slot"] * (360 / WORKER_CORN_PER_RING)
+        + corn["ring"] * (360 / (WORKER_CORN_RINGS * 2))
+    )
+    return (
+        king.x + math.cos(corn_angle) * corn_orbit,
+        king.y + math.sin(corn_angle) * corn_orbit
+    )
+
+
+def update_worker_ant_corn():
+    # Keep 3 circles of 6 corn orbiting every worker ant king.
+    king = kings.get("WorkerAnt")
+    if (
+        king is not None
+        and king.__class__.__name__ == "WorkerAnt"
+        and king.alive
+    ):
+        existing = [
+            (corn["ring"], corn["slot"])
+            for corn in worker_ant_corn
+            if corn["owner"] is king
+        ]
+        for ring in range(WORKER_CORN_RINGS):
+            for slot in range(WORKER_CORN_PER_RING):
+                if (ring, slot) in existing:
+                    continue
+                corn_hp = max(1, int(king.max_hp / 15))
+                worker_ant_corn.append(
+                    {
+                        "owner": king,
+                        "ring": ring,
+                        "slot": slot,
+                        "hp": corn_hp,
+                        "max_hp": corn_hp,
+                        "radius": 10,
+                        "x": king.x,
+                        "y": king.y,
+                        "dying": False,
+                        "shrink": 1.0,
+                        "respawn": 0,
+                    }
+                )
+
+    for corn in worker_ant_corn[:]:
+        king = corn["owner"]
+        if (
+            kings.get("WorkerAnt") is not king
+            or not king.alive
+        ):
+            worker_ant_corn.remove(corn)
+            continue
+
+        if corn.get("dying"):
+            corn["shrink"] -= 0.18
+            if corn["shrink"] <= 0:
+                corn["dying"] = False
+                corn["shrink"] = 1.0
+                corn["respawn"] = WORKER_CORN_RESPAWN
+            continue
+
+        if corn["respawn"] > 0:
+            corn["respawn"] -= 1
+            continue
+
+        corn["x"], corn["y"] = worker_corn_pos(corn)
+
+        # Corn damages the flower's petals on contact.
+        projectile_hits_petals(
+            corn,
+            king.petal_damage,
+            corn["radius"]
+        )
+
+
 def update_king_roses():
     # Move the king's roses; they hurt the flower and heal
     # ladybugs (including the king and minions).
@@ -2845,6 +2942,9 @@ def spawn_king_minions():
         # (about every frame).
         if type(enemy).__name__ == "BabyAnt":
             minion_interval = 1
+        # The worker ant king spawns a minion every 0.5 seconds.
+        if type(enemy).__name__ == "WorkerAnt":
+            minion_interval = 30
         # Hornets volley too: king missiles every 0.2s handled in
         # Hornet.update.
         if enemy.king_minion_timer < minion_interval:
@@ -2855,7 +2955,7 @@ def spawn_king_minions():
         mob_name = type(enemy).__name__
         if mob_name not in (
             "Ladybug", "Spider", "Rock", "Hornet", "BabyAnt",
-            "SoldierAnt"
+            "SoldierAnt", "WorkerAnt"
         ):
             continue
 
@@ -2867,6 +2967,7 @@ def spawn_king_minions():
             "Hornet": Hornet,
             "BabyAnt": BabyAnt,
             "SoldierAnt": SoldierAnt,
+            "WorkerAnt": WorkerAnt,
         }[mob_name]
 
         alive_minions = sum(
@@ -7729,6 +7830,14 @@ class WorkerAnt:
         # Worker ants flee/wander until attacked, then they chase.
         self.angry = False
 
+        # King / minion flags (set by the /king command)
+        self.is_king = False
+        self.is_minion = False
+        self.king_minion_timer = 0
+        self.king_chat_timer = 0
+        self.king_rose_timer = 0
+        self.king_orbit_slot = 0
+
     def take_damage(self, amount):
 
         if not self.alive:
@@ -7799,6 +7908,18 @@ class WorkerAnt:
             return
 
         self.timer += 1
+
+        # ---------------- KING AI ----------------
+
+        if getattr(self, "is_king", False):
+
+            if king_chase_or_guard(self):
+                return
+
+        if getattr(self, "is_minion", False):
+
+            minion_ai(self)
+            return
 
         # ---------------- ANGRY WORKER ANT ----------------
         # Chases the player once it has been damaged.
@@ -8111,6 +8232,25 @@ class WorkerAnt:
                     bar_height
                 )
             )
+
+        # ---------------- KING CORN ----------------
+
+        if getattr(self, "is_king", False):
+
+            # Three circles of six corn orbit the worker ant king.
+            for corn in worker_ant_corn:
+                if corn["owner"] is not self:
+                    continue
+                if corn["respawn"] > 0:
+                    continue
+                corn_x, corn_y = worker_corn_pos(corn)
+                draw_petal(
+                    "Corn",
+                    corn_x - camera_x,
+                    corn_y - camera_y,
+                    self.rarity,
+                    size_scale=corn["shrink"]
+                )
 
         if not getattr(self, "hide_rarity_label", False):
 
@@ -18449,6 +18589,25 @@ while running:
                                     rice["shrink"] = 1.0
                                 hit = True
 
+                        for corn in worker_ant_corn[:]:
+                            if corn.get("dying") or corn["respawn"] > 0:
+                                continue
+                            corn_d = distance(
+                                petal_world_x,
+                                petal_world_y,
+                                corn["x"],
+                                corn["y"]
+                            )
+                            if corn_d < (
+                                petal_range
+                                + corn.get("radius", 10)
+                            ):
+                                corn["hp"] -= damage
+                                if corn["hp"] <= 0:
+                                    corn["dying"] = True
+                                    corn["shrink"] = 1.0
+                                hit = True
+
                         for wing in soldier_wing_projectiles[:]:
                             if wing.get("dying"):
                                 continue
@@ -18766,6 +18925,7 @@ while running:
         update_king_stingers()
         update_baby_ant_rice()
         update_soldier_wings()
+        update_worker_ant_corn()
         update_king_webs()
         update_rock_projectiles()
         update_hornet_missiles()
