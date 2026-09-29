@@ -3316,6 +3316,11 @@ def spawn_flower_minion(slot_index):
     # the egg petal's rarity with the mob multipliers.
     minion.rarity = egg_rarity
     apply_enemy_rarity_stats(minion)
+    # Cap the minion at 1.3 times the flower's size.
+    minion.radius = min(
+        minion.radius,
+        PLAYER_RADIUS * 1.3
+    )
     minion.x = player_x + random.randint(-60, 60)
     minion.y = player_y + random.randint(-60, 60)
     flower_minions.append(minion)
