@@ -1780,14 +1780,16 @@ def projectile_hits_flower(projectile, damage):
     global player_bounce_y
 
     # The projectile pushes the flower like enemies do.
-    push_dx = player_x - projectile["x"]
-    push_dy = player_y - projectile["y"]
-    push_len = math.sqrt(push_dx * push_dx + push_dy * push_dy)
-    if push_len == 0:
-        push_dx = 1
-        push_len = 1
-    player_bounce_x = push_dx / push_len * 6.0
-    player_bounce_y = push_dy / push_len * 6.0
+    # While ghosted the flower can't be pushed at all.
+    if not player_ghost:
+        push_dx = player_x - projectile["x"]
+        push_dy = player_y - projectile["y"]
+        push_len = math.sqrt(push_dx * push_dx + push_dy * push_dy)
+        if push_len == 0:
+            push_dx = 1
+            push_len = 1
+        player_bounce_x = push_dx / push_len * 6.0
+        player_bounce_y = push_dy / push_len * 6.0
 
     # Drain the projectile's HP while it touches the flower
     # (about 1 second of contact to wear it down fully).
