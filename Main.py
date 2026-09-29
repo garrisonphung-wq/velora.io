@@ -19206,6 +19206,7 @@ while running:
                 hornets,
                 baby_ants,
                 soldier_ants,
+                worker_ants,
             ]
             for enemy_list in all_enemy_lists:
                 for enemy in enemy_list:
