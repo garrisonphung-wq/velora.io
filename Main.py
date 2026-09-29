@@ -20329,9 +20329,9 @@ while running:
                 "[message]": (0, 255, 255),
                 "[action]": (255, 0, 255),
                 "[seconds]": (0, 255, 128),
-                "[y": (0, 255, 192),
-                "or": (0, 255, 192),
-                "n]": (0, 255, 192),
+                "[y": (0, 255, 128),
+                "or": (0, 255, 128),
+                "n]": (0, 255, 128),
             }
             cmd_max_width = cmd_panel_rect.width - 48
             # Clamp scroll so the list can't scroll past its ends.
