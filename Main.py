@@ -17320,9 +17320,18 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
-                and not player_ghost
             ):
-                ladybug.update()
+                if player_ghost:
+                    # Ghost mode: the enemy can't see the
+                    # player, so hide the player far away
+                    # while its AI thinks, then restore.
+                    ghost_px, ghost_py = player_x, player_y
+                    player_x = -1000000
+                    player_y = -1000000
+                    ladybug.update()
+                    player_x, player_y = ghost_px, ghost_py
+                else:
+                    ladybug.update()
 
             if ladybug.attack_cooldown > 0:
                 ladybug.attack_cooldown -= 1
@@ -17352,9 +17361,18 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
-                and not player_ghost
             ):
-                bee.update()
+                if player_ghost:
+                    # Ghost mode: the enemy can't see the
+                    # player, so hide the player far away
+                    # while its AI thinks, then restore.
+                    ghost_px, ghost_py = player_x, player_y
+                    player_x = -1000000
+                    player_y = -1000000
+                    bee.update()
+                    player_x, player_y = ghost_px, ghost_py
+                else:
+                    bee.update()
 
             if bee.attack_cooldown > 0:
                 bee.attack_cooldown -= 1
@@ -17384,9 +17402,18 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
-                and not player_ghost
             ):
-                spider.update()
+                if player_ghost:
+                    # Ghost mode: the enemy can't see the
+                    # player, so hide the player far away
+                    # while its AI thinks, then restore.
+                    ghost_px, ghost_py = player_x, player_y
+                    player_x = -1000000
+                    player_y = -1000000
+                    spider.update()
+                    player_x, player_y = ghost_px, ghost_py
+                else:
+                    spider.update()
 
             if spider.attack_cooldown > 0:
                 spider.attack_cooldown -= 1
@@ -17416,9 +17443,18 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
-                and not player_ghost
             ):
-                rock.update()
+                if player_ghost:
+                    # Ghost mode: the enemy can't see the
+                    # player, so hide the player far away
+                    # while its AI thinks, then restore.
+                    ghost_px, ghost_py = player_x, player_y
+                    player_x = -1000000
+                    player_y = -1000000
+                    rock.update()
+                    player_x, player_y = ghost_px, ghost_py
+                else:
+                    rock.update()
 
             if rock.attack_cooldown > 0:
                 rock.attack_cooldown -= 1
@@ -17448,9 +17484,18 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
-                and not player_ghost
             ):
-                hornet.update()
+                if player_ghost:
+                    # Ghost mode: the enemy can't see the
+                    # player, so hide the player far away
+                    # while its AI thinks, then restore.
+                    ghost_px, ghost_py = player_x, player_y
+                    player_x = -1000000
+                    player_y = -1000000
+                    hornet.update()
+                    player_x, player_y = ghost_px, ghost_py
+                else:
+                    hornet.update()
 
             if hornet.attack_cooldown > 0:
                 hornet.attack_cooldown -= 1
@@ -17479,9 +17524,18 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
-                and not player_ghost
             ):
-                ant.update()
+                if player_ghost:
+                    # Ghost mode: the enemy can't see the
+                    # player, so hide the player far away
+                    # while its AI thinks, then restore.
+                    ghost_px, ghost_py = player_x, player_y
+                    player_x = -1000000
+                    player_y = -1000000
+                    ant.update()
+                    player_x, player_y = ghost_px, ghost_py
+                else:
+                    ant.update()
 
             if ant.attack_cooldown > 0:
                 ant.attack_cooldown -= 1
@@ -17510,9 +17564,18 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
-                and not player_ghost
             ):
-                soldier_ant.update()
+                if player_ghost:
+                    # Ghost mode: the enemy can't see the
+                    # player, so hide the player far away
+                    # while its AI thinks, then restore.
+                    ghost_px, ghost_py = player_x, player_y
+                    player_x = -1000000
+                    player_y = -1000000
+                    soldier_ant.update()
+                    player_x, player_y = ghost_px, ghost_py
+                else:
+                    soldier_ant.update()
 
             if soldier_ant.attack_cooldown > 0:
                 soldier_ant.attack_cooldown -= 1
@@ -17531,9 +17594,18 @@ while running:
             if (
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
-                and not player_ghost
             ):
-                worker_ant.update()
+                if player_ghost:
+                    # Ghost mode: the enemy can't see the
+                    # player, so hide the player far away
+                    # while its AI thinks, then restore.
+                    ghost_px, ghost_py = player_x, player_y
+                    player_x = -1000000
+                    player_y = -1000000
+                    worker_ant.update()
+                    player_x, player_y = ghost_px, ghost_py
+                else:
+                    worker_ant.update()
 
             if worker_ant.attack_cooldown > 0:
                 worker_ant.attack_cooldown -= 1
