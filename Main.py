@@ -1800,7 +1800,10 @@ def projectile_hits_flower(projectile, damage):
     projectile["touch_timer"] = (
         projectile.get("touch_timer", 0) - 1
     )
-    if projectile["touch_timer"] <= 0:
+    if (
+        projectile["touch_timer"] <= 0
+        and not player_ghost
+    ):
         projectile["touch_timer"] = 30
         player_hp -= (
             damage
@@ -17693,7 +17696,10 @@ while running:
 
                     if player_spawn_cooldown <= 0:
 
-                        if ladybug.attack_cooldown == 0:
+                        if (
+                            ladybug.attack_cooldown == 0
+                            and not player_ghost
+                        ):
 
                             player_hp -= (
                                 ladybug.damage *
@@ -17728,7 +17734,10 @@ while running:
 
                     if player_spawn_cooldown <= 0:
 
-                        if bee.attack_cooldown == 0:
+                        if (
+                            bee.attack_cooldown == 0
+                            and not player_ghost
+                        ):
 
                             player_hp -= (
                                 bee.damage *
@@ -17764,7 +17773,10 @@ while running:
 
                     if player_spawn_cooldown <= 0:
 
-                        if spider.attack_cooldown == 0:
+                        if (
+                            spider.attack_cooldown == 0
+                            and not player_ghost
+                        ):
 
                             player_hp -= (
                                 spider.damage *
@@ -17800,7 +17812,10 @@ while running:
 
                     if player_spawn_cooldown <= 0:
 
-                        if rock.attack_cooldown == 0:
+                        if (
+                            rock.attack_cooldown == 0
+                            and not player_ghost
+                        ):
 
                             player_hp -= (
                                 rock.damage *
@@ -17836,7 +17851,10 @@ while running:
 
                     if player_spawn_cooldown <= 0:
 
-                        if hornet.attack_cooldown == 0:
+                        if (
+                            hornet.attack_cooldown == 0
+                            and not player_ghost
+                        ):
 
                             player_hp -= (
                                 hornet.damage *
@@ -17871,7 +17889,10 @@ while running:
 
                     if player_spawn_cooldown <= 0:
 
-                        if ant.attack_cooldown == 0:
+                        if (
+                            ant.attack_cooldown == 0
+                            and not player_ghost
+                        ):
 
                             player_hp -= (
                                 ant.damage *
@@ -17906,7 +17927,10 @@ while running:
 
                     if player_spawn_cooldown <= 0:
 
-                        if soldier_ant.attack_cooldown == 0:
+                        if (
+                            soldier_ant.attack_cooldown == 0
+                            and not player_ghost
+                        ):
 
                             player_hp -= (
                                 soldier_ant.damage *
@@ -17941,6 +17965,7 @@ while running:
                     d < PLAYER_RADIUS + worker_ant.radius
                     and player_spawn_cooldown <= 0
                     and worker_ant.attack_cooldown == 0
+                    and not player_ghost
                 ):
                     player_hp -= (
                         worker_ant.damage *
