@@ -7476,6 +7476,44 @@ class SoldierAnt:
                 )
             )
 
+        # ---------------- KING CROWN ----------------
+
+        if getattr(self, "is_king", False):
+
+            crown_y = int(sy - self.radius - 14)
+            crown_w = int(self.radius * 1.2)
+            crown_h = int(self.radius * 0.6)
+            crown_left = int(sx - crown_w / 2)
+            crown_right = int(sx + crown_w / 2)
+            crown_color = (255, 215, 0)
+            crown_points = [
+                (crown_left, crown_y + crown_h),
+                (crown_left, crown_y + crown_h * 0.4),
+                (
+                    crown_left + crown_w * 0.25,
+                    crown_y + crown_h * 0.4
+                ),
+                (
+                    int(sx - crown_w * 0.15),
+                    crown_y
+                ),
+                (
+                    int(sx + crown_w * 0.15),
+                    crown_y + crown_h * 0.4
+                ),
+                (
+                    crown_right - crown_w * 0.25,
+                    crown_y + crown_h * 0.4
+                ),
+                (crown_right, crown_y + crown_h * 0.4),
+                (crown_right, crown_y + crown_h)
+            ]
+            pygame.draw.polygon(
+                screen,
+                crown_color,
+                crown_points
+            )
+
         # ---------------- RARITY TEXT ----------------
 
         if not getattr(self, "hide_rarity_label", False):
