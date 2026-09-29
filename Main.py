@@ -1130,6 +1130,10 @@ def dev_heal_user(target_name, amount, full=False):
 # Kings: one king per mob type (biome regions come later).
 kings = {}
 
+# Enemies frozen via /freez_enemies: counts down frames (60 per
+# second) and pauses enemy AI while above zero.
+enemies_frozen_timer = 0
+
 # How far the king and its minions will chase before giving up.
 KING_CHASE_RANGE = 700
 # How far minions orbit their king while guarding it.
@@ -1361,6 +1365,53 @@ def cleanup_king(enemy):
         for corn in worker_ant_corn[:]:
             if corn.get("owner") is enemy:
                 worker_ant_corn.remove(corn)
+
+
+def dev_freeze_enemies(seconds):
+    # Freeze every enemy's AI movement for the given seconds.
+    global enemies_frozen_timer
+
+    if seconds < 1:
+        show_error("Amount must be at least 1")
+        return False
+    enemies_frozen_timer = seconds * 60
+    show_error(f"Enemies frozen for {seconds} seconds")
+    return True
+
+
+def dev_rarity_to(enemy, rarity):
+    # Change the rarity of the enemy under the mouse. The old
+    # rarity multipliers are undone before the new ones apply.
+    if rarity not in ENEMY_RARITIES:
+        show_error(
+            f"Invalid rarity. Valid: {', '.join(ENEMY_RARITIES)}"
+        )
+        return False
+    if enemy.rarity == rarity:
+        show_error(f"That enemy is already {rarity}")
+        return False
+    old_rarity = enemy.rarity
+    enemy.max_hp /= MOB_HP_MULTIPLIER[old_rarity]
+    enemy.damage /= MOB_DAMAGE_MULTIPLIER[old_rarity]
+    enemy.radius /= MOB_SIZE_MULTIPLIER[old_rarity]
+    enemy.rarity = rarity
+    apply_enemy_rarity_stats(enemy)
+    show_error(f"The {type(enemy).__name__} is now {rarity}")
+    return True
+
+
+def dev_change_enemy_size(enemy, amount):
+    # Grow (positive) or shrink (negative) the enemy under the
+    # mouse by [amount] pixels of radius.
+    if amount == 0:
+        show_error("Amount must not be 0")
+        return False
+    new_radius = int(enemy.radius + amount)
+    if new_radius < 5:
+        show_error("The enemy is too small to shrink")
+        return False
+    enemy.radius = new_radius
+    return True
 
 
 def dev_make_king(enemy):
@@ -15754,6 +15805,89 @@ while running:
                                         show_error("No enemy under your mouse")
                                     else:
                                         dev_make_king(king_target)
+                                elif cmd == "/freez_enemies" and acc_name_text.lower() == "devguard":
+                                    # /freez_enemies [seconds]
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /freez_enemies [seconds]")
+                                    else:
+                                        try:
+                                            seconds = int(args[0])
+                                        except ValueError:
+                                            seconds = None
+                                        if seconds is None:
+                                            show_error("Amount must be a number")
+                                        else:
+                                            dev_freeze_enemies(seconds)
+                                elif cmd == "/rarity_to" and acc_name_text.lower() == "devguard":
+                                    # /rarity_to [rarity] - change the
+                                    # rarity of the enemy under the mouse
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /rarity_to [rarity]")
+                                    else:
+                                        rarity = args[0].capitalize()
+                                        mouse_x, mouse_y = pygame.mouse.get_pos()
+                                        rarity_target = None
+                                        for enemy in all_enemies:
+                                            if not enemy.alive:
+                                                continue
+                                            if getattr(enemy, "dying", False):
+                                                continue
+                                            if distance(
+                                                mouse_x,
+                                                mouse_y,
+                                                enemy.x - camera_x,
+                                                enemy.y - camera_y
+                                            ) <= enemy.radius:
+                                                rarity_target = enemy
+                                                break
+                                        if rarity_target is None:
+                                            show_error("No enemy under your mouse")
+                                        else:
+                                            dev_rarity_to(rarity_target, rarity)
+                                elif cmd in (
+                                    "/s.enemy_increase",
+                                    "/s.enemy_decrease"
+                                ) and acc_name_text.lower() == "devguard":
+                                    # /s.enemy_increase [amount] or
+                                    # /s.enemy_decrease [amount] - grow
+                                    # or shrink the enemy under the mouse
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error(f"Usage: {cmd} [amount]")
+                                    else:
+                                        try:
+                                            amount = int(args[0])
+                                        except ValueError:
+                                            amount = None
+                                        if amount is None:
+                                            show_error("Amount must be a number")
+                                        else:
+                                            mouse_x, mouse_y = pygame.mouse.get_pos()
+                                            size_target = None
+                                            for enemy in all_enemies:
+                                                if not enemy.alive:
+                                                    continue
+                                                if getattr(enemy, "dying", False):
+                                                    continue
+                                                if distance(
+                                                    mouse_x,
+                                                    mouse_y,
+                                                    enemy.x - camera_x,
+                                                    enemy.y - camera_y
+                                                ) <= enemy.radius:
+                                                    size_target = enemy
+                                                    break
+                                            if size_target is None:
+                                                show_error("No enemy under your mouse")
+                                            else:
+                                                if cmd == "/s.enemy_decrease":
+                                                    amount = -amount
+                                                if dev_change_enemy_size(size_target, amount):
+                                                    show_error(
+                                                        f"The {type(size_target).__name__}'s size changed by {abs(amount)}"
+                                                    )
                                 elif cmd in (
                                     "/equip",
                                     "/all_equip",
@@ -15772,7 +15906,11 @@ while running:
                                     "/heal_user",
                                     "/full_heal_user",
                                     "/king",
-                                    "/spawn_enemy"
+                                    "/spawn_enemy",
+                                    "/freez_enemies",
+                                    "/rarity_to",
+                                    "/s.enemy_increase",
+                                    "/s.enemy_decrease"
                                 ) and acc_name_text.lower() != "devguard":
                                     show_error(
                                         "sorry, this command is only for DevGuard"
@@ -17157,7 +17295,10 @@ while running:
             old_x = ladybug.x
             old_y = ladybug.y
 
-            if player_spawn_cooldown <= 0:
+            if (
+                player_spawn_cooldown <= 0
+                and enemies_frozen_timer <= 0
+            ):
                 ladybug.update()
 
             if ladybug.attack_cooldown > 0:
@@ -17185,7 +17326,10 @@ while running:
             old_x = bee.x
             old_y = bee.y
 
-            if player_spawn_cooldown <= 0:
+            if (
+                player_spawn_cooldown <= 0
+                and enemies_frozen_timer <= 0
+            ):
                 bee.update()
 
             if bee.attack_cooldown > 0:
@@ -17213,7 +17357,10 @@ while running:
             old_x = spider.x
             old_y = spider.y
 
-            if player_spawn_cooldown <= 0:
+            if (
+                player_spawn_cooldown <= 0
+                and enemies_frozen_timer <= 0
+            ):
                 spider.update()
 
             if spider.attack_cooldown > 0:
@@ -17241,7 +17388,10 @@ while running:
             old_x = rock.x
             old_y = rock.y
 
-            if player_spawn_cooldown <= 0:
+            if (
+                player_spawn_cooldown <= 0
+                and enemies_frozen_timer <= 0
+            ):
                 rock.update()
 
             if rock.attack_cooldown > 0:
@@ -17269,7 +17419,10 @@ while running:
             old_x = hornet.x
             old_y = hornet.y
 
-            if player_spawn_cooldown <= 0:
+            if (
+                player_spawn_cooldown <= 0
+                and enemies_frozen_timer <= 0
+            ):
                 hornet.update()
 
             if hornet.attack_cooldown > 0:
@@ -17296,7 +17449,10 @@ while running:
             old_x = ant.x
             old_y = ant.y
 
-            if player_spawn_cooldown <= 0:
+            if (
+                player_spawn_cooldown <= 0
+                and enemies_frozen_timer <= 0
+            ):
                 ant.update()
 
             if ant.attack_cooldown > 0:
@@ -17323,7 +17479,10 @@ while running:
             old_x = soldier_ant.x
             old_y = soldier_ant.y
 
-            if player_spawn_cooldown <= 0:
+            if (
+                player_spawn_cooldown <= 0
+                and enemies_frozen_timer <= 0
+            ):
                 soldier_ant.update()
 
             if soldier_ant.attack_cooldown > 0:
@@ -17340,7 +17499,10 @@ while running:
             old_x = worker_ant.x
             old_y = worker_ant.y
 
-            if player_spawn_cooldown <= 0:
+            if (
+                player_spawn_cooldown <= 0
+                and enemies_frozen_timer <= 0
+            ):
                 worker_ant.update()
 
             if worker_ant.attack_cooldown > 0:
@@ -20082,7 +20244,11 @@ while running:
                 "/king",
                 "/me [action]",
                 "/stats",
-                "/whisper [user] [message]"
+                "/whisper [user] [message]",
+                "/freez_enemies [seconds]",
+                "/rarity_to [rarity]",
+                "/s.enemy_increase [amount]",
+                "/s.enemy_decrease [amount]"
             ]
             # Color the bracketed argument words in the list.
             cmd_word_colors = {
@@ -20096,6 +20262,7 @@ while running:
                 "[user]": (128, 255, 0),
                 "[message]": (0, 255, 255),
                 "[action]": (255, 0, 255),
+                "[seconds]": (0, 255, 128),
             }
             cmd_max_width = cmd_panel_rect.width - 48
             # Clamp scroll so the list can't scroll past its ends.
