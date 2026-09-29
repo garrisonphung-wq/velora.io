@@ -20476,11 +20476,6 @@ while running:
                 "[message]": (0, 255, 255),
                 "[action]": (255, 0, 255),
                 "[seconds]": (0, 255, 128),
-                "[y": (0, 255, 128),
-                "or": (0, 255, 128),
-                "n]": (0, 255, 128),
-                "[small": (255, 160, 60),
-                "big]": (255, 160, 60),
             }
             cmd_max_width = cmd_panel_rect.width - 48
             # Clamp scroll so the list can't scroll past its ends.
@@ -20534,6 +20529,13 @@ while running:
                         and words[word_index + 1] == "slot]"
                     ):
                         word_color = (255, 165, 0)
+                    # Pick phrases like [y or n] and [small or big]
+                    # must be one single color each, so decide the
+                    # color from the whole line, not the word.
+                    if "[y" in words and "n]" in words:
+                        word_color = (0, 255, 128)
+                    elif "[small" in words and "big]" in words:
+                        word_color = (170, 120, 255)
                     prefix = (
                         f"{cmd_number}. "
                         if first_line
