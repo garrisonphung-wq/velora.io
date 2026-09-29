@@ -3063,6 +3063,11 @@ def spawn_king_minions():
             # Same HP and damage as the king's giant wing.
             minion.max_hp = max(1, int(enemy.max_hp * 2))
             minion.damage = max(1, int(enemy.damage * 2))
+        elif mob_name == "WorkerAnt":
+            # Same HP and damage as the king's corn: 1/2 of the
+            # king's damage.
+            minion.max_hp = max(1, int(enemy.damage / 2))
+            minion.damage = max(1, int(enemy.damage / 2))
         else:
             minion.max_hp = max(1, int(enemy.max_hp / 3))
             minion.damage = max(1, int(enemy.damage / 3))
@@ -17606,11 +17611,14 @@ while running:
 
         for worker_ant in worker_ants:
 
-            # Worker ant king minions push the flower around on
-            # contact (they deal no damage themselves).
+            # Worker ant kings and their minions push the flower
+            # around on contact (they deal no damage themselves).
             if (
                 worker_ant.alive
-                and getattr(worker_ant, "is_minion", False)
+                and (
+                    getattr(worker_ant, "is_minion", False)
+                    or getattr(worker_ant, "is_king", False)
+                )
                 and not player_dead
             ):
                 d = distance(
