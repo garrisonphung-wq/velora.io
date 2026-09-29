@@ -1155,6 +1155,14 @@ BABY_ANT_RICE_COUNT = 6
 BABY_ANT_RICE_RESPAWN = 120
 baby_ant_rice = []
 
+# Soldier ant king wing projectile: one giant spinning wing petal
+# fired every 6 seconds that chases the flower. HP/damage are 2x
+# the king's, and it is 2x bigger than the king.
+SOLDIER_WING_INTERVAL = 360
+SOLDIER_WING_SPEED = 4
+SOLDIER_WING_LIFETIME = 900
+soldier_wing_projectiles = []
+
 # Hornet missiles: fired backward from the hornet's rear when it
 # stops near the flower, then they fly at the flower.
 HORNET_MISSILE_SPEED = 6
@@ -1187,6 +1195,7 @@ KING_MOB_LIST_NAMES = {
     "Rock": "rocks",
     "Hornet": "hornets",
     "BabyAnt": "baby_ants",
+    "SoldierAnt": "soldier_ants",
 }
 
 def get_king_mob_list(mob_name):
@@ -1319,6 +1328,12 @@ def cleanup_king(enemy):
         for rice in baby_ant_rice[:]:
             if rice.get("owner") is enemy:
                 baby_ant_rice.remove(rice)
+
+        # The soldier ant king's giant wings die with the king.
+        for wing in soldier_wing_projectiles:
+            if wing.get("owner") is enemy:
+                wing["dying"] = True
+                wing["shrink"] = 1.0
 
 
 def dev_make_king(enemy):
@@ -1826,6 +1841,88 @@ def update_baby_ant_rice():
 
         if rice["respawn"] > 0:
             rice["respawn"] -= 1
+
+
+def fire_soldier_wing(king):
+    # The soldier ant king fires one giant spinning wing petal with
+    # 2x the king's HP and 2x the king's damage. It is 2x bigger
+    # than the king and chases the flower.
+    soldier_wing_projectiles.append(
+        {
+            "x": king.x,
+            "y": king.y,
+            "dx": SOLDIER_WING_SPEED,
+            "dy": 0,
+            "damage": max(1, int(king.damage * 2)),
+            "hp": max(1, int(king.max_hp * 2)),
+            "max_hp": max(1, int(king.max_hp * 2)),
+            "radius": king.radius * 2,
+            "spin": random.uniform(0, 360),
+            "spin_speed": 12,
+            "timer": SOLDIER_WING_LIFETIME,
+            "owner": king,
+        }
+    )
+
+
+def update_soldier_wings():
+    # Giant soldier ant king wings spin and chase the flower.
+    global player_hp
+
+    for wing in soldier_wing_projectiles[:]:
+
+        # Dying wings shrink away fast.
+        if wing.get("dying"):
+            wing["shrink"] -= 0.12
+            if wing["shrink"] <= 0:
+                soldier_wing_projectiles.remove(wing)
+            continue
+
+        wing["timer"] -= 1
+
+        if wing["timer"] <= 0:
+            wing["dying"] = True
+            wing["shrink"] = 1.0
+            continue
+
+        wing["spin"] = (
+            (wing["spin"] + wing["spin_speed"]) % 360
+        )
+
+        # Chase the flower.
+        if not player_dead:
+            chase_angle = math.degrees(
+                math.atan2(
+                    player_y - wing["y"],
+                    player_x - wing["x"]
+                )
+            )
+            rad = math.radians(chase_angle)
+            wing["dx"] = math.cos(rad) * SOLDIER_WING_SPEED
+            wing["dy"] = math.sin(rad) * SOLDIER_WING_SPEED
+
+        wing["x"] += wing["dx"]
+        wing["y"] += wing["dy"]
+
+        # Damage the flower on contact.
+        if (
+            not player_dead
+            and distance(
+                wing["x"],
+                wing["y"],
+                player_x,
+                player_y
+            ) <= PLAYER_RADIUS + wing["radius"] * 0.7
+        ):
+            player_hp -= (
+                wing.get("damage", 10)
+                * MOB_DAMAGE_MULTIPLIER.get(
+                    wing["owner"].rarity,
+                    1.0
+                )
+            )
+            wing["dying"] = True
+            wing["shrink"] = 1.0
 
 
 def update_king_roses():
@@ -2549,6 +2646,12 @@ def spawn_king_minions():
             if enemy.king_rose_timer >= 480:
                 enemy.king_rose_timer = 0
                 fire_king_rose_volley(enemy)
+        elif type(enemy).__name__ == "SoldierAnt":
+            # The soldier ant king fires one giant wing every 6
+            # seconds.
+            if enemy.king_rose_timer >= SOLDIER_WING_INTERVAL:
+                enemy.king_rose_timer = 0
+                fire_soldier_wing(enemy)
 
         # The spider king stops and spins a web every second.
         # While spinning it can't move, and the web grows under it
@@ -2603,7 +2706,8 @@ def spawn_king_minions():
 
         mob_name = type(enemy).__name__
         if mob_name not in (
-            "Ladybug", "Spider", "Rock", "Hornet", "BabyAnt"
+            "Ladybug", "Spider", "Rock", "Hornet", "BabyAnt",
+            "SoldierAnt"
         ):
             continue
 
@@ -2614,6 +2718,7 @@ def spawn_king_minions():
             "Rock": Rock,
             "Hornet": Hornet,
             "BabyAnt": BabyAnt,
+            "SoldierAnt": SoldierAnt,
         }[mob_name]
 
         alive_minions = sum(
@@ -2626,6 +2731,9 @@ def spawn_king_minions():
             minion_cap = 5
         if mob_name == "BabyAnt":
             minion_cap = 20
+        # The soldier ant king spawns only 1 minion.
+        if mob_name == "SoldierAnt":
+            minion_cap = 1
         if alive_minions >= minion_cap:
             continue
 
@@ -2639,6 +2747,10 @@ def spawn_king_minions():
         if mob_name == "BabyAnt":
             minion.max_hp = max(1, int(enemy.max_hp / 5))
             minion.damage = max(1, int(enemy.damage / 3))
+        elif mob_name == "SoldierAnt":
+            # Same HP and damage as the king's giant wing.
+            minion.max_hp = max(1, int(enemy.max_hp * 2))
+            minion.damage = max(1, int(enemy.damage * 2))
         else:
             minion.max_hp = max(1, int(enemy.max_hp / 3))
             minion.damage = max(1, int(enemy.damage / 3))
@@ -6784,9 +6896,18 @@ class SoldierAnt:
         self.view_range = 400
 
         self.charging = False
-
         self.charge_speed = 2.5
         self.wing_phase = 0.0
+
+        # King / minion flags (set by the /king command)
+        self.is_king = False
+        self.is_minion = False
+        self.king_minion_timer = 0
+        self.king_chat_timer = 0
+        self.king_rose_timer = 0
+        self.king_orbit_slot = 0
+        self.king_wing_timer = 0
+
 
 
 
@@ -6874,6 +6995,18 @@ class SoldierAnt:
 
 
         self.timer += 1
+
+        # ---------------- KING AI ----------------
+
+        if getattr(self, "is_king", False):
+
+            if king_chase_or_guard(self):
+                return
+
+        if getattr(self, "is_minion", False):
+
+            minion_ai(self)
+            return
 
 
 
@@ -17311,6 +17444,81 @@ while running:
                     2
                 )
 
+        # ---------------- SOLDIER KING WINGS ----------------
+
+        for wing in soldier_wing_projectiles:
+
+            wing_x = wing["x"] - camera_x
+            wing_y = wing["y"] - camera_y
+
+            if (
+                -200 <= wing_x <= WIDTH + 200
+                and -200 <= wing_y <= HEIGHT + 200
+            ):
+                wing_r = wing.get("radius", 8) * wing.get(
+                    "shrink",
+                    1.0
+                )
+                spin_rad = math.radians(wing.get("spin", 0))
+                cos_s = math.cos(spin_rad)
+                sin_s = math.sin(spin_rad)
+                # Wing shape: start, control and end points of the
+                # two bezier curves, scaled up and spun.
+                start = (-0.9, 0.5)
+                control = (0.9, 1.0)
+                end = (0.7, -1.0)
+
+                def spin_point(px, py):
+                    return (
+                        wing_x
+                        + (px * cos_s - py * sin_s) * wing_r,
+                        wing_y
+                        + (px * sin_s + py * cos_s) * wing_r
+                    )
+
+                start_x, start_y = spin_point(*start)
+                end_x, end_y = spin_point(*end)
+                points = []
+                for j in range(31):
+                    t = j / 30
+                    px = (
+                        (1 - t) ** 2 * start_x
+                        + 2 * (1 - t) * t * spin_point(*control)[0]
+                        + t ** 2 * end_x
+                    )
+                    py = (
+                        (1 - t) ** 2 * start_y
+                        + 2 * (1 - t) * t * spin_point(*control)[1]
+                        + t ** 2 * end_y
+                    )
+                    points.append((px, py))
+                inner_control = (-0.1, 0.1)
+                for j in range(30, -1, -1):
+                    t = j / 30
+                    px = (
+                        (1 - t) ** 2 * start_x
+                        + 2 * (1 - t) * t * spin_point(*inner_control)[0]
+                        + t ** 2 * end_x
+                    )
+                    py = (
+                        (1 - t) ** 2 * start_y
+                        + 2 * (1 - t) * t * spin_point(*inner_control)[1]
+                        + t ** 2 * end_y
+                    )
+                    points.append((px, py))
+                pygame.draw.polygon(
+                    screen,
+                    (255, 255, 255),
+                    points
+                )
+                pygame.draw.lines(
+                    screen,
+                    (150, 150, 150),
+                    True,
+                    points,
+                    2
+                )
+
         for pickup in PICKUP_LIST:
 
             collect_t = pickup.get("collecting")
@@ -17965,6 +18173,25 @@ while running:
                                     rice["shrink"] = 1.0
                                 hit = True
 
+                        for wing in soldier_wing_projectiles[:]:
+                            if wing.get("dying"):
+                                continue
+                            wing_d = distance(
+                                petal_world_x,
+                                petal_world_y,
+                                wing["x"],
+                                wing["y"]
+                            )
+                            if wing_d < (
+                                petal_range
+                                + wing.get("radius", 8)
+                            ):
+                                wing["hp"] -= damage
+                                if wing["hp"] <= 0:
+                                    wing["dying"] = True
+                                    wing["shrink"] = 1.0
+                                hit = True
+
                         for rock_p in rock_projectiles[:]:
                             rock_d = distance(
                                 petal_world_x,
@@ -18263,6 +18490,7 @@ while running:
         update_king_roses()
         update_king_stingers()
         update_baby_ant_rice()
+        update_soldier_wings()
         update_king_webs()
         update_rock_projectiles()
         update_hornet_missiles()
