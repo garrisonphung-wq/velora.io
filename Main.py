@@ -3190,7 +3190,7 @@ def flower_minion_ai(minion):
         minion.speed = 0
         return
 
-    orbit = 150 + PLAYER_RADIUS
+    orbit = 140 + PLAYER_RADIUS
     cur_angle = math.atan2(
         minion.y - player_y,
         minion.x - player_x
@@ -3278,7 +3278,9 @@ def spawn_flower_minion(slot_index):
     minion.is_minion = True
     minion.yellow_minion = True
     minion.egg_slot = slot_index
-    minion.king_orbit_slot = len(flower_minions)
+    minion.king_orbit_slot = sum(
+        1 for m in flower_minions if m.alive
+    )
     minion.rarity = egg_rarity
     # A flower minion has one third of the flower's HP and damage.
     minion.max_hp = max(1, int(PLAYER_MAX_HP / 3))
@@ -3291,18 +3293,24 @@ def spawn_flower_minion(slot_index):
 
 def update_flower_minions():
     # Hatch, move and fight with the Ant Egg minions.
-    # 1) Spawn a minion for every alive Ant Egg petal slot.
+    # 1) Spawn minions for every alive Ant Egg petal slot: how many
+    # minions hatch depends on the egg's petal count (parts).
     for i in range(PETAL_SLOTS):
         if (
             petal_slots[i]["filled"]
             and petal_slots[i]["petal"] == "Ant Egg"
             and petal_alive[i]
         ):
-            already = any(
-                getattr(m, "egg_slot", None) == i and m.alive
-                for m in flower_minions
+            egg_count = get_petal_count(
+                "Ant Egg",
+                petal_slots[i]["rarity"]
             )
-            if not already:
+            owned = sum(
+                1
+                for m in flower_minions
+                if getattr(m, "egg_slot", None) == i and m.alive
+            )
+            for _ in range(owned, egg_count):
                 spawn_flower_minion(i)
 
     # 2) Update every minion: orbit, fight, die.
@@ -3336,6 +3344,23 @@ def update_flower_minions():
             continue
 
         flower_minion_ai(minion)
+
+        # Solid collision with its owner: never overlap the flower.
+        if not player_dead:
+            d = distance(
+                minion.x,
+                minion.y,
+                player_x,
+                player_y
+            )
+            min_dist = PLAYER_RADIUS + minion.radius
+            if 0 < d < min_dist:
+                minion.x = player_x + (
+                    (minion.x - player_x) / d * min_dist
+                )
+                minion.y = player_y + (
+                    (minion.y - player_y) / d * min_dist
+                )
 
         if minion.attack_cooldown > 0:
             minion.attack_cooldown -= 1
@@ -3376,6 +3401,32 @@ def update_flower_minions():
                             "Ant Egg"
                         ]
                 break
+
+    # 3) Solid collision between minions: push overlapping pairs
+    # apart so they never stack on each other.
+    for a_index in range(len(flower_minions)):
+        minion_a = flower_minions[a_index]
+        if not minion_a.alive or getattr(minion_a, "dying", False):
+            continue
+        for b_index in range(a_index + 1, len(flower_minions)):
+            minion_b = flower_minions[b_index]
+            if not minion_b.alive or getattr(minion_b, "dying", False):
+                continue
+            d = distance(
+                minion_a.x,
+                minion_a.y,
+                minion_b.x,
+                minion_b.y
+            )
+            min_dist = minion_a.radius + minion_b.radius
+            if 0 < d < min_dist:
+                overlap = (min_dist - d) / 2
+                push_x = (minion_a.x - minion_b.x) / d
+                push_y = (minion_a.y - minion_b.y) / d
+                minion_a.x += push_x * overlap
+                minion_a.y += push_y * overlap
+                minion_b.x -= push_x * overlap
+                minion_b.y -= push_y * overlap
 
 
 def dev_ban_user(target_name):
@@ -7854,11 +7905,11 @@ class SoldierAnt:
         def ant_color(base):
             if getattr(self, "yellow_minion", False):
                 return {
-                    (62, 62, 62): (250, 210, 50),
-                    (22, 22, 22): (180, 130, 20),
-                    (48, 48, 48): (235, 195, 45),
-                    (78, 78, 78): (255, 235, 110),
-                    (40, 40, 40): (170, 120, 20),
+                    (62, 62, 62): (255, 230, 100),
+                    (22, 22, 22): (210, 160, 40),
+                    (48, 48, 48): (250, 215, 80),
+                    (78, 78, 78): (255, 245, 150),
+                    (40, 40, 40): (200, 150, 35),
                 }.get(base, base)
             return flash_color(base, self.flash_timer)
 
