@@ -1274,6 +1274,41 @@ def cleanup_king(enemy):
         enemy.is_king = False
         king_say(mob_name, "i'll be back...")
 
+        # The king's minions die with their king.
+        minion_list_name = KING_MOB_LIST_NAMES.get(mob_name)
+        if minion_list_name:
+            for minion in globals()[minion_list_name]:
+                if not getattr(minion, "is_minion", False):
+                    continue
+                if not minion.alive:
+                    continue
+                if getattr(minion, "death_registered", False):
+                    continue
+                minion.death_registered = True
+                minion.dying = True
+                minion.shrink_scale = 1.0
+                minion.full_radius = minion.radius
+
+        # The king's projectiles die with the king too.
+        for projectile_list in (
+            king_stinger_projectiles,
+            hornet_missiles,
+            rock_projectiles,
+        ):
+            for projectile in projectile_list:
+                if projectile.get("owner") is enemy:
+                    projectile["dying"] = True
+                    projectile["shrink"] = 1.0
+
+        # Roses have no shrink animation, so remove them at once.
+        for rose in king_rose_projectiles[:]:
+            if rose.get("owner") is enemy:
+                king_rose_projectiles.remove(rose)
+
+        # Spider king webs die with the king as well.
+        if mob_name == "Spider":
+            king_webs.clear()
+
 
 def dev_make_king(enemy):
     # Promote the enemy under the mouse into a king.
