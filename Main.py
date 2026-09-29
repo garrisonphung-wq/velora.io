@@ -1149,6 +1149,12 @@ king_rose_projectiles = []
 # Flying bee-king stinger projectiles (damage the flower).
 king_stinger_projectiles = []
 
+# Baby ant king's orbiting rice petals. They are killable: the
+# flower's petals can shoot them down and they respawn after a bit.
+BABY_ANT_RICE_COUNT = 6
+BABY_ANT_RICE_RESPAWN = 120
+baby_ant_rice = []
+
 # Hornet missiles: fired backward from the hornet's rear when it
 # stops near the flower, then they fly at the flower.
 HORNET_MISSILE_SPEED = 6
@@ -1308,6 +1314,11 @@ def cleanup_king(enemy):
         # Spider king webs die with the king as well.
         if mob_name == "Spider":
             king_webs.clear()
+
+        # The baby ant king's rice petals die with the king.
+        for rice in baby_ant_rice[:]:
+            if rice.get("owner") is enemy:
+                baby_ant_rice.remove(rice)
 
 
 def dev_make_king(enemy):
@@ -1749,6 +1760,72 @@ def update_king_stingers():
 
             stinger["dying"] = True
             stinger["shrink"] = 1.0
+
+
+def baby_ant_rice_pos(rice):
+    # World position of a rice petal on its king's orbit ring.
+    king = rice["owner"]
+    rice_orbit = king.radius * 1.8
+    rice_angle = math.radians(
+        time.time() * 90
+        + rice["slot"] * (360 / BABY_ANT_RICE_COUNT)
+    )
+    return (
+        king.x + math.cos(rice_angle) * rice_orbit,
+        king.y + math.sin(rice_angle) * rice_orbit
+    )
+
+
+def update_baby_ant_rice():
+    # Keep six killable rice petals orbiting every baby ant king.
+    king = kings.get("BabyAnt")
+    if (
+        king is not None
+        and king.__class__.__name__ == "BabyAnt"
+        and king.alive
+    ):
+        existing_slots = [
+            rice["slot"]
+            for rice in baby_ant_rice
+            if rice["owner"] is king
+        ]
+        for slot in range(BABY_ANT_RICE_COUNT):
+            if slot in existing_slots:
+                continue
+            rice_hp = max(1, int(king.max_hp / 10))
+            baby_ant_rice.append(
+                {
+                    "owner": king,
+                    "slot": slot,
+                    "hp": rice_hp,
+                    "max_hp": rice_hp,
+                    "radius": 8,
+                    "dying": False,
+                    "shrink": 1.0,
+                    "respawn": 0,
+                }
+            )
+
+    for rice in baby_ant_rice[:]:
+        king = rice["owner"]
+        # Drop rices whose king is gone.
+        if (
+            kings.get("BabyAnt") is not king
+            or not king.alive
+        ):
+            baby_ant_rice.remove(rice)
+            continue
+
+        if rice.get("dying"):
+            rice["shrink"] -= 0.18
+            if rice["shrink"] <= 0:
+                rice["dying"] = False
+                rice["shrink"] = 1.0
+                rice["respawn"] = BABY_ANT_RICE_RESPAWN
+            continue
+
+        if rice["respawn"] > 0:
+            rice["respawn"] -= 1
 
 
 def update_king_roses():
@@ -6557,13 +6634,17 @@ class BabyAnt:
 
         if getattr(self, "is_king", False):
 
-            # Six rice petals circle the baby ant king.
-            rice_count = 6
+            # Six rice petals circle the baby ant king. They are
+            # killable, so draw the live ones from baby_ant_rice.
             rice_orbit = self.radius * 1.8
-            for rice_index in range(rice_count):
+            for rice in baby_ant_rice:
+                if rice["owner"] is not self:
+                    continue
+                if rice["respawn"] > 0:
+                    continue
                 rice_angle = math.radians(
                     time.time() * 90
-                    + rice_index * (360 / rice_count)
+                    + rice["slot"] * (360 / BABY_ANT_RICE_COUNT)
                 )
                 rice_x = (
                     sx
@@ -6577,7 +6658,8 @@ class BabyAnt:
                     "Rice",
                     rice_x,
                     rice_y,
-                    self.rarity
+                    self.rarity,
+                    size_scale=rice["shrink"]
                 )
 
             # ---------------- KING CROWN ----------------
@@ -17863,6 +17945,26 @@ while running:
                                     king_stinger_projectiles.remove(stinger)
                                 hit = True
 
+                        for rice in baby_ant_rice[:]:
+                            if rice.get("dying") or rice["respawn"] > 0:
+                                continue
+                            rice_x, rice_y = baby_ant_rice_pos(rice)
+                            rice_d = distance(
+                                petal_world_x,
+                                petal_world_y,
+                                rice_x,
+                                rice_y
+                            )
+                            if rice_d < (
+                                petal_range
+                                + rice.get("radius", 8)
+                            ):
+                                rice["hp"] -= damage
+                                if rice["hp"] <= 0:
+                                    rice["dying"] = True
+                                    rice["shrink"] = 1.0
+                                hit = True
+
                         for rock_p in rock_projectiles[:]:
                             rock_d = distance(
                                 petal_world_x,
@@ -18160,6 +18262,7 @@ while running:
         spawn_king_minions()
         update_king_roses()
         update_king_stingers()
+        update_baby_ant_rice()
         update_king_webs()
         update_rock_projectiles()
         update_hornet_missiles()
