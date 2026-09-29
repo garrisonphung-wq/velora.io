@@ -15484,13 +15484,26 @@ while running:
                                         show_error("You are muted and can't chat")
                                     elif not is_bad_word(" ".join(args[1:])):
                                         whisper_target = args[0]
-                                        chat_messages.append(
-                                            (
-                                                f"* {acc_name_text} (whisper to {whisper_target})",
-                                                " ".join(args[1:]),
-                                                time.time()
+                                        online_names = [
+                                            sender
+                                            for sender, msg, t in chat_messages
+                                            if not sender.startswith("* ")
+                                        ]
+                                        online_names.append(acc_name_text)
+                                        if whisper_target.lower() not in [
+                                            n.lower() for n in online_names
+                                        ]:
+                                            show_error(
+                                                f"{whisper_target} is not playing right now"
                                             )
-                                        )
+                                        else:
+                                            chat_messages.append(
+                                                (
+                                                    f"* {acc_name_text} (whisper to {whisper_target})",
+                                                    " ".join(args[1:]),
+                                                    time.time()
+                                                )
+                                            )
                                     else:
                                         show_error("The chat does not allow bad words")
                                 elif cmd == "/stats":
