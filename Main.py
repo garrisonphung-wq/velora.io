@@ -2139,6 +2139,21 @@ def update_soldier_wings():
                 wing["shrink"] = 1.0
 
 
+def worker_corn_ring_count(king):
+    # How many corn rings a worker ant king gets, by rarity:
+    # Common-Unusual: 1, Rare-Legendary: 2, Mythic and above: 3.
+    rarity_order = [
+        "Common", "Unusual", "Rare", "Epic", "Legendary",
+        "Mythic", "Ultra", "Super", "Omega", "Unique",
+        "Eternal", "Cosmo", "Jeddiful", "Tacnic", "Radium",
+        "Ancient", "Omnient", "Celestial", "Infino"
+    ]
+    tier = 0
+    if king.rarity in rarity_order:
+        tier = rarity_order.index(king.rarity)
+    return max(1, min(WORKER_CORN_RINGS, 1 + tier // 3))
+
+
 def worker_corn_pos(corn):
     # World position of a corn on its king's rings. Each ring spins
     # at its own speed (degrees per second).
@@ -2171,7 +2186,8 @@ def update_worker_ant_corn():
             for corn in worker_ant_corn
             if corn["owner"] is king
         ]
-        for ring in range(WORKER_CORN_RINGS):
+        ring_count = worker_corn_ring_count(king)
+        for ring in range(ring_count):
             for slot in range(WORKER_CORN_PER_RING):
                 if (ring, slot) in existing:
                     continue
