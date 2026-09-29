@@ -7861,9 +7861,8 @@ class WorkerAnt:
         self.rarity = "Common"
 
         # Stats
-        # Worker ants are harmless to the flower, but they still
-        # defend themselves by damaging petals that touch them.
-        self.damage = 0
+        # Worker ants deal damage now: Soldier Ant HP (90) minus 10.
+        self.damage = 90 - 10
         self.petal_damage = 30
         self.max_hp = (
             50 *
