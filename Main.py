@@ -3440,35 +3440,6 @@ def update_flower_minions():
                     (minion.y - player_y) / d * min_dist
                 )
 
-        # Mobs push the minion around: every overlapping enemy
-        # (regular mobs, kings and king minions alike) shoves the
-        # minion, and the minion shoves back.
-        for enemy in all_enemies:
-            if not enemy.alive:
-                continue
-            if getattr(enemy, "dying", False):
-                continue
-            d = distance(
-                minion.x,
-                minion.y,
-                enemy.x,
-                enemy.y
-            )
-            min_dist = minion.radius + enemy.radius
-            if 0 < d < min_dist:
-                push_x = (minion.x - enemy.x) / d
-                push_y = (minion.y - enemy.y) / d
-                if type(enemy).__name__ in ("Rock", "AntEgg"):
-                    # Rock and Ant Egg are stationary mobs and cannot be pushed by minions
-                    minion.x += push_x * (min_dist - d)
-                    minion.y += push_y * (min_dist - d)
-                else:
-                    overlap = (min_dist - d) / 2
-                    minion.x += push_x * overlap
-                    minion.y += push_y * overlap
-                    enemy.x -= push_x * overlap
-                    enemy.y -= push_y * overlap
-
         if minion.attack_cooldown > 0:
             minion.attack_cooldown -= 1
         if minion.flash_timer > 0:
@@ -3494,6 +3465,13 @@ def update_flower_minions():
                     dmg = get_enemy_attack_damage(enemy)
                     minion.hp -= dmg
                     minion.flash_timer = 4
+                    if type(enemy).__name__ in ("Rock", "AntEgg"):
+                        # Push minion back strongly on attack so minions don't spam damage
+                        p_dist = max(0.001, d)
+                        p_x = (minion.x - enemy.x) / p_dist
+                        p_y = (minion.y - enemy.y) / p_dist
+                        minion.x += p_x * 50
+                        minion.y += p_y * 50
                     if minion.hp <= 0:
                         # The minion dies: its egg is consumed and
                         # reloads like a destroyed petal.
@@ -3505,6 +3483,36 @@ def update_flower_minions():
                             "Ant Egg"
                         ]
                 break
+
+        # Mobs push the minion around: every overlapping enemy
+        # (regular mobs, kings and king minions alike) shoves the
+        # minion, and the minion shoves back.
+        for enemy in all_enemies:
+            if not enemy.alive:
+                continue
+            if getattr(enemy, "dying", False):
+                continue
+            d = distance(
+                minion.x,
+                minion.y,
+                enemy.x,
+                enemy.y
+            )
+            min_dist = minion.radius + enemy.radius
+            if 0 < d < min_dist:
+                push_x = (minion.x - enemy.x) / d
+                push_y = (minion.y - enemy.y) / d
+                if type(enemy).__name__ in ("Rock", "AntEgg"):
+                    # Rock and Ant Egg are stationary mobs and push minions back strongly
+                    extra_push = 20
+                    minion.x += push_x * (min_dist - d + extra_push)
+                    minion.y += push_y * (min_dist - d + extra_push)
+                else:
+                    overlap = (min_dist - d) / 2
+                    minion.x += push_x * overlap
+                    minion.y += push_y * overlap
+                    enemy.x -= push_x * overlap
+                    enemy.y -= push_y * overlap
 
     # 3) Solid collision between minions: push overlapping pairs
     # apart so they never stack on each other.
