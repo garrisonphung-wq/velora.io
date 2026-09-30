@@ -8162,64 +8162,106 @@ class SoldierAnt:
 
         # ---------------- OVAL BODY (BACK) ----------------
 
-        body_surface = pygame.Surface(
-            (
-                int(body_width * 2),
-                int(body_height * 2)
-            ),
-            pygame.SRCALPHA
+        body_length_scale = getattr(
+            self,
+            "body_length_scale",
+            1.0
         )
 
-
-        pygame.draw.ellipse(
-            body_surface,
-            ant_color((62, 62, 62)),
-            (
-                0,
-                0,
-                int(body_width * 2),
-                int(body_height * 2)
+        if body_length_scale > 1.0:
+            # Queen ants have three round body parts: the big
+            # abdomen at the back, a thorax in the middle that is
+            # a little bigger than the head, and the head at the
+            # front (drawn later, on top of both).
+            for part_offset, part_scale in (
+                (-0.9, 1.35),
+                (0.0, 1.1),
+            ):
+                part_x = (
+                    sx
+                    + math.cos(angle)
+                    * self.radius
+                    * part_offset
+                )
+                part_y = (
+                    sy
+                    + math.sin(angle)
+                    * self.radius
+                    * part_offset
+                )
+                part_r = int(head_size * part_scale)
+                pygame.draw.circle(
+                    screen,
+                    ant_color((62, 62, 62)),
+                    (int(part_x), int(part_y)),
+                    part_r
+                )
+                pygame.draw.circle(
+                    screen,
+                    ant_color((22, 22, 22)),
+                    (int(part_x), int(part_y)),
+                    part_r,
+                    max(2, int(self.radius * 0.10))
+                )
+        else:
+            body_surface = pygame.Surface(
+                (
+                    int(body_width * 2),
+                    int(body_height * 2)
+                ),
+                pygame.SRCALPHA
             )
-        )
-        pygame.draw.ellipse(
-            body_surface,
-            ant_color((22, 22, 22)),
-            (
-                0,
-                0,
-                int(body_width * 2),
-                int(body_height * 2)
-            ),
-            max(2, int(self.radius * 0.10))
-        )
 
 
-        body_surface = pygame.transform.rotate(
-            body_surface,
-            -self.angle
-        )
-
-
-        # Longer-bodied ants (the queen) shift the body backward
-        # along their angle so its front tip stays hidden behind
-        # the head instead of sticking out of it.
-        body_shift = (
-            self.radius
-            * 0.8
-            * (getattr(self, "body_length_scale", 1.0) - 1.0)
-        )
-        body_rect = body_surface.get_rect(
-            center=(
-                int(sx - math.cos(angle) * body_shift),
-                int(sy - math.sin(angle) * body_shift)
+            pygame.draw.ellipse(
+                body_surface,
+                ant_color((62, 62, 62)),
+                (
+                    0,
+                    0,
+                    int(body_width * 2),
+                    int(body_height * 2)
+                )
             )
-        )
+            pygame.draw.ellipse(
+                body_surface,
+                ant_color((22, 22, 22)),
+                (
+                    0,
+                    0,
+                    int(body_width * 2),
+                    int(body_height * 2)
+                ),
+                max(2, int(self.radius * 0.10))
+            )
 
 
-        screen.blit(
-            body_surface,
-            body_rect
-        )
+            body_surface = pygame.transform.rotate(
+                body_surface,
+                -self.angle
+            )
+
+
+            # Longer-bodied ants (the queen) shift the body backward
+            # along their angle so its front tip stays hidden behind
+            # the head instead of sticking out of it.
+            body_shift = (
+                self.radius
+                * 0.8
+                * (getattr(self, "body_length_scale", 1.0) - 1.0)
+            )
+            body_rect = body_surface.get_rect(
+                center=(
+                    int(sx - math.cos(angle) * body_shift),
+                    int(sy - math.sin(angle) * body_shift)
+                )
+            )
+
+
+            screen.blit(
+                body_surface,
+                body_rect
+            )
 
 
 
