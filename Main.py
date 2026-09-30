@@ -20614,21 +20614,49 @@ while running:
                 baby_ants,
                 soldier_ants,
                 worker_ants,
+                queen_ants,
             ]
             for enemy_list in all_enemy_lists:
                 for enemy in enemy_list:
                     if not enemy.alive:
                         continue
-                    pygame.draw.circle(
-                        screen,
-                        hitbox_color,
-                        (
-                            int(enemy.x - camera_x),
-                            int(enemy.y - camera_y),
-                        ),
-                        enemy.radius,
-                        hitbox_width
-                    )
+                    if isinstance(enemy, QueenAnt):
+                        # Queens show all three body-part circles.
+                        for c_x, c_y, c_r in enemy.hitbox_circles():
+                            pygame.draw.circle(
+                                screen,
+                                hitbox_color,
+                                (
+                                    int(c_x - camera_x),
+                                    int(c_y - camera_y),
+                                ),
+                                int(c_r),
+                                hitbox_width
+                            )
+                    else:
+                        pygame.draw.circle(
+                            screen,
+                            hitbox_color,
+                            (
+                                int(enemy.x - camera_x),
+                                int(enemy.y - camera_y),
+                            ),
+                            enemy.radius,
+                            hitbox_width
+                        )
+
+            # Queen egg hitboxes
+            for egg in queen_eggs:
+                pygame.draw.circle(
+                    screen,
+                    hitbox_color,
+                    (
+                        int(egg["x"] - camera_x),
+                        int(egg["y"] - camera_y),
+                    ),
+                    egg["radius"],
+                    hitbox_width
+                )
 
 
         # ---------------- PLAYER FACE (spins while dead) ----------------
