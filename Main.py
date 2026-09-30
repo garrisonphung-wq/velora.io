@@ -1457,6 +1457,12 @@ def dev_change_enemy_size(enemy, amount):
     return True
 
 
+def get_enemy_attack_damage(enemy):
+    if getattr(enemy, "custom_damage", None) is not None:
+        return enemy.custom_damage
+    return enemy.damage * MOB_DAMAGE_MULTIPLIER.get(enemy.rarity, 1.0)
+
+
 def dev_make_king(enemy):
     # Promote the enemy under the mouse into a king.
     mob_name = type(enemy).__name__
@@ -1475,6 +1481,8 @@ def dev_make_king(enemy):
 
     enemy.is_king = True
     enemy.damage = int(enemy.damage * 2)
+    if getattr(enemy, "custom_damage", None) is not None:
+        enemy.custom_damage = int(enemy.custom_damage * 2)
     enemy.max_hp = int(enemy.max_hp * 2)
     enemy.hp = enemy.max_hp
     enemy.radius = int(enemy.radius * 1.3)
@@ -3483,10 +3491,7 @@ def update_flower_minions():
                 if minion.attack_cooldown <= 0:
                     minion.attack_cooldown = 30
                     enemy.take_damage(minion.damage)
-                    dmg = (
-                        enemy.damage
-                        * MOB_DAMAGE_MULTIPLIER[enemy.rarity]
-                    )
+                    dmg = get_enemy_attack_damage(enemy)
                     minion.hp -= dmg
                     minion.flash_timer = 4
                     if minion.hp <= 0:
@@ -5126,7 +5131,11 @@ class Ladybug:
 
             give_xp(
                 int(
-                    10 * MOB_XP_MULTIPLIER[self.rarity]
+                    getattr(
+                        self,
+                        "custom_xp",
+                        10 * MOB_XP_MULTIPLIER[self.rarity]
+                    )
                 )
             )
 
@@ -5506,7 +5515,11 @@ class Bee:
 
             give_xp(
                 int(
-                    10 * MOB_XP_MULTIPLIER[self.rarity]
+                    getattr(
+                        self,
+                        "custom_xp",
+                        10 * MOB_XP_MULTIPLIER[self.rarity]
+                    )
                 )
             )
 
@@ -6039,7 +6052,11 @@ class Spider:
 
             give_xp(
                 int(
-                    10 * MOB_XP_MULTIPLIER[self.rarity]
+                    getattr(
+                        self,
+                        "custom_xp",
+                        10 * MOB_XP_MULTIPLIER[self.rarity]
+                    )
                 )
             )
 
@@ -6446,7 +6463,11 @@ class Rock:
 
             give_xp(
                 int(
-                    10 * MOB_XP_MULTIPLIER[self.rarity]
+                    getattr(
+                        self,
+                        "custom_xp",
+                        10 * MOB_XP_MULTIPLIER[self.rarity]
+                    )
                 )
             )
 
@@ -6821,7 +6842,11 @@ class Hornet:
 
             give_xp(
                 int(
-                    10 * MOB_XP_MULTIPLIER[self.rarity]
+                    getattr(
+                        self,
+                        "custom_xp",
+                        10 * MOB_XP_MULTIPLIER[self.rarity]
+                    )
                 )
             )
 
@@ -7372,7 +7397,11 @@ class BabyAnt:
 
             give_xp(
                 int(
-                    10 * MOB_XP_MULTIPLIER[self.rarity]
+                    getattr(
+                        self,
+                        "custom_xp",
+                        10 * MOB_XP_MULTIPLIER[self.rarity]
+                    )
                 )
             )
 
@@ -7910,7 +7939,11 @@ class SoldierAnt:
 
             give_xp(
                 int(
-                    10 * MOB_XP_MULTIPLIER[self.rarity]
+                    getattr(
+                        self,
+                        "custom_xp",
+                        10 * MOB_XP_MULTIPLIER[self.rarity]
+                    )
                 )
             )
 
@@ -8775,7 +8808,11 @@ class WorkerAnt:
 
             give_xp(
                 int(
-                    10 * MOB_XP_MULTIPLIER[self.rarity]
+                    getattr(
+                        self,
+                        "custom_xp",
+                        10 * MOB_XP_MULTIPLIER[self.rarity]
+                    )
                 )
             )
 
@@ -9251,7 +9288,11 @@ class AntEgg:
 
             give_xp(
                 int(
-                    10 * MOB_XP_MULTIPLIER[self.rarity]
+                    getattr(
+                        self,
+                        "custom_xp",
+                        10 * MOB_XP_MULTIPLIER[self.rarity]
+                    )
                 )
             )
 
@@ -16463,11 +16504,12 @@ while running:
                             if chat_input_text.startswith("/"):
                                 parts = chat_input_text.split()
                                 cmd = parts[0]
-                                if cmd == "/spawn_enemy" and acc_name_text.lower() == "devguard":
-                                    # /spawn_enemy [rarity] [mob type] [amount]
+                                if cmd in ("/spawn_enemy", "/spawn_custom_enemy") and acc_name_text.lower() == "devguard":
+                                    # /spawn_enemy [rarity] [mob] [amount]
+                                    # OR /spawn_enemy [rarity] [mob] [mob damage] [mob health] [mob xp] [optional amount]
                                     args = parts[1:]
                                     if len(args) < 2:
-                                        show_error("Usage: /spawn_enemy [rarity] [mob type] [amount]")
+                                        show_error("Usage: /spawn_enemy [rarity] [mob] [damage] [health] [xp]")
                                     else:
                                         rarity = args[0].capitalize()
                                         enemy_classes = {
@@ -16487,38 +16529,75 @@ while running:
                                             "Ant Egg": (AntEgg, ant_eggs),
                                             "AntEgg": (AntEgg, ant_eggs),
                                         }
-                                        # Try to match multi-word mob names first (e.g. "Baby Ant", "Soldier Ant", "Worker Ant")
                                         mob_type = None
-                                        amount = 1
+                                        trailing_args = []
                                         if len(args) >= 3:
                                             # Try 2-word mob names first
                                             two_word = args[1] + " " + args[2]
                                             for key in enemy_classes:
                                                 if key.lower() == two_word.lower():
                                                     mob_type = key
-                                                    amount = int(args[3]) if len(args) >= 4 else 1
+                                                    trailing_args = args[3:]
                                                     break
-                                        if mob_type is None:
+                                        if mob_type is None and len(args) >= 2:
                                             # Try single-word mob names
-                                            mob_type = args[1]
-                                            amount = int(args[2]) if len(args) >= 3 else 1
-                                        enemy_class = None
-                                        for key in enemy_classes:
-                                            if key.lower() == mob_type.lower():
-                                                enemy_class = enemy_classes[key]
-                                                break
-                                        if enemy_class:
-                                            mob_class, mob_list = enemy_class
-                                            mouse_x, mouse_y = pygame.mouse.get_pos()
-                                            world_x = mouse_x + camera_x
-                                            world_y = mouse_y + camera_y
-                                            for _ in range(amount):
-                                                enemy = mob_class()
-                                                enemy.rarity = rarity
-                                                apply_enemy_rarity_stats(enemy)
-                                                enemy.x = world_x
-                                                enemy.y = world_y
-                                                mob_list.append(enemy)
+                                            for key in enemy_classes:
+                                                if key.lower() == args[1].lower():
+                                                    mob_type = key
+                                                    trailing_args = args[2:]
+                                                    break
+
+                                        amount = 1
+                                        custom_damage = None
+                                        custom_hp = None
+                                        custom_xp = None
+
+                                        if len(trailing_args) >= 3:
+                                            # Custom stats: [mob damage] [mob health] [mob xp] [optional amount]
+                                            try:
+                                                custom_damage = float(trailing_args[0])
+                                                custom_hp = float(trailing_args[1])
+                                                custom_xp = int(trailing_args[2])
+                                                if len(trailing_args) >= 4:
+                                                    amount = max(1, int(trailing_args[3]))
+                                            except ValueError:
+                                                show_error("Damage, health, and xp must be numbers")
+                                                mob_type = None
+                                        elif len(trailing_args) == 1:
+                                            try:
+                                                amount = max(1, int(trailing_args[0]))
+                                            except ValueError:
+                                                amount = 1
+
+                                        if mob_type is not None:
+                                            enemy_class = None
+                                            for key in enemy_classes:
+                                                if key.lower() == mob_type.lower():
+                                                    enemy_class = enemy_classes[key]
+                                                    break
+                                            if enemy_class:
+                                                mob_class, mob_list = enemy_class
+                                                mouse_x, mouse_y = pygame.mouse.get_pos()
+                                                world_x = mouse_x + camera_x
+                                                world_y = mouse_y + camera_y
+                                                for _ in range(amount):
+                                                    enemy = mob_class()
+                                                    enemy.rarity = rarity
+                                                    apply_enemy_rarity_stats(enemy)
+                                                    enemy.x = world_x
+                                                    enemy.y = world_y
+                                                    if custom_damage is not None:
+                                                        enemy.damage = int(custom_damage)
+                                                        enemy.custom_damage = int(custom_damage)
+                                                    if custom_hp is not None:
+                                                        enemy.max_hp = int(custom_hp)
+                                                        enemy.hp = int(custom_hp)
+                                                    if custom_xp is not None:
+                                                        enemy.custom_xp = int(custom_xp)
+                                                    mob_list.append(enemy)
+                                            else:
+                                                valid_mobs = ", ".join(enemy_classes.keys())
+                                                show_error(f"Invalid mob type. Valid: {valid_mobs}")
                                         else:
                                             valid_mobs = ", ".join(enemy_classes.keys())
                                             show_error(f"Invalid mob type. Valid: {valid_mobs}")
@@ -18866,10 +18945,7 @@ while running:
                             and not player_ghost
                         ):
 
-                            player_hp -= (
-                                ladybug.damage *
-                                MOB_DAMAGE_MULTIPLIER[ladybug.rarity]
-                            )
+                            player_hp -= get_enemy_attack_damage(ladybug)
 
                             if player_hp < 0:
                                 player_hp = 0
@@ -18904,10 +18980,7 @@ while running:
                             and not player_ghost
                         ):
 
-                            player_hp -= (
-                                bee.damage *
-                                MOB_DAMAGE_MULTIPLIER[bee.rarity]
-                            )
+                            player_hp -= get_enemy_attack_damage(bee)
 
                             if player_hp < 0:
                                 player_hp = 0
@@ -18943,10 +19016,7 @@ while running:
                             and not player_ghost
                         ):
 
-                            player_hp -= (
-                                spider.damage *
-                                MOB_DAMAGE_MULTIPLIER[spider.rarity]
-                            )
+                            player_hp -= get_enemy_attack_damage(spider)
 
                             if player_hp < 0:
                                 player_hp = 0
@@ -18982,10 +19052,7 @@ while running:
                             and not player_ghost
                         ):
 
-                            player_hp -= (
-                                rock.damage *
-                                MOB_DAMAGE_MULTIPLIER[rock.rarity]
-                            )
+                            player_hp -= get_enemy_attack_damage(rock)
 
                             if player_hp < 0:
                                 player_hp = 0
@@ -19021,10 +19088,7 @@ while running:
                             and not player_ghost
                         ):
 
-                            player_hp -= (
-                                hornet.damage *
-                                MOB_DAMAGE_MULTIPLIER[hornet.rarity]
-                            )
+                            player_hp -= get_enemy_attack_damage(hornet)
 
                             if player_hp < 0:
                                 player_hp = 0
@@ -19059,10 +19123,7 @@ while running:
                             and not player_ghost
                         ):
 
-                            player_hp -= (
-                                ant.damage *
-                                MOB_DAMAGE_MULTIPLIER[ant.rarity]
-                            )
+                            player_hp -= get_enemy_attack_damage(ant)
 
                             if player_hp < 0:
                                 player_hp = 0
@@ -19097,10 +19158,7 @@ while running:
                             and not player_ghost
                         ):
 
-                            player_hp -= (
-                                soldier_ant.damage *
-                                MOB_DAMAGE_MULTIPLIER[soldier_ant.rarity]
-                            )
+                            player_hp -= get_enemy_attack_damage(soldier_ant)
 
                             if player_hp < 0:
                                 player_hp = 0
@@ -19132,10 +19190,7 @@ while running:
                     and worker_ant.attack_cooldown == 0
                     and not player_ghost
                 ):
-                    player_hp -= (
-                        worker_ant.damage *
-                        MOB_DAMAGE_MULTIPLIER[worker_ant.rarity]
-                    )
+                    player_hp -= get_enemy_attack_damage(worker_ant)
 
                     if player_hp < 0:
                         player_hp = 0
@@ -19171,10 +19226,7 @@ while running:
                     ):
                         continue
 
-                    player_hp -= (
-                        queen_ant.damage *
-                        MOB_DAMAGE_MULTIPLIER[queen_ant.rarity]
-                    )
+                    player_hp -= get_enemy_attack_damage(queen_ant)
 
                     if player_hp < 0:
                         player_hp = 0
@@ -20164,15 +20216,9 @@ while running:
                                 if d < petal_range + enemy.radius:
                                     if enemy.attack_cooldown == 0:
                                         light_hp[i][li] -= (
-                                            getattr(
-                                                enemy,
-                                                "petal_damage",
-                                                enemy.damage
-                                            )
-                                            * MOB_DAMAGE_MULTIPLIER.get(
-                                                enemy.rarity,
-                                                1.0
-                                            )
+                                            enemy.petal_damage
+                                            if hasattr(enemy, "petal_damage")
+                                            else get_enemy_attack_damage(enemy)
                                         )
                                         if light_hp[i][li] <= 0:
                                             light_alive[i][li] = False
@@ -20246,15 +20292,9 @@ while running:
                                     # rarity so high-rarity mobs
                                     # one-shot them.
                                     petal_hp[i] -= (
-                                        getattr(
-                                            enemy,
-                                            "petal_damage",
-                                            enemy.damage
-                                        )
-                                        * MOB_DAMAGE_MULTIPLIER.get(
-                                            enemy.rarity,
-                                            1.0
-                                        )
+                                        enemy.petal_damage
+                                        if hasattr(enemy, "petal_damage")
+                                        else get_enemy_attack_damage(enemy)
                                     )
                                     petal_flash_timers[i] = 4
 
@@ -21728,6 +21768,7 @@ while running:
             )
             cmd_list_font = pygame.font.Font(None, 20)
             cmd_lines = [
+                "/spawn_enemy [rarity] [mob] [damage] [health] [xp]",
                 "/spawn_enemy [rarity] [mob type] [amount]",
                 "/equip [rarity] [petal] [petal slot]",
                 "/all_equip [rarity] [petal]",
