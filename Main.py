@@ -18850,22 +18850,26 @@ while running:
 
         for queen_ant in queen_ants:
 
-            # Queen ants damage and push the flower on contact
-            # like worker ants do.
+            # Queen ants damage the flower on contact with any of
+            # her three body-part circles, and knock it away from
+            # the body part it touched.
             if queen_ant.alive and not player_dead:
 
-                d = distance(
-                    player_x,
-                    player_y,
-                    queen_ant.x,
-                    queen_ant.y
-                )
-                if (
-                    d < PLAYER_RADIUS + queen_ant.radius
-                    and player_spawn_cooldown <= 0
-                    and queen_ant.attack_cooldown == 0
-                    and not player_ghost
-                ):
+                for c_x, c_y, c_r in queen_ant.hitbox_circles():
+                    d = distance(
+                        player_x,
+                        player_y,
+                        c_x,
+                        c_y
+                    )
+                    if not (
+                        0 < d < PLAYER_RADIUS + c_r
+                        and player_spawn_cooldown <= 0
+                        and queen_ant.attack_cooldown == 0
+                        and not player_ghost
+                    ):
+                        continue
+
                     player_hp -= (
                         queen_ant.damage *
                         MOB_DAMAGE_MULTIPLIER[queen_ant.rarity]
@@ -18876,12 +18880,28 @@ while running:
 
                     player_flash_timer = 4
 
-                    push_player_from(queen_ant)
+                    # Knockback away from the touched body part.
+                    knock_x = player_x - c_x
+                    knock_y = player_y - c_y
+                    knock_len = math.sqrt(
+                        knock_x * knock_x + knock_y * knock_y
+                    )
+                    if knock_len == 0:
+                        knock_x = 1
+                        knock_y = 0
+                        knock_len = 1
+                    player_bounce_x = (
+                        knock_x / knock_len * 6.0
+                    )
+                    player_bounce_y = (
+                        knock_y / knock_len * 6.0
+                    )
 
                     if player_hp == 0:
                         kill_player(queen_ant)
 
                     queen_ant.attack_cooldown = 2
+                    break
 
         # -------- DRAW --------
 
