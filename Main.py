@@ -17825,7 +17825,8 @@ while running:
                     rocks,
                     hornets,
                     baby_ants,
-                    soldier_ants
+                    soldier_ants,
+                    queen_ants
                 ):
                     for e in group:
                         e_radius = getattr(e, "radius", 0)
