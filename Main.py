@@ -3599,7 +3599,7 @@ def update_flower_minion_projectile_fight():
 
 
 def update_queen_eggs():
-    # Queen ant eggs wobble for 0.8 seconds, then hatch into an
+    # Queen ant eggs wobble for 1.5 seconds, then hatch into an
     # enemy soldier ant minion whose rarity is two lower than the
     # queen's.
     for egg in queen_eggs[:]:
@@ -3607,6 +3607,45 @@ def update_queen_eggs():
         egg["timer"] -= 1
 
         if egg["timer"] > 0:
+            # Egg hitbox: the flower and mobs push the egg around
+            # on contact.
+            egg_r = egg["radius"]
+            d = distance(
+                player_x,
+                player_y,
+                egg["x"],
+                egg["y"]
+            )
+            if (
+                not player_dead
+                and 0 < d < PLAYER_RADIUS + egg_r
+            ):
+                push = PLAYER_RADIUS + egg_r - d
+                egg["x"] += (
+                    (egg["x"] - player_x) / d * push
+                )
+                egg["y"] += (
+                    (egg["y"] - player_y) / d * push
+                )
+            for enemy in all_enemies:
+                if not enemy.alive:
+                    continue
+                if getattr(enemy, "dying", False):
+                    continue
+                d = distance(
+                    enemy.x,
+                    enemy.y,
+                    egg["x"],
+                    egg["y"]
+                )
+                if 0 < d < enemy.radius + egg_r:
+                    push = enemy.radius + egg_r - d
+                    egg["x"] += (
+                        (egg["x"] - enemy.x) / d * push
+                    )
+                    egg["y"] += (
+                        (egg["y"] - enemy.y) / d * push
+                    )
             continue
 
         queen_eggs.remove(egg)
@@ -3621,6 +3660,10 @@ def update_queen_eggs():
         ant = SoldierAnt()
         ant.rarity = lower_rarity
         apply_enemy_rarity_stats(ant)
+        # The hatched soldier ant is the size of the egg it
+        # hatched from.
+        ant.radius = egg["radius"]
+        ant.base_radius = ant.radius
         ant.charging = True
         ant.x = egg["x"] + random.randint(-10, 10)
         ant.y = egg["y"] + random.randint(-10, 10)
@@ -8157,8 +8200,19 @@ class SoldierAnt:
         )
 
 
+        # Longer-bodied ants (the queen) shift the body backward
+        # along their angle so its front tip stays hidden behind
+        # the head instead of sticking out of it.
+        body_shift = (
+            self.radius
+            * 0.8
+            * (getattr(self, "body_length_scale", 1.0) - 1.0)
+        )
         body_rect = body_surface.get_rect(
-            center=(int(sx), int(sy))
+            center=(
+                int(sx - math.cos(angle) * body_shift),
+                int(sy - math.sin(angle) * body_shift)
+            )
         )
 
 
@@ -8444,17 +8498,28 @@ class QueenAnt(SoldierAnt):
             return
 
         # While chasing the player, lay an egg every 0.9 seconds
-        # (54 frames).
+        # (54 frames). The egg is laid behind the queen, never in
+        # the middle of her body, and hatches in 1.5 seconds.
         if self.charging and not player_dead:
             self.egg_timer += 1
             if self.egg_timer >= 54:
                 self.egg_timer = 0
                 self.lay_freeze_timer = 18
+                lay_rad = math.radians(self.angle)
                 queen_eggs.append(
                     {
-                        "x": self.x,
-                        "y": self.y,
-                        "timer": 48,
+                        "x": (
+                            self.x
+                            - math.cos(lay_rad)
+                            * self.radius * 1.3
+                        ),
+                        "y": (
+                            self.y
+                            - math.sin(lay_rad)
+                            * self.radius * 1.3
+                        ),
+                        "timer": 90,
+                        "radius": 15,
                         "rarity": self.rarity,
                         "wobble": random.uniform(0, 360)
                     }
@@ -18767,7 +18832,7 @@ while running:
 
             egg_x = int(egg["x"] - camera_x)
             egg_y = int(egg["y"] - camera_y)
-            egg_r = 12
+            egg_r = egg["radius"]
             wobble = (
                 math.sin(
                     time.time() * 8 + egg["wobble"]
@@ -18775,13 +18840,13 @@ while running:
             )
             pygame.draw.circle(
                 screen,
-                (250, 250, 250),
+                (250, 240, 180),
                 (egg_x, int(egg_y + wobble)),
                 egg_r
             )
             pygame.draw.circle(
                 screen,
-                (190, 190, 190),
+                (200, 175, 110),
                 (egg_x, int(egg_y + wobble)),
                 egg_r,
                 3
