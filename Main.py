@@ -8586,7 +8586,11 @@ class QueenAnt(SoldierAnt):
                             * self.radius * 1.3
                         ),
                         "timer": 90,
-                        "radius": 15,
+                        # Egg size scales with the queen's size.
+                        "radius": max(
+                            10,
+                            int(self.radius * 0.45)
+                        ),
                         "rarity": self.rarity,
                         "wobble": random.uniform(0, 360)
                     }
@@ -20198,80 +20202,6 @@ while running:
 
                 # Draw player
 
-                # ---------------- FLOWER LEVEL UI ----------------
-
-                font = flower_info_font
-
-
-                level_text = font.render(
-                    "Level: " + str(flower_level),
-                    True,
-                    (255,255,255)
-                )
-
-
-                xp_text = font.render(
-                    "XP: " + format_number(int(flower_xp)) +
-                    "/" +
-                    format_number(int(flower_xp_needed)),
-                    True,
-                    (255,255,255)
-                )
-
-
-                points_text = font.render(
-                    "Points: " + format_number(upgrade_points),
-                    True,
-                    (255,255,0)
-                )
-
-
-
-                # ---------------- DRAW PLAYER ----------------
-
-                    # Draw player
-
-                player_center_x = WIDTH // 2
-                player_center_y = HEIGHT // 2
-
-
-                # body
-                # ---------------- PLAYER HP BAR ----------------
-
-                bar_width = 80
-                bar_height = 8
-
-                hp_percent = max(
-                    0,
-                    min(
-                        player_hp / PLAYER_MAX_HP,
-                        1
-                    )
-                )
-
-
-                pygame.draw.rect(
-                    screen,
-                    (210, 45, 45),
-                    (
-                        player_center_x - bar_width//2,
-                        player_center_y - PLAYER_RADIUS - 25,
-                        bar_width,
-                        bar_height
-                    )
-                )
-
-
-                pygame.draw.rect(
-                    screen,
-                    (0,255,0),
-                    (
-                        player_center_x - bar_width//2,
-                        player_center_y - PLAYER_RADIUS - 25,
-                        int(bar_width * hp_percent),
-                        bar_height
-                    )
-                )
 
                 if boss_hp > 0:
 
@@ -20426,6 +20356,80 @@ while running:
                             dy * rarity_push
                         )
 
+        # ---------------- FLOWER LEVEL UI ----------------
+
+        font = flower_info_font
+
+
+        level_text = font.render(
+            "Level: " + str(flower_level),
+            True,
+            (255,255,255)
+        )
+
+
+        xp_text = font.render(
+            "XP: " + format_number(int(flower_xp)) +
+            "/" +
+            format_number(int(flower_xp_needed)),
+            True,
+            (255,255,255)
+        )
+
+
+        points_text = font.render(
+            "Points: " + format_number(upgrade_points),
+            True,
+            (255,255,0)
+        )
+
+
+
+        # ---------------- DRAW PLAYER ----------------
+
+            # Draw player
+
+        player_center_x = WIDTH // 2
+        player_center_y = HEIGHT // 2
+
+
+        # body
+        # ---------------- PLAYER HP BAR ----------------
+
+        bar_width = 80
+        bar_height = 8
+
+        hp_percent = max(
+            0,
+            min(
+                player_hp / PLAYER_MAX_HP,
+                1
+            )
+        )
+
+
+        pygame.draw.rect(
+            screen,
+            (210, 45, 45),
+            (
+                player_center_x - bar_width//2,
+                player_center_y - PLAYER_RADIUS - 25,
+                bar_width,
+                bar_height
+            )
+        )
+
+
+        pygame.draw.rect(
+            screen,
+            (0,255,0),
+            (
+                player_center_x - bar_width//2,
+                player_center_y - PLAYER_RADIUS - 25,
+                int(bar_width * hp_percent),
+                bar_height
+            )
+        )
         player_center_x = WIDTH // 2
         player_center_y = HEIGHT // 2
 
