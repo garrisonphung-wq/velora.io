@@ -3602,13 +3602,16 @@ def update_queen_eggs():
     # Queen ant eggs wobble for 1.5 seconds, then hatch into an
     # enemy soldier ant minion whose rarity is two lower than the
     # queen's.
+    global player_x
+    global player_y
+
     for egg in queen_eggs[:]:
 
         egg["timer"] -= 1
 
         if egg["timer"] > 0:
-            # Egg hitbox: the flower and mobs push the egg around
-            # on contact.
+            # Egg hitbox: the flower and mobs bump into the egg
+            # and both get pushed apart.
             egg_r = egg["radius"]
             d = distance(
                 player_x,
@@ -3621,12 +3624,12 @@ def update_queen_eggs():
                 and 0 < d < PLAYER_RADIUS + egg_r
             ):
                 push = PLAYER_RADIUS + egg_r - d
-                egg["x"] += (
-                    (egg["x"] - player_x) / d * push
-                )
-                egg["y"] += (
-                    (egg["y"] - player_y) / d * push
-                )
+                push_x = (egg["x"] - player_x) / d
+                push_y = (egg["y"] - player_y) / d
+                egg["x"] += push_x * push / 2
+                egg["y"] += push_y * push / 2
+                player_x -= push_x * push / 2
+                player_y -= push_y * push / 2
             for enemy in all_enemies:
                 if not enemy.alive:
                     continue
@@ -3640,12 +3643,12 @@ def update_queen_eggs():
                 )
                 if 0 < d < enemy.radius + egg_r:
                     push = enemy.radius + egg_r - d
-                    egg["x"] += (
-                        (egg["x"] - enemy.x) / d * push
-                    )
-                    egg["y"] += (
-                        (egg["y"] - enemy.y) / d * push
-                    )
+                    push_x = (egg["x"] - enemy.x) / d
+                    push_y = (egg["y"] - enemy.y) / d
+                    egg["x"] += push_x * push / 2
+                    egg["y"] += push_y * push / 2
+                    enemy.x -= push_x * push / 2
+                    enemy.y -= push_y * push / 2
             continue
 
         queen_eggs.remove(egg)
@@ -3668,6 +3671,27 @@ def update_queen_eggs():
         ant.x = egg["x"] + random.randint(-10, 10)
         ant.y = egg["y"] + random.randint(-10, 10)
         soldier_ants.append(ant)
+
+    # Eggs push each other apart too.
+    for a_index in range(len(queen_eggs)):
+        egg_a = queen_eggs[a_index]
+        for b_index in range(a_index + 1, len(queen_eggs)):
+            egg_b = queen_eggs[b_index]
+            d = distance(
+                egg_a["x"],
+                egg_a["y"],
+                egg_b["x"],
+                egg_b["y"]
+            )
+            min_dist = egg_a["radius"] + egg_b["radius"]
+            if 0 < d < min_dist:
+                overlap = (min_dist - d) / 2
+                push_x = (egg_a["x"] - egg_b["x"]) / d
+                push_y = (egg_a["y"] - egg_b["y"]) / d
+                egg_a["x"] += push_x * overlap
+                egg_a["y"] += push_y * overlap
+                egg_b["x"] -= push_x * overlap
+                egg_b["y"] -= push_y * overlap
 
 
 def dev_ban_user(target_name):
@@ -18359,6 +18383,53 @@ while running:
                 queen_ant.flash_timer -= 1
 
         update_queen_eggs()
+
+        # ---------------- ENEMY BUMP SEPARATION ----------------
+
+        # All enemy types push each other apart when they bump
+        # into each other.
+        bump_list = [
+            e
+            for e in all_enemies
+            if e.alive and not getattr(e, "dying", False)
+        ]
+        for a_index in range(len(bump_list)):
+            enemy_a = bump_list[a_index]
+            for b_index in range(a_index + 1, len(bump_list)):
+                enemy_b = bump_list[b_index]
+                d = distance(
+                    enemy_a.x,
+                    enemy_a.y,
+                    enemy_b.x,
+                    enemy_b.y
+                )
+                min_dist = enemy_a.radius + enemy_b.radius
+                if 0 < d < min_dist:
+                    overlap = (min_dist - d) / 2
+                    push_x = (enemy_a.x - enemy_b.x) / d
+                    push_y = (enemy_a.y - enemy_b.y) / d
+                    enemy_a.x += push_x * overlap
+                    enemy_a.y += push_y * overlap
+                    enemy_b.x -= push_x * overlap
+                    enemy_b.y -= push_y * overlap
+
+        # The queen ant is solid: push the flower out of her.
+        if not player_dead:
+            for queen_ant in queen_ants:
+                d = distance(
+                    player_x,
+                    player_y,
+                    queen_ant.x,
+                    queen_ant.y
+                )
+                min_dist = PLAYER_RADIUS + queen_ant.radius
+                if 0 < d < min_dist:
+                    player_x = queen_ant.x + (
+                        (player_x - queen_ant.x) / d * min_dist
+                    )
+                    player_y = queen_ant.y + (
+                        (player_y - queen_ant.y) / d * min_dist
+                    )
 
         update_boss_hp()
         # ---------------- PETAL RESPAWN ----------------
