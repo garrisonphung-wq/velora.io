@@ -3671,6 +3671,7 @@ def update_queen_eggs():
         ant.charging = True
         ant.x = egg["x"] + random.randint(-10, 10)
         ant.y = egg["y"] + random.randint(-10, 10)
+        ant.queen = egg.get("queen")
         soldier_ants.append(ant)
 
     # Eggs push each other apart too.
@@ -8552,6 +8553,21 @@ class QueenAnt(SoldierAnt):
         self.egg_timer = 0
         self.lay_freeze_timer = 0
 
+    def count_active_minions(self):
+        eggs = globals().get("queen_eggs", [])
+        ants = globals().get("soldier_ants", [])
+        egg_count = sum(
+            1 for egg in eggs
+            if egg.get("queen") is self
+        )
+        minion_count = sum(
+            1 for ant in ants
+            if getattr(ant, "queen", None) is self
+            and ant.alive
+            and not getattr(ant, "dying", False)
+        )
+        return egg_count + minion_count
+
     def update(self):
 
         if not self.alive:
@@ -8566,36 +8582,41 @@ class QueenAnt(SoldierAnt):
             return
 
         # While chasing the player, lay an egg every 0.9 seconds
-        # (54 frames). The egg is laid behind the queen, never in
-        # the middle of her body, and hatches in 1.5 seconds.
+        # (54 frames) if this queen currently has fewer than 5 active
+        # minions (including unhatched eggs). The egg is laid behind
+        # the queen, never in the middle of her body, and hatches in 1.5s.
         if self.charging and not player_dead:
-            self.egg_timer += 1
-            if self.egg_timer >= 54:
+            if self.count_active_minions() < 5:
+                self.egg_timer += 1
+                if self.egg_timer >= 54:
+                    self.egg_timer = 0
+                    self.lay_freeze_timer = 18
+                    lay_rad = math.radians(self.angle)
+                    queen_eggs.append(
+                        {
+                            "x": (
+                                self.x
+                                - math.cos(lay_rad)
+                                * self.radius * 1.3
+                            ),
+                            "y": (
+                                self.y
+                                - math.sin(lay_rad)
+                                * self.radius * 1.3
+                            ),
+                            "timer": 90,
+                            # Egg size scales with the queen's size.
+                            "radius": max(
+                                10,
+                                int(self.radius * 0.45)
+                            ),
+                            "rarity": self.rarity,
+                            "wobble": random.uniform(0, 360),
+                            "queen": self
+                        }
+                    )
+            else:
                 self.egg_timer = 0
-                self.lay_freeze_timer = 18
-                lay_rad = math.radians(self.angle)
-                queen_eggs.append(
-                    {
-                        "x": (
-                            self.x
-                            - math.cos(lay_rad)
-                            * self.radius * 1.3
-                        ),
-                        "y": (
-                            self.y
-                            - math.sin(lay_rad)
-                            * self.radius * 1.3
-                        ),
-                        "timer": 90,
-                        # Egg size scales with the queen's size.
-                        "radius": max(
-                            10,
-                            int(self.radius * 0.45)
-                        ),
-                        "rarity": self.rarity,
-                        "wobble": random.uniform(0, 360)
-                    }
-                )
 
         super().update()
 
