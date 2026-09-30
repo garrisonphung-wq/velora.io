@@ -3635,20 +3635,21 @@ def update_queen_eggs():
                     continue
                 if getattr(enemy, "dying", False):
                     continue
-                d = distance(
-                    enemy.x,
-                    enemy.y,
-                    egg["x"],
-                    egg["y"]
-                )
-                if 0 < d < enemy.radius + egg_r:
-                    push = enemy.radius + egg_r - d
-                    push_x = (egg["x"] - enemy.x) / d
-                    push_y = (egg["y"] - enemy.y) / d
-                    egg["x"] += push_x * push / 2
-                    egg["y"] += push_y * push / 2
-                    enemy.x -= push_x * push / 2
-                    enemy.y -= push_y * push / 2
+                for c_x, c_y, c_r in entity_hit_circles(enemy):
+                    d = distance(
+                        c_x,
+                        c_y,
+                        egg["x"],
+                        egg["y"]
+                    )
+                    if 0 < d < c_r + egg_r:
+                        push = c_r + egg_r - d
+                        push_x = (egg["x"] - c_x) / d
+                        push_y = (egg["y"] - c_y) / d
+                        egg["x"] += push_x * push / 2
+                        egg["y"] += push_y * push / 2
+                        enemy.x -= push_x * push / 2
+                        enemy.y -= push_y * push / 2
             continue
 
         queen_eggs.remove(egg)
@@ -8592,6 +8593,38 @@ class QueenAnt(SoldierAnt):
                 )
 
         super().update()
+
+    def hitbox_circles(self):
+        # The queen's hitbox is three circles that match her three
+        # body parts: abdomen (back), thorax (middle) and head
+        # (front). Offsets follow the same layout as her drawing.
+        head_size = self.radius * 0.8
+        rad = math.radians(self.angle)
+        circles = []
+        for part_offset, part_scale in (
+            (-0.65, 1.2),
+            (0.0, 1.1),
+            (0.7, 1.0),
+        ):
+            circles.append(
+                (
+                    self.x
+                    + math.cos(rad) * self.radius * part_offset,
+                    self.y
+                    + math.sin(rad) * self.radius * part_offset,
+                    head_size * part_scale
+                )
+            )
+        return circles
+
+
+def entity_hit_circles(entity):
+    # Collision circles for any mob: queen ants use their three
+    # body-part circles, everything else a single body circle.
+    if isinstance(entity, QueenAnt):
+        return entity.hitbox_circles()
+    return [(entity.x, entity.y, entity.radius)]
+
 
 # ----- DIF SECTION -----
 
@@ -18396,41 +18429,55 @@ while running:
         ]
         for a_index in range(len(bump_list)):
             enemy_a = bump_list[a_index]
+            circles_a = entity_hit_circles(enemy_a)
             for b_index in range(a_index + 1, len(bump_list)):
                 enemy_b = bump_list[b_index]
-                d = distance(
-                    enemy_a.x,
-                    enemy_a.y,
-                    enemy_b.x,
-                    enemy_b.y
-                )
-                min_dist = enemy_a.radius + enemy_b.radius
-                if 0 < d < min_dist:
-                    overlap = (min_dist - d) / 2
-                    push_x = (enemy_a.x - enemy_b.x) / d
-                    push_y = (enemy_a.y - enemy_b.y) / d
-                    enemy_a.x += push_x * overlap
-                    enemy_a.y += push_y * overlap
-                    enemy_b.x -= push_x * overlap
-                    enemy_b.y -= push_y * overlap
+                circles_b = entity_hit_circles(enemy_b)
+                # Find the deepest overlapping circle pair.
+                hit = None
+                for ca_x, ca_y, ca_r in circles_a:
+                    for cb_x, cb_y, cb_r in circles_b:
+                        d = distance(ca_x, ca_y, cb_x, cb_y)
+                        min_dist = ca_r + cb_r
+                        if 0 < d < min_dist:
+                            overlap = min_dist - d
+                            if hit is None or overlap > hit[0]:
+                                hit = (
+                                    overlap,
+                                    ca_x,
+                                    ca_y,
+                                    cb_x,
+                                    cb_y
+                                )
+                if hit is not None:
+                    overlap, ca_x, ca_y, cb_x, cb_y = hit
+                    d = distance(ca_x, ca_y, cb_x, cb_y)
+                    push_x = (ca_x - cb_x) / d
+                    push_y = (ca_y - cb_y) / d
+                    enemy_a.x += push_x * overlap / 2
+                    enemy_a.y += push_y * overlap / 2
+                    enemy_b.x -= push_x * overlap / 2
+                    enemy_b.y -= push_y * overlap / 2
 
-        # The queen ant is solid: push the flower out of her.
+        # The queen ant is solid: push the flower out of every
+        # body-part circle.
         if not player_dead:
             for queen_ant in queen_ants:
-                d = distance(
-                    player_x,
-                    player_y,
-                    queen_ant.x,
-                    queen_ant.y
-                )
-                min_dist = PLAYER_RADIUS + queen_ant.radius
-                if 0 < d < min_dist:
-                    player_x = queen_ant.x + (
-                        (player_x - queen_ant.x) / d * min_dist
+                for c_x, c_y, c_r in queen_ant.hitbox_circles():
+                    d = distance(
+                        player_x,
+                        player_y,
+                        c_x,
+                        c_y
                     )
-                    player_y = queen_ant.y + (
-                        (player_y - queen_ant.y) / d * min_dist
-                    )
+                    min_dist = PLAYER_RADIUS + c_r
+                    if 0 < d < min_dist:
+                        player_x = c_x + (
+                            (player_x - c_x) / d * min_dist
+                        )
+                        player_y = c_y + (
+                            (player_y - c_y) / d * min_dist
+                        )
 
         update_boss_hp()
         # ---------------- PETAL RESPAWN ----------------
