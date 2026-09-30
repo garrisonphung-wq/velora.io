@@ -3448,13 +3448,18 @@ def update_flower_minions():
             )
             min_dist = minion.radius + enemy.radius
             if 0 < d < min_dist:
-                overlap = (min_dist - d) / 2
                 push_x = (minion.x - enemy.x) / d
                 push_y = (minion.y - enemy.y) / d
-                minion.x += push_x * overlap
-                minion.y += push_y * overlap
-                enemy.x -= push_x * overlap
-                enemy.y -= push_y * overlap
+                if type(enemy).__name__ in ("Rock", "AntEgg"):
+                    # Rock and Ant Egg are stationary mobs and cannot be pushed by minions
+                    minion.x += push_x * (min_dist - d)
+                    minion.y += push_y * (min_dist - d)
+                else:
+                    overlap = (min_dist - d) / 2
+                    minion.x += push_x * overlap
+                    minion.y += push_y * overlap
+                    enemy.x -= push_x * overlap
+                    enemy.y -= push_y * overlap
 
         if minion.attack_cooldown > 0:
             minion.attack_cooldown -= 1
@@ -18743,10 +18748,21 @@ while running:
                     d = distance(ca_x, ca_y, cb_x, cb_y)
                     push_x = (ca_x - cb_x) / d
                     push_y = (ca_y - cb_y) / d
-                    enemy_a.x += push_x * overlap / 2
-                    enemy_a.y += push_y * overlap / 2
-                    enemy_b.x -= push_x * overlap / 2
-                    enemy_b.y -= push_y * overlap / 2
+                    immobile_a = type(enemy_a).__name__ in ("Rock", "AntEgg")
+                    immobile_b = type(enemy_b).__name__ in ("Rock", "AntEgg")
+                    if immobile_a and immobile_b:
+                        pass
+                    elif immobile_a:
+                        enemy_b.x -= push_x * overlap
+                        enemy_b.y -= push_y * overlap
+                    elif immobile_b:
+                        enemy_a.x += push_x * overlap
+                        enemy_a.y += push_y * overlap
+                    else:
+                        enemy_a.x += push_x * overlap / 2
+                        enemy_a.y += push_y * overlap / 2
+                        enemy_b.x -= push_x * overlap / 2
+                        enemy_b.y -= push_y * overlap / 2
 
         # The queen ant is solid: push the flower out of every
         # body-part circle.
