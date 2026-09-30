@@ -3621,7 +3621,7 @@ def update_queen_eggs():
         ant = SoldierAnt()
         ant.rarity = lower_rarity
         apply_enemy_rarity_stats(ant)
-        ant.angry = True
+        ant.charging = True
         ant.x = egg["x"] + random.randint(-10, 10)
         ant.y = egg["y"] + random.randint(-10, 10)
         soldier_ants.append(ant)
@@ -8445,7 +8445,7 @@ class QueenAnt(SoldierAnt):
 
         # While chasing the player, lay an egg every 0.9 seconds
         # (54 frames).
-        if self.angry and not player_dead:
+        if self.charging and not player_dead:
             self.egg_timer += 1
             if self.egg_timer >= 54:
                 self.egg_timer = 0
