@@ -21776,7 +21776,7 @@ while running:
             )
             cmd_list_font = pygame.font.Font(None, 20)
             cmd_lines = [
-                "/spawn_enemy [rarity] [mob] [damage] [health] [xp]",
+                "/spawn_enemy [rarity] [mob] [mob damage] [mob health] [mob xp]",
                 "/spawn_enemy [rarity] [mob type] [amount]",
                 "/equip [rarity] [petal] [petal slot]",
                 "/all_equip [rarity] [petal]",
@@ -21811,8 +21811,15 @@ while running:
             # Color the bracketed argument words in the list.
             cmd_word_colors = {
                 "[rarity]": (255, 255, 0),
+                "[mob]": (0, 230, 255),
                 "[mob": (0, 255, 0),
                 "type]": (0, 255, 0),
+                "[damage]": (255, 65, 65),
+                "damage]": (255, 65, 65),
+                "[health]": (50, 255, 90),
+                "health]": (50, 255, 90),
+                "[xp]": (255, 110, 200),
+                "xp]": (255, 110, 200),
                 "[amount]": (0, 128, 255),
                 "[petal]": (255, 0, 0),
                 "[petal": (255, 0, 0),
@@ -21874,6 +21881,16 @@ while running:
                         and words[word_index + 1] == "slot]"
                     ):
                         word_color = (255, 165, 0)
+                    elif word == "[mob" and word_index + 1 < len(words):
+                        next_w = words[word_index + 1]
+                        if next_w == "damage]":
+                            word_color = (255, 65, 65)
+                        elif next_w == "health]":
+                            word_color = (50, 255, 90)
+                        elif next_w == "xp]":
+                            word_color = (255, 110, 200)
+                        elif next_w == "type]":
+                            word_color = (0, 255, 0)
                     # Pick phrases like [y or n] and [small or big]
                     # must be one single color each, so decide the
                     # color from the whole line, not the word.
