@@ -1241,6 +1241,7 @@ KING_MOB_LIST_NAMES = {
     "BabyAnt": "baby_ants",
     "SoldierAnt": "soldier_ants",
     "WorkerAnt": "worker_ants",
+    "AntEgg": "ant_eggs",
 }
 
 def get_king_mob_list(mob_name):
@@ -1322,8 +1323,9 @@ KING_CHAT_LINES = [
 
 def king_say(mob_name, message):
     # A king posts a chat message.
+    king_title = "King Ant Egg" if mob_name == "AntEgg" else f"King {mob_name}"
     chat_messages.append(
-        (f"King {mob_name}", message, time.time())
+        (king_title, message, time.time())
     )
 
 def cleanup_king(enemy):
@@ -1335,19 +1337,35 @@ def cleanup_king(enemy):
         king_say(mob_name, "i'll be back...")
 
         # The king's minions die with their king.
-        minion_list_name = KING_MOB_LIST_NAMES.get(mob_name)
-        if minion_list_name:
-            for minion in globals()[minion_list_name]:
-                if not getattr(minion, "is_minion", False):
-                    continue
-                if not minion.alive:
-                    continue
-                if getattr(minion, "death_registered", False):
-                    continue
-                minion.death_registered = True
-                minion.dying = True
-                minion.shrink_scale = 1.0
-                minion.full_radius = minion.radius
+        if mob_name == "AntEgg":
+            for minion in soldier_ants:
+                if (
+                    getattr(minion, "is_minion", False)
+                    and (
+                        getattr(minion, "king_owner", None) is enemy
+                        or getattr(minion, "king_mob_name", None) == "AntEgg"
+                    )
+                ):
+                    if not minion.alive or getattr(minion, "death_registered", False):
+                        continue
+                    minion.death_registered = True
+                    minion.dying = True
+                    minion.shrink_scale = 1.0
+                    minion.full_radius = minion.radius
+        else:
+            minion_list_name = KING_MOB_LIST_NAMES.get(mob_name)
+            if minion_list_name:
+                for minion in globals()[minion_list_name]:
+                    if not getattr(minion, "is_minion", False):
+                        continue
+                    if not minion.alive:
+                        continue
+                    if getattr(minion, "death_registered", False):
+                        continue
+                    minion.death_registered = True
+                    minion.dying = True
+                    minion.shrink_scale = 1.0
+                    minion.full_radius = minion.radius
 
         # The king's projectiles die with the king too.
         for projectile_list in (
@@ -1480,7 +1498,10 @@ def dev_make_king(enemy):
         return False
 
     enemy.is_king = True
-    enemy.damage = int(enemy.damage * 2)
+    if enemy.damage == 0:
+        enemy.damage = int(40 * MOB_DAMAGE_MULTIPLIER.get(enemy.rarity, 1.0))
+    else:
+        enemy.damage = int(enemy.damage * 2)
     if getattr(enemy, "custom_damage", None) is not None:
         enemy.custom_damage = int(enemy.custom_damage * 2)
     enemy.max_hp = int(enemy.max_hp * 2)
@@ -1560,7 +1581,9 @@ def minion_ai(minion):
     # Minion AI for one minion: chase with the king,
     # or orbit and guard it.
 
-    king = kings.get(type(minion).__name__)
+    king = getattr(minion, "king_owner", None)
+    if king is None or not king.alive:
+        king = kings.get(getattr(minion, "king_mob_name", type(minion).__name__))
     has_king = (
         king is not None
         and king.alive
@@ -1591,16 +1614,26 @@ def minion_ai(minion):
         minion.turn_to(target_angle, 6)
         # Three times the king's chase speed so the
         # difference is clearly visible.
-        minion.speed = king.max_speed * 3.1 * 3
+        king_speed = getattr(king, "max_speed", None)
+        if king_speed is None or king_speed <= 0:
+            king_speed = 1.0
+        minion.speed = king_speed * 3.1 * 3
         rad = math.radians(minion.angle)
         move_with_collision(
             minion,
             math.cos(rad) * minion.speed * 0.15,
             math.sin(rad) * minion.speed * 0.15
         )
+        if hasattr(minion, "wing_phase"):
+            minion.wing_phase += 0.85
 
         # Bounce off other minions when they bump while chasing.
-        for other in get_king_mob_list(type(minion).__name__):
+        search_list = (
+            soldier_ants
+            if getattr(minion, "king_mob_name", None) == "AntEgg"
+            else get_king_mob_list(type(minion).__name__)
+        )
+        for other in search_list:
             if other is minion:
                 continue
             if not getattr(other, "is_minion", False):
@@ -1696,7 +1729,12 @@ def minion_ai(minion):
         separation = minion.radius * 2.2
         bounce_x = 0.0
         bounce_y = 0.0
-        for other in get_king_mob_list(type(minion).__name__):
+        search_list = (
+            soldier_ants
+            if getattr(minion, "king_mob_name", None) == "AntEgg"
+            else get_king_mob_list(type(minion).__name__)
+        )
+        for other in search_list:
             if other is minion:
                 continue
             if not getattr(other, "is_minion", False):
@@ -1731,6 +1769,9 @@ def minion_ai(minion):
         else:
             minion.x = target_x
             minion.y = target_y
+
+        if hasattr(minion, "wing_phase"):
+            minion.wing_phase += 0.4
 
         # Apply the bounce push away from bumped minions.
         if bounce_x or bounce_y:
@@ -3126,26 +3167,37 @@ def spawn_king_minions():
         mob_name = type(enemy).__name__
         if mob_name not in (
             "Ladybug", "Spider", "Rock", "Hornet", "BabyAnt",
-            "SoldierAnt", "WorkerAnt"
+            "SoldierAnt", "WorkerAnt", "AntEgg"
         ):
             continue
 
-        mob_list = get_king_mob_list(mob_name)
-        minion_class = {
-            "Ladybug": Ladybug,
-            "Spider": Spider,
-            "Rock": Rock,
-            "Hornet": Hornet,
-            "BabyAnt": BabyAnt,
-            "SoldierAnt": SoldierAnt,
-            "WorkerAnt": WorkerAnt,
-        }[mob_name]
+        if mob_name == "AntEgg":
+            mob_list = soldier_ants
+            minion_class = SoldierAnt
+        else:
+            mob_list = get_king_mob_list(mob_name)
+            minion_class = {
+                "Ladybug": Ladybug,
+                "Spider": Spider,
+                "Rock": Rock,
+                "Hornet": Hornet,
+                "BabyAnt": BabyAnt,
+                "SoldierAnt": SoldierAnt,
+                "WorkerAnt": WorkerAnt,
+            }[mob_name]
 
-        alive_minions = sum(
-            1
-            for e in mob_list
-            if getattr(e, "is_minion", False) and e.alive
-        )
+        if mob_name == "AntEgg":
+            alive_minions = sum(
+                1
+                for e in mob_list
+                if getattr(e, "is_minion", False) and getattr(e, "king_owner", None) is enemy and e.alive
+            )
+        else:
+            alive_minions = sum(
+                1
+                for e in mob_list
+                if getattr(e, "is_minion", False) and e.alive
+            )
         minion_cap = 30 if mob_name == "Spider" else 10
         if mob_name == "Rock":
             minion_cap = 5
@@ -3154,6 +3206,8 @@ def spawn_king_minions():
         # The soldier ant king spawns only 1 minion.
         if mob_name == "SoldierAnt":
             minion_cap = 1
+        if mob_name == "AntEgg":
+            minion_cap = 10
         if alive_minions >= minion_cap:
             continue
 
@@ -3161,14 +3215,24 @@ def spawn_king_minions():
         minion.is_minion = True
         minion.angry = True
         minion.rarity = enemy.rarity
+        if mob_name == "AntEgg":
+            minion.king_owner = enemy
+            minion.king_mob_name = "AntEgg"
+            minion.radius = max(6, int(enemy.radius / 4))
+            minion.base_radius = minion.radius
+            minion.max_hp = max(1, int(enemy.max_hp / 4))
+            minion.damage = max(1, int(get_enemy_attack_damage(enemy) / 4))
+            minion.custom_damage = minion.damage
         # The soldier ant king's minion is 2x bigger than the king.
-        if mob_name == "SoldierAnt":
+        elif mob_name == "SoldierAnt":
             minion.radius = enemy.radius * 2
         else:
             minion.radius = max(6, int(enemy.radius * 0.35))
         # A minion has one third of the king's HP and damage,
         # and chases at three times the king's speed.
-        if mob_name == "BabyAnt":
+        if mob_name == "AntEgg":
+            pass
+        elif mob_name == "BabyAnt":
             minion.max_hp = max(1, int(enemy.max_hp / 5))
             minion.damage = max(1, int(enemy.damage / 3))
         elif mob_name == "SoldierAnt":
@@ -8479,18 +8543,20 @@ class SoldierAnt:
 
 
 
+        jaw_scale = max(0.25, self.radius / 24.0)
+        jaw_w = max(1, int(3 * jaw_scale))
         draw_clean_line(
             screen,
             ant_color((40, 40, 40)),
             (
-                mouth_start_x + side_x * (5 + right_jaw_motion),
-                mouth_start_y + side_y * (5 + right_jaw_motion)
+                mouth_start_x + side_x * ((5 + right_jaw_motion) * jaw_scale),
+                mouth_start_y + side_y * ((5 + right_jaw_motion) * jaw_scale)
             ),
             (
-                mouth_end_x + side_x * (8 + right_jaw_motion),
-                mouth_end_y + side_y * (8 + right_jaw_motion)
+                mouth_end_x + side_x * ((8 + right_jaw_motion) * jaw_scale),
+                mouth_end_y + side_y * ((8 + right_jaw_motion) * jaw_scale)
             ),
-            3
+            jaw_w
         )
 
 
@@ -8499,21 +8565,21 @@ class SoldierAnt:
             screen,
             ant_color((40, 40, 40)),
             (
-                mouth_start_x - side_x * (5 + left_jaw_motion),
-                mouth_start_y - side_y * (5 + left_jaw_motion)
+                mouth_start_x - side_x * ((5 + left_jaw_motion) * jaw_scale),
+                mouth_start_y - side_y * ((5 + left_jaw_motion) * jaw_scale)
             ),
             (
-                mouth_end_x - side_x * (8 + left_jaw_motion),
-                mouth_end_y - side_y * (8 + left_jaw_motion)
+                mouth_end_x - side_x * ((8 + left_jaw_motion) * jaw_scale),
+                mouth_end_y - side_y * ((8 + left_jaw_motion) * jaw_scale)
             ),
-            3
+            jaw_w
         )
 
         # ---------------- HP BAR ----------------
 
         if self.hp < self.max_hp:
 
-            bar_width = max(1, int(45 * settings_hp_bar_scale))
+            bar_width = max(1, int(min(45, self.radius * 2) * settings_hp_bar_scale))
             bar_height = max(
                 1,
                 int(5 * settings_hp_bar_scale)
@@ -9255,6 +9321,10 @@ class AntEgg:
         # King / minion flags
         self.is_king = False
         self.is_minion = False
+        self.king_minion_timer = 0
+        self.king_chat_timer = 0
+        self.king_rose_timer = 0
+        self.king_orbit_slot = 0
 
     def push(self, dx, dy):
         if not self.alive:
@@ -9371,18 +9441,62 @@ class AntEgg:
             max(2, int(current_radius * 0.18))
         )
 
+        # ---------------- KING CROWN ----------------
+        if getattr(self, "is_king", False):
+            crown_y = int(draw_y - current_radius - 14)
+            crown_w = int(current_radius * 1.2)
+            crown_h = int(current_radius * 0.6)
+            crown_left = int(sx - crown_w / 2)
+            crown_right = int(sx + crown_w / 2)
+
+            crown_points = [
+                (crown_left, crown_y + crown_h),
+                (crown_left, crown_y + crown_h * 0.4),
+                (
+                    crown_left + crown_w * 0.25,
+                    crown_y + crown_h * 0.4
+                ),
+                (
+                    int(sx - crown_w * 0.15),
+                    crown_y
+                ),
+                (
+                    int(sx + crown_w * 0.15),
+                    crown_y + crown_h * 0.4
+                ),
+                (
+                    crown_right - crown_w * 0.25,
+                    crown_y + crown_h * 0.4
+                ),
+                (crown_right, crown_y + crown_h * 0.4),
+                (crown_right, crown_y + crown_h)
+            ]
+
+            pygame.draw.polygon(
+                screen,
+                flash_color((255, 200, 0), self.flash_timer),
+                crown_points
+            )
+            pygame.draw.polygon(
+                screen,
+                flash_color((160, 110, 0), self.flash_timer),
+                crown_points,
+                2
+            )
+
         # HP bar
         if self.hp < self.max_hp and not getattr(self, "dying", False):
             bar_width = max(1, int(35 * settings_hp_bar_scale))
             bar_height = max(1, int(5 * settings_hp_bar_scale))
             hp_percent = max(0.0, min(1.0, self.hp / self.max_hp))
+            bar_offset = 24 if getattr(self, "is_king", False) else 10
 
             pygame.draw.rect(
                 screen,
                 (210, 45, 45),
                 (
                     int(sx - bar_width / 2),
-                    int(draw_y - current_radius - 10 - bar_height),
+                    int(draw_y - current_radius - bar_offset - bar_height),
                     bar_width,
                     bar_height
                 )
@@ -9392,7 +9506,7 @@ class AntEgg:
                 (0, 255, 0),
                 (
                     int(sx - bar_width / 2),
-                    int(draw_y - current_radius - 10 - bar_height),
+                    int(draw_y - current_radius - bar_offset - bar_height),
                     int(bar_width * hp_percent),
                     bar_height
                 )
@@ -10960,8 +11074,8 @@ MOB_DROP_INFO = {
     ("Ant Egg", "Common"): [
         ("Ant Egg", "Common", 35),
         ("Ant Egg", "Unusual", 10),
-        ("Rice", "Common", 25),
-        ("Rice", "Unusual", 8),
+        ("Soil", "Common", 25),
+        ("Soil", "Unusual", 8),
     ],
     ("Ladybug", "Unusual"): [
         ("Light", "Common", 10),
