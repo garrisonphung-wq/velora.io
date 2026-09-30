@@ -1464,6 +1464,11 @@ def dev_make_king(enemy):
     if getattr(enemy, "is_king", False):
         show_error("That enemy is already a king")
         return False
+    if isinstance(enemy, QueenAnt):
+        # The queen ant can never be a king, and she never
+        # talks in chat.
+        show_error("The Queen Ant can't be a king")
+        return False
     if mob_name in kings and kings[mob_name].alive:
         show_error(f"There is already a {mob_name} king")
         return False
@@ -3591,6 +3596,35 @@ def update_flower_minion_projectile_fight():
         ):
             projectile["dying"] = True
             projectile["shrink"] = 1.0
+
+
+def update_queen_eggs():
+    # Queen ant eggs wobble for 0.8 seconds, then hatch into an
+    # enemy soldier ant minion whose rarity is two lower than the
+    # queen's.
+    for egg in queen_eggs[:]:
+
+        egg["timer"] -= 1
+
+        if egg["timer"] > 0:
+            continue
+
+        queen_eggs.remove(egg)
+
+        rarity_index = ENEMY_RARITIES.index(
+            egg["rarity"]
+        ) if egg["rarity"] in ENEMY_RARITIES else 0
+        lower_rarity = ENEMY_RARITIES[
+            max(0, rarity_index - 2)
+        ]
+
+        ant = SoldierAnt()
+        ant.rarity = lower_rarity
+        apply_enemy_rarity_stats(ant)
+        ant.angry = True
+        ant.x = egg["x"] + random.randint(-10, 10)
+        ant.y = egg["y"] + random.randint(-10, 10)
+        soldier_ants.append(ant)
 
 
 def dev_ban_user(target_name):
@@ -8061,7 +8095,11 @@ class SoldierAnt:
 
         head_size = self.radius * 0.80
 
-        body_width = self.radius * 1.2
+        body_width = (
+            self.radius
+            * 1.2
+            * getattr(self, "body_length_scale", 1.0)
+        )
         body_height = self.radius * 0.8
 
         # Yellow flower minions are recolored golden yellow instead
@@ -8369,6 +8407,60 @@ class SoldierAnt:
                 int(sx),
                 int(sy + self.radius + 15)
             )
+
+class QueenAnt(SoldierAnt):
+
+    def __init__(self):
+
+        super().__init__()
+
+        # Bigger than a soldier ant, with a longer body.
+        self.radius = random.randint(32, 40)
+        self.base_radius = self.radius
+        self.body_length_scale = 1.6
+
+        # Queen stats: 115 main HP and the soldier ant's main
+        # damage + 10.
+        self.max_hp = 115
+        self.hp = 115
+        self.damage = 50
+
+        # Egg laying: one egg every 0.9 seconds of chasing, then a
+        # 0.3 second freeze right after laying.
+        self.egg_timer = 0
+        self.lay_freeze_timer = 0
+
+    def update(self):
+
+        if not self.alive:
+            return
+
+        if dead_flower_ai(self):
+            return
+
+        # Laying freeze: stand still for 0.3 seconds, then chase.
+        if self.lay_freeze_timer > 0:
+            self.lay_freeze_timer -= 1
+            return
+
+        # While chasing the player, lay an egg every 0.9 seconds
+        # (54 frames).
+        if self.angry and not player_dead:
+            self.egg_timer += 1
+            if self.egg_timer >= 54:
+                self.egg_timer = 0
+                self.lay_freeze_timer = 18
+                queen_eggs.append(
+                    {
+                        "x": self.x,
+                        "y": self.y,
+                        "timer": 48,
+                        "rarity": self.rarity,
+                        "wobble": random.uniform(0, 360)
+                    }
+                )
+
+        super().update()
 
 # ----- DIF SECTION -----
 
@@ -15036,6 +15128,11 @@ hornets = []
 baby_ants = []
 soldier_ants = []
 worker_ants = []
+queen_ants = []
+
+# Eggs laid by queen ants while chasing; they hatch into enemy
+# soldier ant minions.
+queen_eggs = []
 
 # Friendly minions hatched from Ant Egg petals. They live outside
 # the enemy lists so petals and enemy AI never target them.
@@ -15247,6 +15344,7 @@ while running:
         + baby_ants
         + soldier_ants
         + worker_ants
+        + queen_ants
     )
 
     for event in pygame.event.get():
@@ -15947,6 +16045,8 @@ while running:
                                             "SoldierAnt": (SoldierAnt, soldier_ants),
                                             "Worker Ant": (WorkerAnt, worker_ants),
                                             "WorkerAnt": (WorkerAnt, worker_ants),
+                                            "Queen Ant": (QueenAnt, queen_ants),
+                                            "QueenAnt": (QueenAnt, queen_ants),
                                         }
                                         # Try to match multi-word mob names first (e.g. "Baby Ant", "Soldier Ant", "Worker Ant")
                                         mob_type = None
@@ -18121,6 +18221,38 @@ while running:
             if worker_ant.flash_timer > 0:
                 worker_ant.flash_timer -= 1
 
+        for queen_ant in queen_ants:
+
+            old_x = queen_ant.x
+            old_y = queen_ant.y
+
+            if (
+                player_spawn_cooldown <= 0
+                and enemies_frozen_timer <= 0
+            ):
+                if player_ghost:
+                    # Ghost mode: the queen can't see the
+                    # player, so hide the player far away
+                    # while her AI thinks, then restore.
+                    ghost_px, ghost_py = player_x, player_y
+                    player_x = -1000000
+                    player_y = -1000000
+                    queen_ant.update()
+                    player_x, player_y = ghost_px, ghost_py
+                else:
+                    queen_ant.update()
+
+            if queen_ant.attack_cooldown > 0:
+                queen_ant.attack_cooldown -= 1
+
+            if queen_ant.petal_attack_cooldown > 0:
+                queen_ant.petal_attack_cooldown -= 1
+
+            if queen_ant.flash_timer > 0:
+                queen_ant.flash_timer -= 1
+
+        update_queen_eggs()
+
         update_boss_hp()
         # ---------------- PETAL RESPAWN ----------------
 
@@ -18486,6 +18618,41 @@ while running:
 
                     worker_ant.attack_cooldown = 2
 
+        for queen_ant in queen_ants:
+
+            # Queen ants damage and push the flower on contact
+            # like worker ants do.
+            if queen_ant.alive and not player_dead:
+
+                d = distance(
+                    player_x,
+                    player_y,
+                    queen_ant.x,
+                    queen_ant.y
+                )
+                if (
+                    d < PLAYER_RADIUS + queen_ant.radius
+                    and player_spawn_cooldown <= 0
+                    and queen_ant.attack_cooldown == 0
+                    and not player_ghost
+                ):
+                    player_hp -= (
+                        queen_ant.damage *
+                        MOB_DAMAGE_MULTIPLIER[queen_ant.rarity]
+                    )
+
+                    if player_hp < 0:
+                        player_hp = 0
+
+                    player_flash_timer = 4
+
+                    push_player_from(queen_ant)
+
+                    if player_hp == 0:
+                        kill_player(queen_ant)
+
+                    queen_ant.attack_cooldown = 2
+
         # -------- DRAW --------
 
         screen.fill(game_grid_color)
@@ -18589,6 +18756,36 @@ while running:
         for worker_ant in worker_ants:
 
             worker_ant.draw()
+
+        for queen_ant in queen_ants:
+
+            queen_ant.draw()
+
+        # ---------------- QUEEN ANT EGGS ----------------
+
+        for egg in queen_eggs:
+
+            egg_x = int(egg["x"] - camera_x)
+            egg_y = int(egg["y"] - camera_y)
+            egg_r = 12
+            wobble = (
+                math.sin(
+                    time.time() * 8 + egg["wobble"]
+                ) * 1.5
+            )
+            pygame.draw.circle(
+                screen,
+                (250, 250, 250),
+                (egg_x, int(egg_y + wobble)),
+                egg_r
+            )
+            pygame.draw.circle(
+                screen,
+                (190, 190, 190),
+                (egg_x, int(egg_y + wobble)),
+                egg_r,
+                3
+            )
 
         # ---------------- FLOWER MINIONS ----------------
 
@@ -19907,6 +20104,7 @@ while running:
             + baby_ants
             + soldier_ants
             + worker_ants
+            + queen_ants
         )
 
         # ---------------- ENEMY DEATH SHRINK ----------------
