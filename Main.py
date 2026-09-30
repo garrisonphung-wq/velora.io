@@ -3492,7 +3492,8 @@ def update_flower_minions():
                 break
 
     # 3) Solid collision between minions: push overlapping pairs
-    # apart so they never stack on each other.    for a_index in range(len(flower_minions)):
+    # apart so they never stack on each other.
+    for a_index in range(len(flower_minions)):
         minion_a = flower_minions[a_index]
         if not minion_a.alive or getattr(minion_a, "dying", False):
             continue
