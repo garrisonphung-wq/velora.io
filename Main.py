@@ -4633,7 +4633,8 @@ mob_gallery_names = (
     "Baby Ant",
     "Soldier Ant",
     "Worker Ant",
-    "Queen Ant"
+    "Queen Ant",
+    "Ant Egg"
 )
 mob_gallery_scroll_target = 0
 mob_gallery_scroll_position = 0.0
@@ -7396,7 +7397,22 @@ class BabyAnt:
             minion_ai(self)
             return
 
-
+        # ---------------- ANGRY BABY ANT ----------------
+        # Chases the player when angry (e.g. hatched from broken Ant Egg)
+        if getattr(self, "angry", False) and not player_dead:
+            target_angle = math.degrees(
+                math.atan2(
+                    player_y - self.y,
+                    player_x - self.x
+                )
+            )
+            self.turn_to(target_angle, 6)
+            rad = math.radians(self.angle)
+            chase_speed = 3.0
+            dx = math.cos(rad) * chase_speed
+            dy = math.sin(rad) * chase_speed
+            move_with_collision(self, dx, dy)
+            return
 
         # ---------------- NORMAL BABY ANT MOVEMENT ----------------
 
@@ -9155,6 +9171,187 @@ class WorkerAnt:
                 int(sy + self.radius + 15)
             )
 
+# ---------------- ANT EGG ----------------
+
+class AntEgg:
+
+    def __init__(self):
+
+        self.x = random.randint(-500, 500)
+        self.y = random.randint(-500, 500)
+        self.knockback_x = 0
+        self.knockback_y = 0
+        self.rarity = "Common"
+
+        # Stats: stays still, 0 damage, 50 base HP
+        self.damage = 0
+        self.max_hp = (
+            50 *
+            MOB_HP_MULTIPLIER[self.rarity]
+        )
+        self.hp = self.max_hp
+        self.alive = True
+        self.flash_timer = 0
+        self.attack_cooldown = 2
+        self.petal_attack_cooldown = 2
+
+        # Size: similar to queen ant egg
+        self.radius = 16
+        self.base_radius = self.radius
+
+        # Subtle wobble (matching queen ant egg)
+        self.wobble = random.uniform(0, 360)
+
+        # King / minion flags
+        self.is_king = False
+        self.is_minion = False
+
+    def push(self, dx, dy):
+        if not self.alive:
+            return
+        self.x += dx
+        self.y += dy
+
+    def turn_to(self, target_angle, speed=2):
+        return True
+
+    def take_damage(self, amount):
+
+        if not self.alive:
+            return
+
+        self.hp -= int(amount)
+        self.flash_timer = 4
+
+        if self.hp <= 0:
+
+            if getattr(self, "death_registered", False):
+                return
+            self.death_registered = True
+
+            cleanup_king(self)
+            register_mob_kill(self)
+            drop_mob_loot(self)
+
+            # Fast shrink death animation
+            self.dying = True
+            self.shrink_scale = 1.0
+            self.full_radius = self.radius
+
+            if self.rarity in ("Celestial", "Omnient"):
+                show_defeat_message(
+                    self.rarity,
+                    type(self).__name__
+                )
+
+            give_xp(
+                int(
+                    10 * MOB_XP_MULTIPLIER[self.rarity]
+                )
+            )
+
+            # 30% chance a baby ant with same rarity spawns and chases the player
+            if random.random() < 0.30:
+                spawned_baby = BabyAnt()
+                spawned_baby.x = self.x
+                spawned_baby.y = self.y
+                spawned_baby.rarity = self.rarity
+                apply_enemy_rarity_stats(spawned_baby)
+                spawned_baby.angry = True
+                baby_ants.append(spawned_baby)
+
+    def update(self):
+        if not self.alive:
+            return
+        if dead_flower_ai(self):
+            return
+        # Egg stays still
+
+    def draw(self):
+
+        if not self.alive:
+            return
+
+        sx = self.x - camera_x
+        sy = self.y - camera_y
+
+        if (
+            sx < -100 or
+            sx > WIDTH + 100 or
+            sy < -100 or
+            sy > HEIGHT + 100
+        ):
+            return
+
+        current_radius = int(
+            self.radius * getattr(self, "shrink_scale", 1.0)
+        )
+        if current_radius <= 0:
+            return
+
+        wobble_offset = 0
+        if not getattr(self, "freeze_animation", False):
+            wobble_offset = (
+                math.sin(
+                    time.time() * 8 + self.wobble
+                ) * 1.5
+            )
+
+        draw_y = int(sy + wobble_offset)
+
+        # Egg body: soft cream yellow with golden-tan outline (matching queen ant egg)
+        base_fill = (250, 240, 180)
+        base_outline = (200, 175, 110)
+
+        pygame.draw.circle(
+            screen,
+            flash_color(base_fill, self.flash_timer),
+            (int(sx), draw_y),
+            current_radius
+        )
+        pygame.draw.circle(
+            screen,
+            flash_color(base_outline, self.flash_timer),
+            (int(sx), draw_y),
+            current_radius,
+            max(2, int(current_radius * 0.18))
+        )
+
+        # HP bar
+        if self.hp < self.max_hp and not getattr(self, "dying", False):
+            bar_width = max(1, int(35 * settings_hp_bar_scale))
+            bar_height = max(1, int(5 * settings_hp_bar_scale))
+            hp_percent = max(0.0, min(1.0, self.hp / self.max_hp))
+
+            pygame.draw.rect(
+                screen,
+                (210, 45, 45),
+                (
+                    int(sx - bar_width / 2),
+                    int(draw_y - current_radius - 10 - bar_height),
+                    bar_width,
+                    bar_height
+                )
+            )
+            pygame.draw.rect(
+                screen,
+                (0, 255, 0),
+                (
+                    int(sx - bar_width / 2),
+                    int(draw_y - current_radius - 10 - bar_height),
+                    int(bar_width * hp_percent),
+                    bar_height
+                )
+            )
+
+        if not getattr(self, "hide_rarity_label", False):
+            draw_mob_rarity_label(
+                self,
+                int(sx),
+                int(draw_y + current_radius + 15)
+            )
+
+
 def delete_enemy(enemy):
 
     if acc_name_text != "DevGuard":
@@ -10246,7 +10443,8 @@ def spawn_random_mob():
         "Baby Ant": (BabyAnt, baby_ants),
         "Soldier Ant": (SoldierAnt, soldier_ants),
         "Worker Ant": (WorkerAnt, worker_ants),
-        "Queen Ant": (QueenAnt, queen_ants)
+        "Queen Ant": (QueenAnt, queen_ants),
+        "Ant Egg": (AntEgg, ant_eggs)
     }
 
     drop_mob_names = sorted({
@@ -10332,6 +10530,8 @@ def register_mob_kill(enemy):
         mob_name = "Worker Ant"
     elif mob_name == "QueenAnt":
         mob_name = "Queen Ant"
+    elif mob_name == "AntEgg":
+        mob_name = "Ant Egg"
 
     key = f"{mob_name}|{enemy.rarity}"
     previous_count = int(mob_gallery_unlocks.get(key, 0))
@@ -10372,6 +10572,8 @@ def drop_mob_loot(enemy):
         mob_name = "Worker Ant"
     elif mob_name == "QueenAnt":
         mob_name = "Queen Ant"
+    elif mob_name == "AntEgg":
+        mob_name = "Ant Egg"
 
     drop_table = MOB_DROP_INFO.get((mob_name, enemy.rarity))
     if not drop_table:
@@ -10593,7 +10795,8 @@ GALLERY_ICON_RADIUS = {
     "Baby Ant": 8,
     "Soldier Ant": 10,
     "Worker Ant": 10,
-    "Queen Ant": 8
+    "Queen Ant": 8,
+    "Ant Egg": 11
 }
 
 # Short lore text shown in the gallery hover rectangle.
@@ -10628,6 +10831,10 @@ GALLERY_MOB_DESCRIPTIONS = {
     "Queen Ant": (
         "the mother of the ant colony. she lays eggs that hatch "
         "into ants while chasing you."
+    ),
+    "Ant Egg": (
+        "a fragile ant egg that stays still. when broken, a baby ant "
+        "might hatch from it and chase you!"
     )
 }
 
@@ -10684,6 +10891,24 @@ MOB_DROP_INFO = {
         ("Glass", "Common", 28),
         ("Glass", "Unusual", 7),
     ],
+    ("Worker Ant", "Common"): [
+        ("Corn", "Common", 34),
+        ("Corn", "Unusual", 11),
+        ("Clover", "Common", 30),
+        ("Clover", "Unusual", 17),
+    ],
+    ("Queen Ant", "Common"): [
+        ("Ant Egg", "Common", 34),
+        ("Ant Egg", "Unusual", 9),
+        ("Soil", "Common", 31),
+        ("Soil", "Unusual", 11),
+    ],
+    ("Ant Egg", "Common"): [
+        ("Ant Egg", "Common", 35),
+        ("Ant Egg", "Unusual", 10),
+        ("Rice", "Common", 25),
+        ("Rice", "Unusual", 8),
+    ],
     ("Ladybug", "Unusual"): [
         ("Light", "Common", 10),
         ("Light", "Unusual", 41),
@@ -10729,7 +10954,8 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
         "Baby Ant": BabyAnt,
         "Soldier Ant": SoldierAnt,
         "Worker Ant": WorkerAnt,
-        "Queen Ant": QueenAnt
+        "Queen Ant": QueenAnt,
+        "Ant Egg": AntEgg
     }
     enemy_class = enemy_classes.get(mob_name)
     if enemy_class is None:
@@ -10864,7 +11090,9 @@ def update_boss_hp():
         hornets +
         baby_ants +
         soldier_ants +
-        worker_ants
+        worker_ants +
+        queen_ants +
+        ant_eggs
     )
 
 
@@ -15331,6 +15559,7 @@ baby_ants = []
 soldier_ants = []
 worker_ants = []
 queen_ants = []
+ant_eggs = []
 
 # Eggs laid by queen ants while chasing; they hatch into enemy
 # soldier ant minions.
@@ -15547,6 +15776,7 @@ while running:
         + soldier_ants
         + worker_ants
         + queen_ants
+        + ant_eggs
     )
 
     for event in pygame.event.get():
@@ -16249,6 +16479,8 @@ while running:
                                             "WorkerAnt": (WorkerAnt, worker_ants),
                                             "Queen Ant": (QueenAnt, queen_ants),
                                             "QueenAnt": (QueenAnt, queen_ants),
+                                            "Ant Egg": (AntEgg, ant_eggs),
+                                            "AntEgg": (AntEgg, ant_eggs),
                                         }
                                         # Try to match multi-word mob names first (e.g. "Baby Ant", "Soldier Ant", "Worker Ant")
                                         mob_type = None
@@ -17897,7 +18129,9 @@ while running:
                     hornets,
                     baby_ants,
                     soldier_ants,
-                    queen_ants
+                    worker_ants,
+                    queen_ants,
+                    ant_eggs
                 ):
                     for e in group:
                         e_radius = getattr(e, "radius", 0)
@@ -18453,6 +18687,23 @@ while running:
 
             if queen_ant.flash_timer > 0:
                 queen_ant.flash_timer -= 1
+
+        for ant_egg in ant_eggs:
+
+            if (
+                player_spawn_cooldown <= 0
+                and enemies_frozen_timer <= 0
+            ):
+                ant_egg.update()
+
+            if ant_egg.attack_cooldown > 0:
+                ant_egg.attack_cooldown -= 1
+
+            if ant_egg.petal_attack_cooldown > 0:
+                ant_egg.petal_attack_cooldown -= 1
+
+            if ant_egg.flash_timer > 0:
+                ant_egg.flash_timer -= 1
 
         update_queen_eggs()
 
@@ -19072,6 +19323,9 @@ while running:
         for queen_ant in queen_ants:
 
             queen_ant.draw()
+
+        for ant_egg in ant_eggs:
+            ant_egg.draw()
 
         # ---------------- FLOWER MINIONS ----------------
 
@@ -19860,7 +20114,9 @@ while running:
                         hornets +
                         baby_ants +
                         soldier_ants +
-                        worker_ants
+                        worker_ants +
+                        queen_ants +
+                        ant_eggs
                     )
 
                     hit = False
@@ -19936,7 +20192,9 @@ while running:
                             hornets +
                             baby_ants +
                             soldier_ants +
-                            worker_ants
+                            worker_ants +
+                            queen_ants +
+                            ant_eggs
                         )
 
                         damage = get_petal_damage(
@@ -20317,6 +20575,7 @@ while running:
             + soldier_ants
             + worker_ants
             + queen_ants
+            + ant_eggs
         )
 
         # ---------------- ENEMY DEATH SHRINK ----------------
@@ -20669,6 +20928,7 @@ while running:
                 soldier_ants,
                 worker_ants,
                 queen_ants,
+                ant_eggs,
             ]
             for enemy_list in all_enemy_lists:
                 for enemy in enemy_list:
