@@ -3427,10 +3427,10 @@ def update_flower_minions():
                     (minion.y - player_y) / d * min_dist
                 )
 
-        # Push enemy (king) minions around on contact.
+        # Mobs push the minion around: every overlapping enemy
+        # (regular mobs, kings and king minions alike) shoves the
+        # minion, and the minion shoves back.
         for enemy in all_enemies:
-            if not getattr(enemy, "is_minion", False):
-                continue
             if not enemy.alive:
                 continue
             if getattr(enemy, "dying", False):
@@ -3443,13 +3443,13 @@ def update_flower_minions():
             )
             min_dist = minion.radius + enemy.radius
             if 0 < d < min_dist:
-                overlap = min_dist - d
-                enemy.x += (
-                    (enemy.x - minion.x) / d * overlap
-                )
-                enemy.y += (
-                    (enemy.y - minion.y) / d * overlap
-                )
+                overlap = (min_dist - d) / 2
+                push_x = (minion.x - enemy.x) / d
+                push_y = (minion.y - enemy.y) / d
+                minion.x += push_x * overlap
+                minion.y += push_y * overlap
+                enemy.x -= push_x * overlap
+                enemy.y -= push_y * overlap
 
         if minion.attack_cooldown > 0:
             minion.attack_cooldown -= 1
