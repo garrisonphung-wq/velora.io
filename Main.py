@@ -8174,7 +8174,7 @@ class SoldierAnt:
             # a little bigger than the head, and the head at the
             # front (drawn later, on top of both).
             for part_offset, part_scale in (
-                (-0.9, 1.35),
+                (-0.65, 1.2),
                 (0.0, 1.1),
             ):
                 part_x = (
@@ -18864,12 +18864,10 @@ while running:
 
             worker_ant.draw()
 
-        for queen_ant in queen_ants:
-
-            queen_ant.draw()
-
         # ---------------- QUEEN ANT EGGS ----------------
 
+        # Eggs are drawn before the queens so they sit on the
+        # back layer, underneath the queen's body.
         for egg in queen_eggs:
 
             egg_x = int(egg["x"] - camera_x)
@@ -18893,6 +18891,10 @@ while running:
                 egg_r,
                 3
             )
+
+        for queen_ant in queen_ants:
+
+            queen_ant.draw()
 
         # ---------------- FLOWER MINIONS ----------------
 
