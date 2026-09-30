@@ -4631,7 +4631,8 @@ mob_gallery_names = (
     "Hornet",
     "Baby Ant",
     "Soldier Ant",
-    "Worker Ant"
+    "Worker Ant",
+    "Queen Ant"
 )
 mob_gallery_scroll_target = 0
 mob_gallery_scroll_position = 0.0
@@ -10223,7 +10224,8 @@ def spawn_random_mob():
         "Hornet": (Hornet, hornets),
         "Baby Ant": (BabyAnt, baby_ants),
         "Soldier Ant": (SoldierAnt, soldier_ants),
-        "Worker Ant": (WorkerAnt, worker_ants)
+        "Worker Ant": (WorkerAnt, worker_ants),
+        "Queen Ant": (QueenAnt, queen_ants)
     }
 
     drop_mob_names = sorted({
@@ -10307,6 +10309,8 @@ def register_mob_kill(enemy):
         mob_name = "Soldier Ant"
     elif mob_name == "WorkerAnt":
         mob_name = "Worker Ant"
+    elif mob_name == "QueenAnt":
+        mob_name = "Queen Ant"
 
     key = f"{mob_name}|{enemy.rarity}"
     previous_count = int(mob_gallery_unlocks.get(key, 0))
@@ -10345,6 +10349,8 @@ def drop_mob_loot(enemy):
         mob_name = "Soldier Ant"
     elif mob_name == "WorkerAnt":
         mob_name = "Worker Ant"
+    elif mob_name == "QueenAnt":
+        mob_name = "Queen Ant"
 
     drop_table = MOB_DROP_INFO.get((mob_name, enemy.rarity))
     if not drop_table:
@@ -10564,7 +10570,9 @@ GALLERY_ICON_RADIUS = {
     "Rock": 11,
     "Hornet": 11,
     "Baby Ant": 8,
-    "Soldier Ant": 10
+    "Soldier Ant": 10,
+    "Worker Ant": 10,
+    "Queen Ant": 8
 }
 
 # Short lore text shown in the gallery hover rectangle.
@@ -10595,6 +10603,10 @@ GALLERY_MOB_DESCRIPTIONS = {
     "Worker Ant": (
         "this one worker for the queen ant but it chase you"
         "when you damage it."
+    ),
+    "Queen Ant": (
+        "the mother of the ant colony. she lays eggs that hatch "
+        "into ants while chasing you."
     )
 }
 
@@ -10695,7 +10707,8 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
         "Hornet": Hornet,
         "Baby Ant": BabyAnt,
         "Soldier Ant": SoldierAnt,
-        "Worker Ant": WorkerAnt
+        "Worker Ant": WorkerAnt,
+        "Queen Ant": QueenAnt
     }
     enemy_class = enemy_classes.get(mob_name)
     if enemy_class is None:
