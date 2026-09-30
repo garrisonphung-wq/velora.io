@@ -3427,6 +3427,30 @@ def update_flower_minions():
                     (minion.y - player_y) / d * min_dist
                 )
 
+        # Push enemy (king) minions around on contact.
+        for enemy in all_enemies:
+            if not getattr(enemy, "is_minion", False):
+                continue
+            if not enemy.alive:
+                continue
+            if getattr(enemy, "dying", False):
+                continue
+            d = distance(
+                minion.x,
+                minion.y,
+                enemy.x,
+                enemy.y
+            )
+            min_dist = minion.radius + enemy.radius
+            if 0 < d < min_dist:
+                overlap = min_dist - d
+                enemy.x += (
+                    (enemy.x - minion.x) / d * overlap
+                )
+                enemy.y += (
+                    (enemy.y - minion.y) / d * overlap
+                )
+
         if minion.attack_cooldown > 0:
             minion.attack_cooldown -= 1
         if minion.flash_timer > 0:
@@ -3468,8 +3492,7 @@ def update_flower_minions():
                 break
 
     # 3) Solid collision between minions: push overlapping pairs
-    # apart so they never stack on each other.
-    for a_index in range(len(flower_minions)):
+    # apart so they never stack on each other.    for a_index in range(len(flower_minions)):
         minion_a = flower_minions[a_index]
         if not minion_a.alive or getattr(minion_a, "dying", False):
             continue
@@ -3492,6 +3515,81 @@ def update_flower_minions():
                 minion_a.y += push_y * overlap
                 minion_b.x -= push_x * overlap
                 minion_b.y -= push_y * overlap
+
+
+def projectile_fight_flower_minions(projectile, damage, hit_radius):
+    # Enemy projectiles that touch a flower minion get pushed away,
+    # grind down from the minion's damage, and hurt the minion in
+    # return. Returns True when the projectile should start dying.
+    for minion in flower_minions:
+        if not minion.alive:
+            continue
+        if getattr(minion, "dying", False):
+            continue
+        d = distance(
+            minion.x,
+            minion.y,
+            projectile["x"],
+            projectile["y"]
+        )
+        if 0 < d <= minion.radius + hit_radius:
+            # Push the projectile out of the minion.
+            push = minion.radius + hit_radius - d
+            projectile["x"] += (
+                (projectile["x"] - minion.x) / d * push
+            )
+            projectile["y"] += (
+                (projectile["y"] - minion.y) / d * push
+            )
+            # The projectile damages the minion...
+            minion.hp -= damage
+            minion.flash_timer = 4
+            if minion.hp <= 0:
+                slot = getattr(minion, "egg_slot", None)
+                minion.dying = True
+                minion.shrink_scale = 1.0
+                minion.full_radius = minion.radius
+                if (
+                    slot is not None
+                    and petal_slots[slot]["filled"]
+                    and petal_slots[slot]["petal"] == "Ant Egg"
+                ):
+                    petal_alive[slot] = False
+                    petal_respawn_timer[slot] = PETAL_RELOAD[
+                        "Ant Egg"
+                    ]
+            # ...and the minion grinds the projectile down.
+            projectile["hp"] -= max(
+                1,
+                int(minion.damage / 10)
+            )
+            if projectile["hp"] <= 0:
+                return True
+    return False
+
+
+def update_flower_minion_projectile_fight():
+    # Run the minion vs projectile fight for every enemy projectile
+    # list. Dying projectiles are skipped.
+    enemy_projectile_lists = (
+        king_stinger_projectiles
+        + king_rose_projectiles
+        + baby_ant_rice
+        + worker_ant_corn
+        + hornet_missiles
+        + rock_projectiles
+        + soldier_wing_projectiles
+    )
+    for projectile in enemy_projectile_lists:
+        if projectile.get("dying"):
+            continue
+        if projectile_fight_flower_minions(
+            projectile,
+            projectile.get("damage", 1),
+            projectile.get("radius", 8)
+        ):
+            projectile["dying"] = True
+            projectile["shrink"] = 1.0
 
 
 def dev_ban_user(target_name):
@@ -19832,6 +19930,7 @@ while running:
 
         spawn_king_minions()
         update_flower_minions()
+        update_flower_minion_projectile_fight()
         update_king_roses()
         update_king_stingers()
         update_baby_ant_rice()
