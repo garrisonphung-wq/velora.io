@@ -1231,6 +1231,10 @@ king_webs = []
 player_in_web = False
 player_in_web_slowdown = KING_WEB_SLOWDOWN
 
+# Flower projectiles (not made yet): projectiles launched by the flower or its petals.
+flower_projectiles = []
+player_projectiles = flower_projectiles
+
 # Mob list lookup for king minion AI (class name -> list name).
 KING_MOB_LIST_NAMES = {
     "Ladybug": "ladybugs",
@@ -2050,6 +2054,12 @@ def update_king_stingers():
 
     for stinger in king_stinger_projectiles[:]:
 
+        if stinger.get("dying"):
+            stinger["shrink"] -= 0.18
+            if stinger["shrink"] <= 0:
+                king_stinger_projectiles.remove(stinger)
+            continue
+
         stinger["timer"] -= 1
 
         if stinger["timer"] <= 0:
@@ -2092,6 +2102,19 @@ def update_king_stingers():
 
         stinger["x"] += stinger["dx"]
         stinger["y"] += stinger["dy"]
+
+        # Prevent stinger from going past map boundaries
+        stinger_hit_radius = stinger.get("radius", 8)
+        stinger["x"] = max(stinger_hit_radius, min(stinger["x"], WORLD_WIDTH - stinger_hit_radius))
+        stinger["y"] = max(stinger_hit_radius, min(stinger["y"], WORLD_HEIGHT - stinger_hit_radius))
+        if (
+            stinger["x"] <= stinger_hit_radius
+            or stinger["x"] >= WORLD_WIDTH - stinger_hit_radius
+            or stinger["y"] <= stinger_hit_radius
+            or stinger["y"] >= WORLD_HEIGHT - stinger_hit_radius
+        ):
+            stinger["dying"] = True
+            stinger["shrink"] = 1.0
 
         # Stingers chip the flower's petals too.
         projectile_hits_petals(
@@ -2187,6 +2210,9 @@ def update_baby_ant_rice():
             continue
 
         rice["x"], rice["y"] = baby_ant_rice_pos(rice)
+        rice_r = rice.get("radius", 8)
+        rice["x"] = max(rice_r, min(rice["x"], WORLD_WIDTH - rice_r))
+        rice["y"] = max(rice_r, min(rice["y"], WORLD_HEIGHT - rice_r))
 
         # Rice also damages the flower on contact (grinding down).
         if (
@@ -2266,6 +2292,11 @@ def update_soldier_wings():
 
         wing["x"] += wing["dx"]
         wing["y"] += wing["dy"]
+
+        # Prevent soldier wing from going past map boundaries
+        wing_r = wing.get("radius", 8)
+        wing["x"] = max(wing_r, min(wing["x"], WORLD_WIDTH - wing_r))
+        wing["y"] = max(wing_r, min(wing["y"], WORLD_HEIGHT - wing_r))
 
         # The giant wing chips the flower's petals too.
         projectile_hits_petals(
@@ -2388,6 +2419,9 @@ def update_worker_ant_corn():
             continue
 
         corn["x"], corn["y"] = worker_corn_pos(corn)
+        corn_r = corn.get("radius", 10)
+        corn["x"] = max(corn_r, min(corn["x"], WORLD_WIDTH - corn_r))
+        corn["y"] = max(corn_r, min(corn["y"], WORLD_HEIGHT - corn_r))
 
         # Corn also damages the flower on contact (grinding down).
         if (
@@ -2449,6 +2483,19 @@ def update_king_roses():
 
         rose["x"] += rose["dx"]
         rose["y"] += rose["dy"]
+
+        # Prevent king rose from going past map boundaries
+        rose_r = rose.get("radius", 8)
+        rose["x"] = max(rose_r, min(rose["x"], WORLD_WIDTH - rose_r))
+        rose["y"] = max(rose_r, min(rose["y"], WORLD_HEIGHT - rose_r))
+        if (
+            rose["x"] <= rose_r
+            or rose["x"] >= WORLD_WIDTH - rose_r
+            or rose["y"] <= rose_r
+            or rose["y"] >= WORLD_HEIGHT - rose_r
+        ):
+            king_rose_projectiles.remove(rose)
+            continue
 
         # Roses chip the flower's petals too.
         projectile_hits_petals(
@@ -2951,6 +2998,19 @@ def update_hornet_missiles():
         missile["x"] += missile["dx"]
         missile["y"] += missile["dy"]
 
+        # Prevent hornet missile from going past map boundaries
+        missile_r = missile["owner"].radius * 0.5
+        missile["x"] = max(missile_r, min(missile["x"], WORLD_WIDTH - missile_r))
+        missile["y"] = max(missile_r, min(missile["y"], WORLD_HEIGHT - missile_r))
+        if (
+            missile["x"] <= missile_r
+            or missile["x"] >= WORLD_WIDTH - missile_r
+            or missile["y"] <= missile_r
+            or missile["y"] >= WORLD_HEIGHT - missile_r
+        ):
+            missile["dying"] = True
+            missile["shrink"] = 1.0
+
         # Missiles chip the flower's petals too.
         projectile_hits_petals(
             missile,
@@ -3005,6 +3065,19 @@ def update_rock_projectiles():
         rock_p["x"] += rock_p["dx"]
         rock_p["y"] += rock_p["dy"]
 
+        # Prevent rock projectile from going past map boundaries
+        rock_r = rock_p.get("radius", 8)
+        rock_p["x"] = max(rock_r, min(rock_p["x"], WORLD_WIDTH - rock_r))
+        rock_p["y"] = max(rock_r, min(rock_p["y"], WORLD_HEIGHT - rock_r))
+        if (
+            rock_p["x"] <= rock_r
+            or rock_p["x"] >= WORLD_WIDTH - rock_r
+            or rock_p["y"] <= rock_r
+            or rock_p["y"] >= WORLD_HEIGHT - rock_r
+        ):
+            rock_p["dying"] = True
+            rock_p["shrink"] = 1.0
+
         # Rocks chip the flower's petals too.
         projectile_hits_petals(
             rock_p,
@@ -3051,6 +3124,10 @@ def update_king_webs():
         if web["timer"] <= 0:
             king_webs.remove(web)
             continue
+        web_r = web.get("radius", 60)
+        web["x"] = max(web_r, min(web["x"], WORLD_WIDTH - web_r))
+        web["y"] = max(web_r, min(web["y"], WORLD_HEIGHT - web_r))
+
         if distance(
             web["x"],
             web["y"],
@@ -3059,6 +3136,70 @@ def update_king_webs():
         ) <= web["radius"] + PLAYER_RADIUS:
             player_in_web = True
             player_in_web_slowdown = web["slowdown"]
+
+
+def update_flower_projectiles():
+    # Move flower projectiles (not made yet) and ensure they cannot
+    # go past the edge of the map.
+    for fp in flower_projectiles[:]:
+        if isinstance(fp, dict):
+            if fp.get("dying"):
+                fp["shrink"] = fp.get("shrink", 1.0) - 0.18
+                if fp["shrink"] <= 0:
+                    flower_projectiles.remove(fp)
+                continue
+            if "timer" in fp:
+                fp["timer"] -= 1
+                if fp["timer"] <= 0:
+                    fp["dying"] = True
+                    fp["shrink"] = 1.0
+                    continue
+            fp["x"] = fp.get("x", 0) + fp.get("dx", 0)
+            fp["y"] = fp.get("y", 0) + fp.get("dy", 0)
+            r = fp.get("radius", 8)
+            fp["x"] = max(r, min(fp["x"], WORLD_WIDTH - r))
+            fp["y"] = max(r, min(fp["y"], WORLD_HEIGHT - r))
+            if (
+                fp["x"] <= r
+                or fp["x"] >= WORLD_WIDTH - r
+                or fp["y"] <= r
+                or fp["y"] >= WORLD_HEIGHT - r
+            ):
+                fp["dying"] = True
+                fp["shrink"] = 1.0
+        elif hasattr(fp, "update"):
+            fp.update()
+            r = getattr(fp, "radius", 8)
+            fp.x = max(r, min(fp.x, WORLD_WIDTH - r))
+            fp.y = max(r, min(fp.y, WORLD_HEIGHT - r))
+            if (
+                fp.x <= r
+                or fp.x >= WORLD_WIDTH - r
+                or fp.y <= r
+                or fp.y >= WORLD_HEIGHT - r
+            ):
+                if hasattr(fp, "dying"):
+                    fp.dying = True
+                elif hasattr(fp, "alive"):
+                    fp.alive = False
+                if not getattr(fp, "alive", True) and fp in flower_projectiles:
+                    flower_projectiles.remove(fp)
+        elif hasattr(fp, "x") and hasattr(fp, "y"):
+            r = getattr(fp, "radius", 8)
+            fp.x = max(r, min(fp.x, WORLD_WIDTH - r))
+            fp.y = max(r, min(fp.y, WORLD_HEIGHT - r))
+            if (
+                fp.x <= r
+                or fp.x >= WORLD_WIDTH - r
+                or fp.y <= r
+                or fp.y >= WORLD_HEIGHT - r
+            ):
+                if hasattr(fp, "dying"):
+                    fp.dying = True
+                elif hasattr(fp, "alive"):
+                    fp.alive = False
+                if not getattr(fp, "alive", True) and fp in flower_projectiles:
+                    flower_projectiles.remove(fp)
 
 
 def spawn_king_minions():
@@ -3251,13 +3392,13 @@ def spawn_king_minions():
         if hasattr(enemy, "max_speed"):
             minion.max_speed = enemy.max_speed * 3
         minion.king_orbit_slot = alive_minions
-        minion.x = (
-            enemy.x
-            + random.randint(-60, 60)
+        minion.x = max(
+            minion.radius,
+            min(enemy.x + random.randint(-60, 60), WORLD_WIDTH - minion.radius)
         )
-        minion.y = (
-            enemy.y
-            + random.randint(-60, 60)
+        minion.y = max(
+            minion.radius,
+            min(enemy.y + random.randint(-60, 60), WORLD_HEIGHT - minion.radius)
         )
         mob_list.append(minion)
 
@@ -3399,8 +3540,14 @@ def spawn_flower_minion(slot_index):
         minion.radius,
         PLAYER_RADIUS * MOB_SIZE_MULTIPLIER.get(egg_rarity, 1.0)
     )
-    minion.x = player_x + random.randint(-60, 60)
-    minion.y = player_y + random.randint(-60, 60)
+    minion.x = max(
+        minion.radius,
+        min(player_x + random.randint(-60, 60), WORLD_WIDTH - minion.radius)
+    )
+    minion.y = max(
+        minion.radius,
+        min(player_y + random.randint(-60, 60), WORLD_HEIGHT - minion.radius)
+    )
     flower_minions.append(minion)
 
 
@@ -3606,6 +3753,12 @@ def update_flower_minions():
                 minion_b.x -= push_x * overlap
                 minion_b.y -= push_y * overlap
 
+    # Keep all flower minions inside map boundaries
+    for minion in flower_minions:
+        rad = getattr(minion, "radius", 0)
+        minion.x = max(rad, min(minion.x, WORLD_WIDTH - rad))
+        minion.y = max(rad, min(minion.y, WORLD_HEIGHT - rad))
+
 
 def projectile_fight_flower_minions(projectile, damage, hit_radius):
     # Enemy projectiles that touch a flower minion get pushed away,
@@ -3757,6 +3910,12 @@ def update_queen_eggs():
         ant.y = egg["y"] + random.randint(-10, 10)
         ant.queen = egg.get("queen")
         soldier_ants.append(ant)
+
+    # Keep all queen ant eggs inside map boundaries
+    for egg in queen_eggs:
+        egg_r = egg.get("radius", 15)
+        egg["x"] = max(egg_r, min(egg["x"], WORLD_WIDTH - egg_r))
+        egg["y"] = max(egg_r, min(egg["y"], WORLD_HEIGHT - egg_r))
 
     # Eggs push each other apart too.
     for a_index in range(len(queen_eggs)):
@@ -6553,6 +6712,8 @@ class Rock:
 
         self.x += dx
         self.y += dy
+        self.x = max(self.radius, min(self.x, WORLD_WIDTH - self.radius))
+        self.y = max(self.radius, min(self.y, WORLD_HEIGHT - self.radius))
 
 
     def update(self):
@@ -9337,6 +9498,8 @@ class AntEgg:
             return
         self.x += dx
         self.y += dy
+        self.x = max(self.radius, min(self.x, WORLD_WIDTH - self.radius))
+        self.y = max(self.radius, min(self.y, WORLD_HEIGHT - self.radius))
 
     def turn_to(self, target_angle, speed=2):
         return True
@@ -10646,8 +10809,8 @@ def spawn_random_mob():
     # Update HP after changing rarity
     apply_enemy_rarity_stats(enemy)
 
-    enemy.x = player_x + random.randint(-300, 300)
-    enemy.y = player_y + random.randint(-300, 300)
+    enemy.x = max(enemy.radius, min(player_x + random.randint(-300, 300), WORLD_WIDTH - enemy.radius))
+    enemy.y = max(enemy.radius, min(player_y + random.randint(-300, 300), WORLD_HEIGHT - enemy.radius))
 
     enemy_list.append(enemy)
 
@@ -11667,6 +11830,11 @@ def move_with_collision(enemy, dx, dy):
 
             enemy.y -= dy
             break
+
+    # Keep enemy inside map boundaries
+    rad = getattr(enemy, "radius", 0)
+    enemy.x = max(rad, min(enemy.x, WORLD_WIDTH - rad))
+    enemy.y = max(rad, min(enemy.y, WORLD_HEIGHT - rad))
 
 def dead_flower_ai(enemy):
 
@@ -16712,8 +16880,8 @@ while running:
                                                     enemy = mob_class()
                                                     enemy.rarity = rarity
                                                     apply_enemy_rarity_stats(enemy)
-                                                    enemy.x = world_x
-                                                    enemy.y = world_y
+                                                    enemy.x = max(enemy.radius, min(world_x, WORLD_WIDTH - enemy.radius))
+                                                    enemy.y = max(enemy.radius, min(world_y, WORLD_HEIGHT - enemy.radius))
                                                     if custom_damage is not None:
                                                         enemy.damage = int(custom_damage)
                                                         enemy.custom_damage = int(custom_damage)
@@ -18971,6 +19139,12 @@ while running:
                         enemy_b.x -= push_x * overlap / 2
                         enemy_b.y -= push_y * overlap / 2
 
+        # Keep all enemies (regular mobs, mob kings, mob minions) inside map boundaries
+        for enemy in all_enemies:
+            rad = getattr(enemy, "radius", 0)
+            enemy.x = max(rad, min(enemy.x, WORLD_WIDTH - rad))
+            enemy.y = max(rad, min(enemy.y, WORLD_HEIGHT - rad))
+
         # The queen ant is solid: push the flower out of every
         # body-part circle.
         if not player_dead:
@@ -19556,6 +19730,23 @@ while running:
                 ),
                 border_radius=2
             )
+
+        # ---------------- FLOWER PROJECTILES (NOT MADE YET) ----------------
+
+        for fp in flower_projectiles:
+            if isinstance(fp, dict):
+                fp_x = fp.get("x", 0) - camera_x
+                fp_y = fp.get("y", 0) - camera_y
+                fp_r = fp.get("radius", 8) * fp.get("shrink", 1.0)
+                if -50 <= fp_x <= WIDTH + 50 and -50 <= fp_y <= HEIGHT + 50:
+                    pygame.draw.circle(
+                        screen,
+                        fp.get("color", (255, 220, 60)),
+                        (int(fp_x), int(fp_y)),
+                        max(1, int(fp_r))
+                    )
+            elif hasattr(fp, "draw"):
+                fp.draw()
 
         # ---------------- HORNET MISSILES ----------------
 
@@ -20787,6 +20978,7 @@ while running:
 
         spawn_king_minions()
         update_flower_minions()
+        update_flower_projectiles()
         update_flower_minion_projectile_fight()
         update_king_roses()
         update_king_stingers()
