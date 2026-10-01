@@ -1150,6 +1150,12 @@ enemies_frozen_timer = 0
 # and the flower is drawn semi-transparent.
 player_ghost = False
 
+# True while /godmode is active: player cannot take damage or die.
+player_godmode = False
+
+# Player movement speed multiplier controlled via /p.speed.
+player_speed_mult = 1.0
+
 # How far the king and its minions will chase before giving up.
 KING_CHASE_RANGE = 700
 
@@ -1902,6 +1908,7 @@ def projectile_hits_flower(projectile, damage):
     if (
         projectile["touch_timer"] <= 0
         and not player_ghost
+        and not player_godmode
     ):
         projectile["touch_timer"] = 30
         player_hp -= (
@@ -15797,6 +15804,12 @@ def push_player_from(enemy, speed=6.0):
 def kill_player(enemy):
 
     global player_dead
+    global player_hp
+    global player_godmode
+
+    if getattr(globals(), "player_godmode", False):
+        player_hp = PLAYER_MAX_HP
+        return
     global player_death_timer
     global player_bounce_x
     global player_bounce_y
@@ -17205,6 +17218,52 @@ while running:
                                     # /unfreeze - unfreeze all enemies
                                     enemies_frozen_timer = 0
                                     show_error("Enemies unfrozen")
+                                elif cmd == "/godmode" and acc_name_text.lower() == "devguard":
+                                    # /godmode [state] - toggle complete invincibility
+                                    args = parts[1:]
+                                    if len(args) < 1 or args[0].lower() not in ("on", "off", "true", "false", "1", "0", "y", "n"):
+                                        show_error("Usage: /godmode [state] (on/off)")
+                                    elif args[0].lower() in ("on", "true", "1", "y"):
+                                        player_godmode = True
+                                        player_hp = PLAYER_MAX_HP
+                                        show_error("Godmode ON")
+                                    else:
+                                        player_godmode = False
+                                        show_error("Godmode OFF")
+                                elif cmd == "/p.speed" and acc_name_text.lower() == "devguard":
+                                    # /p.speed [multiplier] - adjust player movement speed
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /p.speed [multiplier]")
+                                    else:
+                                        try:
+                                            mult = float(args[0])
+                                            if mult <= 0 or mult > 20:
+                                                show_error("Multiplier must be between 0.1 and 20")
+                                            else:
+                                                player_speed_mult = mult
+                                                show_error(f"Player speed set to {mult}x")
+                                        except ValueError:
+                                            show_error("Multiplier must be a number")
+                                elif cmd == "/tp_pos" and acc_name_text.lower() == "devguard":
+                                    # /tp_pos [x] [y] - teleport player to coordinates
+                                    args = parts[1:]
+                                    if len(args) < 2:
+                                        show_error("Usage: /tp_pos [x] [y]")
+                                    else:
+                                        try:
+                                            tx = float(args[0])
+                                            ty = float(args[1])
+                                            player_x = max(PLAYER_RADIUS, min(tx, WORLD_WIDTH - PLAYER_RADIUS))
+                                            player_y = max(PLAYER_RADIUS, min(ty, WORLD_HEIGHT - PLAYER_RADIUS))
+                                            show_error(f"Teleported to ({int(player_x)}, {int(player_y)})")
+                                        except ValueError:
+                                            show_error("Coordinates must be numbers")
+                                elif cmd == "/clean_drops" and acc_name_text.lower() == "devguard":
+                                    # /clean_drops - remove all dropped items on the map
+                                    count = len(pickups)
+                                    pickups.clear()
+                                    show_error(f"Cleared {count} drops")
                                 elif cmd == "/p.ghost" and acc_name_text.lower() == "devguard":
                                     # /p.ghost [y or n] - ghost mode:
                                     # enemies can't see the player
@@ -18560,7 +18619,7 @@ while running:
 
             # Sticky spider king webs slow the flower down; the
             # slowdown depends on the spider king's rarity.
-            move_speed = PLAYER_SPEED
+            move_speed = PLAYER_SPEED * player_speed_mult
             if player_in_web:
                 move_speed *= player_in_web_slowdown
 
@@ -18612,6 +18671,9 @@ while running:
                     player_y = wall.rect.bottom + PLAYER_RADIUS
 
                 break
+
+        if player_godmode:
+            player_hp = PLAYER_MAX_HP
 
         # keep player inside map
 
@@ -22115,6 +22177,10 @@ while running:
                 "/whisper [user] [message]",
                 "/freez_enemies [seconds]",
                 "/unfreeze",
+                "/godmode [state]",
+                "/p.speed [multiplier]",
+                "/tp_pos [x] [y]",
+                "/clean_drops",
                 "/p.ghost [y or n]",
                 "/p.size [small or big]",
                 "/despawn_mobs",
@@ -22143,6 +22209,11 @@ while running:
                 "[message]": (0, 255, 255),
                 "[action]": (255, 0, 255),
                 "[seconds]": (0, 255, 128),
+                "[state]": (255, 185, 30),
+                "[multiplier]": (60, 235, 220),
+                "[x]": (190, 120, 255),
+                "[y]": (255, 130, 220),
+                "from.[user]": (128, 255, 0),
             }
             cmd_max_width = cmd_panel_rect.width - 48
             # Clamp scroll so the list can't scroll past its ends.
@@ -22207,11 +22278,10 @@ while running:
                         elif next_w == "type]":
                             word_color = (0, 255, 0)
                     # Pick phrases like [y or n] and [small or big]
-                    # must be one single color each, so decide the
-                    # color from the whole line, not the word.
-                    if "[y" in words and "n]" in words:
+                    # must only color the bracket words, not the command name!
+                    if word in ("[y", "or", "n]") and "[y" in words and "n]" in words:
                         word_color = (0, 255, 128)
-                    elif "[small" in words and "big]" in words:
+                    elif word in ("[small", "or", "big]") and "[small" in words and "big]" in words:
                         word_color = (170, 120, 255)
                     prefix = (
                         f"{cmd_number}. "
