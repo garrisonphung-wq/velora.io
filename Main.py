@@ -1153,6 +1153,9 @@ player_ghost = False
 # True while /godmode is active: player cannot take damage or die.
 player_godmode = False
 
+# True while /p.mode peaceful is active: mobs do not chase or attack.
+game_peaceful_mode = False
+
 # Player movement speed multiplier controlled via /p.speed.
 player_speed_mult = 1.0
 
@@ -1909,6 +1912,7 @@ def projectile_hits_flower(projectile, damage):
         projectile["touch_timer"] <= 0
         and not player_ghost
         and not player_godmode
+        and not game_peaceful_mode
     ):
         projectile["touch_timer"] = 30
         player_hp -= (
@@ -17284,6 +17288,17 @@ while running:
                                         show_error("Usage: /revive_user [user]")
                                     else:
                                         dev_revive_user(" ".join(args))
+                                elif cmd in ("/p.mode", "/pick.mode") and acc_name_text.lower() == "devguard":
+                                    # /p.mode [peaceful or normal] (or /pick.mode) - pick game mode
+                                    args = parts[1:]
+                                    if len(args) < 1 or args[0].lower() not in ("peaceful", "normal"):
+                                        show_error("Usage: /p.mode [peaceful or normal]")
+                                    elif args[0].lower() == "peaceful":
+                                        game_peaceful_mode = True
+                                        show_error("Peaceful mode ON")
+                                    else:
+                                        game_peaceful_mode = False
+                                        show_error("Normal mode ON")
                                 elif cmd in ("/p.size", "/pick.size") and acc_name_text.lower() == "devguard":
                                     # /p.size [small or big] (or /pick.size) - pick your
                                     # flower size
@@ -17414,6 +17429,8 @@ while running:
                                     "/revive_user",
                                     "/p.size",
                                     "/pick.size",
+                                    "/p.mode",
+                                    "/pick.mode",
                                     "/despawn_mobs",
                                     "/rarity_to",
                                     "/s.enemy_increase",
@@ -18812,7 +18829,7 @@ while running:
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
             ):
-                if player_ghost:
+                if player_ghost or game_peaceful_mode:
                     # Ghost mode: the enemy can't see the
                     # player, so hide the player far away
                     # while its AI thinks, then restore.
@@ -18853,7 +18870,7 @@ while running:
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
             ):
-                if player_ghost:
+                if player_ghost or game_peaceful_mode:
                     # Ghost mode: the enemy can't see the
                     # player, so hide the player far away
                     # while its AI thinks, then restore.
@@ -18894,7 +18911,7 @@ while running:
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
             ):
-                if player_ghost:
+                if player_ghost or game_peaceful_mode:
                     # Ghost mode: the enemy can't see the
                     # player, so hide the player far away
                     # while its AI thinks, then restore.
@@ -18935,7 +18952,7 @@ while running:
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
             ):
-                if player_ghost:
+                if player_ghost or game_peaceful_mode:
                     # Ghost mode: the enemy can't see the
                     # player, so hide the player far away
                     # while its AI thinks, then restore.
@@ -18976,7 +18993,7 @@ while running:
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
             ):
-                if player_ghost:
+                if player_ghost or game_peaceful_mode:
                     # Ghost mode: the enemy can't see the
                     # player, so hide the player far away
                     # while its AI thinks, then restore.
@@ -19016,7 +19033,7 @@ while running:
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
             ):
-                if player_ghost:
+                if player_ghost or game_peaceful_mode:
                     # Ghost mode: the enemy can't see the
                     # player, so hide the player far away
                     # while its AI thinks, then restore.
@@ -19056,7 +19073,7 @@ while running:
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
             ):
-                if player_ghost:
+                if player_ghost or game_peaceful_mode:
                     # Ghost mode: the enemy can't see the
                     # player, so hide the player far away
                     # while its AI thinks, then restore.
@@ -19086,7 +19103,7 @@ while running:
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
             ):
-                if player_ghost:
+                if player_ghost or game_peaceful_mode:
                     # Ghost mode: the enemy can't see the
                     # player, so hide the player far away
                     # while its AI thinks, then restore.
@@ -19116,7 +19133,7 @@ while running:
                 player_spawn_cooldown <= 0
                 and enemies_frozen_timer <= 0
             ):
-                if player_ghost:
+                if player_ghost or game_peaceful_mode:
                     # Ghost mode: the queen can't see the
                     # player, so hide the player far away
                     # while her AI thinks, then restore.
@@ -19314,6 +19331,7 @@ while running:
                         if (
                             ladybug.attack_cooldown == 0
                             and not player_ghost
+                            and not game_peaceful_mode
                         ):
 
                             player_hp -= get_enemy_attack_damage(ladybug)
@@ -19349,6 +19367,7 @@ while running:
                         if (
                             bee.attack_cooldown == 0
                             and not player_ghost
+                            and not game_peaceful_mode
                         ):
 
                             player_hp -= get_enemy_attack_damage(bee)
@@ -19385,6 +19404,7 @@ while running:
                         if (
                             spider.attack_cooldown == 0
                             and not player_ghost
+                            and not game_peaceful_mode
                         ):
 
                             player_hp -= get_enemy_attack_damage(spider)
@@ -19421,6 +19441,7 @@ while running:
                         if (
                             rock.attack_cooldown == 0
                             and not player_ghost
+                            and not game_peaceful_mode
                         ):
 
                             player_hp -= get_enemy_attack_damage(rock)
@@ -19457,6 +19478,7 @@ while running:
                         if (
                             hornet.attack_cooldown == 0
                             and not player_ghost
+                            and not game_peaceful_mode
                         ):
 
                             player_hp -= get_enemy_attack_damage(hornet)
@@ -19492,6 +19514,7 @@ while running:
                         if (
                             ant.attack_cooldown == 0
                             and not player_ghost
+                            and not game_peaceful_mode
                         ):
 
                             player_hp -= get_enemy_attack_damage(ant)
@@ -19527,6 +19550,7 @@ while running:
                         if (
                             soldier_ant.attack_cooldown == 0
                             and not player_ghost
+                            and not game_peaceful_mode
                         ):
 
                             player_hp -= get_enemy_attack_damage(soldier_ant)
@@ -19560,6 +19584,7 @@ while running:
                     and player_spawn_cooldown <= 0
                     and worker_ant.attack_cooldown == 0
                     and not player_ghost
+                    and not game_peaceful_mode
                 ):
                     player_hp -= get_enemy_attack_damage(worker_ant)
 
@@ -19594,6 +19619,7 @@ while running:
                         and player_spawn_cooldown <= 0
                         and queen_ant.attack_cooldown == 0
                         and not player_ghost
+                        and not game_peaceful_mode
                     ):
                         continue
 
@@ -22190,6 +22216,7 @@ while running:
                 "/clean_drops",
                 "/p.ghost [y or n]",
                 "/p.size [small or big]",
+                "/p.mode [peaceful or normal]",
                 "/despawn_mobs",
                 "/revive_user [user]",
                 "/rarity_to [rarity]",
@@ -22290,6 +22317,8 @@ while running:
                         word_color = (0, 255, 128)
                     elif word in ("[small", "or", "big]") and "[small" in words and "big]" in words:
                         word_color = (170, 120, 255)
+                    elif word in ("[peaceful", "or", "normal]") and "[peaceful" in words and "normal]" in words:
+                        word_color = (100, 240, 180)
                     prefix = (
                         f"{cmd_number}. "
                         if first_line
