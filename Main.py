@@ -9477,8 +9477,8 @@ class AntEgg:
         self.knockback_y = 0
         self.rarity = "Common"
 
-        # Stats: stays still, 0 damage, 50 base HP
-        self.damage = 0
+        # Stats: stays still, same damage as baby ant (25), 50 base HP
+        self.damage = 25
         self.max_hp = (
             50 *
             MOB_HP_MULTIPLIER[self.rarity]
@@ -19652,6 +19652,40 @@ while running:
 
                     queen_ant.attack_cooldown = 2
                     break
+
+        for ant_egg in ant_eggs:
+
+            if ant_egg.alive and not player_dead:
+                d = distance(
+                    player_x,
+                    player_y,
+                    ant_egg.x,
+                    ant_egg.y
+                )
+
+                if d < PLAYER_RADIUS + ant_egg.radius:
+
+                    if player_spawn_cooldown <= 0:
+
+                        if (
+                            ant_egg.attack_cooldown == 0
+                            and not player_ghost
+                            and not game_peaceful_mode
+                        ):
+
+                            player_hp -= get_enemy_attack_damage(ant_egg)
+
+                            if player_hp < 0:
+                                player_hp = 0
+
+                            player_flash_timer = 4
+
+                            push_player_from(ant_egg)
+
+                            if player_hp == 0:
+                                kill_player(ant_egg)
+
+                            ant_egg.attack_cooldown = 2
 
         # -------- DRAW --------
 
