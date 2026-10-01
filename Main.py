@@ -1156,6 +1156,9 @@ player_godmode = False
 # True while /p.mode peaceful is active: mobs do not chase or attack.
 game_peaceful_mode = False
 
+# Petal orbit rotation multiplier controlled via /p.petal_speed.
+petal_rot_speed_mult = 1.0
+
 # Player movement speed multiplier controlled via /p.speed.
 player_speed_mult = 1.0
 
@@ -17262,6 +17265,10 @@ while running:
                                             show_error(f"Teleported to ({int(player_x)}, {int(player_y)})")
                                         except ValueError:
                                             show_error("Coordinates must be numbers")
+                                elif cmd == "/clear_chat" and acc_name_text.lower() == "devguard":
+                                    # /clear_chat - clear all messages in the chat history
+                                    chat_messages.clear()
+                                    show_error("Chat cleared")
                                 elif cmd == "/clean_drops" and acc_name_text.lower() == "devguard":
                                     # /clean_drops - remove all dropped items on the map
                                     count = len(pickups)
@@ -17287,6 +17294,20 @@ while running:
                                         show_error("Usage: /revive_user [user]")
                                     else:
                                         dev_revive_user(" ".join(args))
+                                elif cmd in ("/p.petal_speed", "/pick.petal_speed") and acc_name_text.lower() == "devguard":
+                                    # /p.petal_speed [slow or normal or fast] - pick petal rotation speed
+                                    args = parts[1:]
+                                    if len(args) < 1 or args[0].lower() not in ("slow", "normal", "fast"):
+                                        show_error("Usage: /p.petal_speed [slow or normal or fast]")
+                                    elif args[0].lower() == "slow":
+                                        petal_rot_speed_mult = 0.5
+                                        show_error("Petal speed set to slow")
+                                    elif args[0].lower() == "fast":
+                                        petal_rot_speed_mult = 2.5
+                                        show_error("Petal speed set to fast")
+                                    else:
+                                        petal_rot_speed_mult = 1.0
+                                        show_error("Petal speed set to normal")
                                 elif cmd in ("/p.mode", "/pick.mode") and acc_name_text.lower() == "devguard":
                                     # /p.mode [peaceful or normal] (or /pick.mode) - pick game mode
                                     args = parts[1:]
@@ -17422,7 +17443,10 @@ while running:
                                     "/speed",
                                     "/p.speed",
                                     "/tp_pos",
+                                    "/clear_chat",
                                     "/clean_drops",
+                                    "/p.petal_speed",
+                                    "/pick.petal_speed",
                                     "/p.ghost",
                                     "/pick.ghost",
                                     "/revive_user",
@@ -18778,8 +18802,8 @@ while running:
 
                 spin_speed += spin_amount
 
-        petal_angle += spin_speed
-        petal_self_spin_angle += 0.45
+        petal_angle += spin_speed * petal_rot_speed_mult
+        petal_self_spin_angle += 0.45 * petal_rot_speed_mult
 
         mouse = pygame.mouse.get_pressed()
 
@@ -22246,7 +22270,9 @@ while running:
                 "/godmode [state]",
                 "/speed [multiplier]",
                 "/tp_pos [x] [y]",
+                "/clear_chat",
                 "/clean_drops",
+                "/p.petal_speed [slow or normal or fast]",
                 "/p.ghost [y or n]",
                 "/p.size [small or big]",
                 "/p.mode [peaceful or normal]",
@@ -22352,6 +22378,8 @@ while running:
                         word_color = (170, 120, 255)
                     elif word in ("[peaceful", "or", "normal]") and "[peaceful" in words and "normal]" in words:
                         word_color = (100, 240, 180)
+                    elif word in ("[slow", "or", "normal", "fast]") and "[slow" in words and "fast]" in words:
+                        word_color = (255, 140, 0)
                     prefix = (
                         f"{cmd_number}. "
                         if first_line
