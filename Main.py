@@ -9495,6 +9495,7 @@ class AntEgg:
 
         # Subtle wobble (matching queen ant egg)
         self.wobble = random.uniform(0, 360)
+        self.angle = 0
 
         # King / minion flags
         self.is_king = False
@@ -9566,8 +9567,6 @@ class AntEgg:
 
     def update(self):
         if not self.alive:
-            return
-        if dead_flower_ai(self):
             return
         # Egg stays still
 
@@ -11860,8 +11859,8 @@ def dead_flower_ai(enemy):
     # facing. Returns True while the enemy is playing (its normal
     # behavior should be skipped).
 
-    # baby ants do not play with the dead flower
-    if enemy.__class__.__name__ == "BabyAnt":
+    # baby ants, ant eggs, and rocks do not play with the dead flower
+    if enemy.__class__.__name__ in ("BabyAnt", "AntEgg", "Rock") or not hasattr(enemy, "angle"):
         return False
 
     if not hasattr(enemy, "play_mode"):
