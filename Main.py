@@ -1499,7 +1499,7 @@ def dev_make_king(enemy):
 
     enemy.is_king = True
     if enemy.damage == 0:
-        enemy.damage = int(40 * MOB_DAMAGE_MULTIPLIER.get(enemy.rarity, 1.0))
+        enemy.damage = 40
     else:
         enemy.damage = int(enemy.damage * 2)
     if getattr(enemy, "custom_damage", None) is not None:
@@ -3397,7 +3397,7 @@ def spawn_flower_minion(slot_index):
     # mob size multiplier.
     minion.radius = min(
         minion.radius,
-        PLAYER_RADIUS * MOB_SIZE_MULTIPLIER[egg_rarity]
+        PLAYER_RADIUS * MOB_SIZE_MULTIPLIER.get(egg_rarity, 1.0)
     )
     minion.x = player_x + random.randint(-60, 60)
     minion.y = player_y + random.randint(-60, 60)
@@ -3537,15 +3537,17 @@ def update_flower_minions():
                         minion.x += p_x * 50
                         minion.y += p_y * 50
                     if minion.hp <= 0:
+                        minion.hp = 0
                         # The minion dies: its egg is consumed and
                         # reloads like a destroyed petal.
                         minion.dying = True
                         minion.shrink_scale = 1.0
                         minion.full_radius = minion.radius
-                        petal_alive[slot] = False
-                        petal_respawn_timer[slot] = PETAL_RELOAD[
-                            "Ant Egg"
-                        ]
+                        if slot is not None and 0 <= slot < len(petal_alive):
+                            petal_alive[slot] = False
+                            petal_respawn_timer[slot] = PETAL_RELOAD[
+                                "Ant Egg"
+                            ]
                 break
 
         # Mobs push the minion around: every overlapping enemy
@@ -7666,7 +7668,7 @@ class BabyAnt:
 
         # ---------------- HP BAR ----------------
 
-        if self.hp < self.max_hp:
+        if self.hp < self.max_hp and not getattr(self, "dying", False):
 
             bar_width = max(1, int(30 * settings_hp_bar_scale))
             bar_height = max(
@@ -7674,7 +7676,7 @@ class BabyAnt:
                 int(5 * settings_hp_bar_scale)
             )
 
-            hp_percent = self.hp / self.max_hp
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
 
 
 
@@ -8577,15 +8579,19 @@ class SoldierAnt:
 
         # ---------------- HP BAR ----------------
 
-        if self.hp < self.max_hp:
+        if (
+            not getattr(self, "yellow_minion", False)
+            and not getattr(self, "dying", False)
+            and self.hp < self.max_hp
+        ):
 
-            bar_width = max(1, int(min(45, self.radius * 2) * settings_hp_bar_scale))
+            bar_width = max(10, int(min(35, max(10, self.radius * 1.5)) * settings_hp_bar_scale))
             bar_height = max(
                 1,
-                int(5 * settings_hp_bar_scale)
+                int(4 * settings_hp_bar_scale)
             )
 
-            hp_percent = self.hp / self.max_hp
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
 
 
             pygame.draw.rect(
@@ -8593,7 +8599,7 @@ class SoldierAnt:
                 (210, 45, 45),
                 (
                     int(sx - bar_width/2),
-                    int(sy - self.radius - 13 - bar_height),
+                    int(sy - self.radius - 10 - bar_height),
                     bar_width,
                     bar_height
                 )
@@ -8605,7 +8611,7 @@ class SoldierAnt:
                 (0,255,0),
                 (
                     int(sx - bar_width/2),
-                    int(sy - self.radius - 13 - bar_height),
+                    int(sy - self.radius - 10 - bar_height),
                     int(bar_width * hp_percent),
                     bar_height
                 )
@@ -9486,9 +9492,9 @@ class AntEgg:
 
         # HP bar
         if self.hp < self.max_hp and not getattr(self, "dying", False):
-            bar_width = max(1, int(35 * settings_hp_bar_scale))
-            bar_height = max(1, int(5 * settings_hp_bar_scale))
-            hp_percent = max(0.0, min(1.0, self.hp / self.max_hp))
+            bar_width = max(10, int(min(35, max(16, current_radius * 1.4)) * settings_hp_bar_scale))
+            bar_height = max(1, int(4 * settings_hp_bar_scale))
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
             bar_offset = 24 if getattr(self, "is_king", False) else 10
 
             pygame.draw.rect(
@@ -19523,13 +19529,16 @@ while running:
 
             minion.draw()
 
+            if getattr(minion, "dying", False):
+                continue
+
             # Small HP bar above the minion.
             m_r = max(1, int(minion.radius))
-            hp_ratio = max(0, minion.hp / minion.max_hp)
-            bar_w = m_r * 2
-            bar_h = 5
-            bar_x = int(minion.x - camera_x - m_r)
-            bar_y = int(minion.y - camera_y - m_r - 12)
+            hp_ratio = max(0.0, min(1.0, minion.hp / max(1, minion.max_hp)))
+            bar_w = max(14, min(32, int(m_r * 1.4)))
+            bar_h = 4
+            bar_x = int(minion.x - camera_x - bar_w / 2)
+            bar_y = int(minion.y - camera_y - m_r - 10)
             pygame.draw.rect(
                 screen,
                 (60, 60, 60),
