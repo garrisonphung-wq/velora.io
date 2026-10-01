@@ -17230,11 +17230,11 @@ while running:
                                     else:
                                         player_godmode = False
                                         show_error("Godmode OFF")
-                                elif cmd == "/p.speed" and acc_name_text.lower() == "devguard":
-                                    # /p.speed [multiplier] - adjust player movement speed
+                                elif cmd in ("/speed", "/p.speed") and acc_name_text.lower() == "devguard":
+                                    # /speed [multiplier] - adjust player movement speed
                                     args = parts[1:]
                                     if len(args) < 1:
-                                        show_error("Usage: /p.speed [multiplier]")
+                                        show_error("Usage: /speed [multiplier]")
                                     else:
                                         try:
                                             mult = float(args[0])
@@ -17264,8 +17264,8 @@ while running:
                                     count = len(pickups)
                                     pickups.clear()
                                     show_error(f"Cleared {count} drops")
-                                elif cmd == "/p.ghost" and acc_name_text.lower() == "devguard":
-                                    # /p.ghost [y or n] - ghost mode:
+                                elif cmd in ("/p.ghost", "/pick.ghost") and acc_name_text.lower() == "devguard":
+                                    # /p.ghost [y or n] (or /pick.ghost) - pick ghost mode:
                                     # enemies can't see the player
                                     args = parts[1:]
                                     if len(args) < 1 or args[0].lower() not in ("y", "n"):
@@ -17284,8 +17284,8 @@ while running:
                                         show_error("Usage: /revive_user [user]")
                                     else:
                                         dev_revive_user(" ".join(args))
-                                elif cmd == "/p.size" and acc_name_text.lower() == "devguard":
-                                    # /p.size [small or big] - pick your
+                                elif cmd in ("/p.size", "/pick.size") and acc_name_text.lower() == "devguard":
+                                    # /p.size [small or big] (or /pick.size) - pick your
                                     # flower size
                                     args = parts[1:]
                                     if len(args) < 1 or args[0].lower() not in ("small", "big"):
@@ -17404,9 +17404,16 @@ while running:
                                     "/spawn_enemy",
                                     "/freez_enemies",
                                     "/unfreeze",
+                                    "/godmode",
+                                    "/speed",
+                                    "/p.speed",
+                                    "/tp_pos",
+                                    "/clean_drops",
                                     "/p.ghost",
+                                    "/pick.ghost",
                                     "/revive_user",
                                     "/p.size",
+                                    "/pick.size",
                                     "/despawn_mobs",
                                     "/rarity_to",
                                     "/s.enemy_increase",
@@ -22178,7 +22185,7 @@ while running:
                 "/freez_enemies [seconds]",
                 "/unfreeze",
                 "/godmode [state]",
-                "/p.speed [multiplier]",
+                "/speed [multiplier]",
                 "/tp_pos [x] [y]",
                 "/clean_drops",
                 "/p.ghost [y or n]",
