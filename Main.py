@@ -1153,6 +1153,9 @@ player_ghost = False
 # True while /godmode is active: player cannot take damage or die.
 player_godmode = False
 
+# Game theme ('day' or 'night') controlled via /p.theme.
+game_theme = "day"
+
 # True while /p.mode peaceful is active: mobs do not chase or attack.
 game_peaceful_mode = False
 
@@ -17294,6 +17297,19 @@ while running:
                                         show_error("Usage: /revive_user [user]")
                                     else:
                                         dev_revive_user(" ".join(args))
+                                elif cmd in ("/p.theme", "/pick.theme") and acc_name_text.lower() == "devguard":
+                                    # /p.theme [day or night] (or /pick.theme) - pick day or night theme
+                                    args = parts[1:]
+                                    if len(args) < 1 or args[0].lower() not in ("day", "night"):
+                                        show_error("Usage: /p.theme [day or night]")
+                                    elif args[0].lower() == "night":
+                                        game_theme = "night"
+                                        game_target_grid_color = (18, 24, 38)
+                                        show_error("Night theme ON")
+                                    else:
+                                        game_theme = "day"
+                                        game_target_grid_color = (60, 180, 75)
+                                        show_error("Day theme ON")
                                 elif cmd in ("/p.petal_speed", "/pick.petal_speed") and acc_name_text.lower() == "devguard":
                                     # /p.petal_speed [slow or normal or fast] - pick petal rotation speed
                                     args = parts[1:]
@@ -17445,6 +17461,8 @@ while running:
                                     "/tp_pos",
                                     "/clear_chat",
                                     "/clean_drops",
+                                    "/p.theme",
+                                    "/pick.theme",
                                     "/p.petal_speed",
                                     "/pick.petal_speed",
                                     "/p.ghost",
@@ -19748,6 +19766,20 @@ while running:
                     (screen_x, screen_y, GRASS_SIZE, GRASS_SIZE),
                     1
                 )
+
+                if game_theme == "night":
+                    # Deterministic little starry twinkles on tiles
+                    star_hash = (gx * 73856093 ^ gy * 19349663) & 0xFFFFFFFF
+                    if star_hash % 7 == 0:
+                        star_ox = (star_hash >> 4) % (GRASS_SIZE - 8) + 4
+                        star_oy = (star_hash >> 8) % (GRASS_SIZE - 8) + 4
+                        star_bright = 160 + (star_hash % 95)
+                        pygame.draw.circle(
+                            screen,
+                            (star_bright, star_bright, min(255, star_bright + 30)),
+                            (int(screen_x + star_ox), int(screen_y + star_oy)),
+                            1 if star_hash % 2 == 0 else 2
+                        )
 
         # ---------------- KING WEBS ----------------
         # Transparent spider webs drawn under the mobs.
@@ -22273,6 +22305,7 @@ while running:
                 "/clear_chat",
                 "/clean_drops",
                 "/p.petal_speed [slow or normal or fast]",
+                "/p.theme [day or night]",
                 "/p.ghost [y or n]",
                 "/p.size [small or big]",
                 "/p.mode [peaceful or normal]",
@@ -22380,6 +22413,8 @@ while running:
                         word_color = (100, 240, 180)
                     elif word in ("[slow", "or", "normal", "fast]") and "[slow" in words and "fast]" in words:
                         word_color = (255, 140, 0)
+                    elif word in ("[day", "or", "night]") and "[day" in words and "night]" in words:
+                        word_color = (80, 200, 255)
                     prefix = (
                         f"{cmd_number}. "
                         if first_line
