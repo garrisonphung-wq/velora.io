@@ -3543,6 +3543,61 @@ def flower_minion_ai(minion):
     minion.speed = 0
 
 
+def spawn_custom_flower_minion(rarity, mob_name, custom_damage=None, custom_hp=None, custom_speed=None, custom_size=None, custom_view_range=None):
+    enemy_classes = {
+        "Ladybug": Ladybug,
+        "Bee": Bee,
+        "Spider": Spider,
+        "Rock": Rock,
+        "Hornet": Hornet,
+        "Baby Ant": BabyAnt,
+        "Soldier Ant": SoldierAnt,
+        "BabyAnt": BabyAnt,
+        "SoldierAnt": SoldierAnt,
+        "Worker Ant": WorkerAnt,
+        "WorkerAnt": WorkerAnt,
+        "Queen Ant": QueenAnt,
+        "QueenAnt": QueenAnt,
+        "Ant Egg": AntEgg,
+        "AntEgg": AntEgg,
+    }
+    cls = enemy_classes.get(mob_name, SoldierAnt)
+    minion = cls()
+    minion.is_minion = True
+    minion.yellow_minion = True
+    minion.is_command_minion = True
+    minion.king_orbit_slot = sum(1 for m in flower_minions if m.alive)
+
+    valid_rarity = rarity.capitalize() if rarity.capitalize() in MOB_HP_MULTIPLIER else "Common"
+    minion.rarity = valid_rarity
+    apply_enemy_rarity_stats(minion)
+
+    if custom_size is not None:
+        minion.radius = max(4, int(custom_size))
+        minion.base_radius = minion.radius
+    else:
+        minion.radius = min(minion.radius, PLAYER_RADIUS * MOB_SIZE_MULTIPLIER.get(valid_rarity, 1.0))
+
+    if custom_damage is not None:
+        minion.damage = int(custom_damage)
+        minion.custom_damage = int(custom_damage)
+
+    if custom_hp is not None:
+        minion.max_hp = int(custom_hp)
+        minion.hp = int(custom_hp)
+
+    if custom_speed is not None:
+        minion.custom_speed = float(custom_speed)
+
+    if custom_view_range is not None:
+        minion.custom_view_range = float(custom_view_range)
+
+    minion.x = max(minion.radius, min(player_x + random.randint(-60, 60), WORLD_WIDTH - minion.radius))
+    minion.y = max(minion.radius, min(player_y + random.randint(-60, 60), WORLD_HEIGHT - minion.radius))
+    flower_minions.append(minion)
+    return minion
+
+
 def spawn_flower_minion(slot_index):
     # Hatch a yellow SoldierAnt minion from an alive Ant Egg petal.
     egg_rarity = petal_slots[slot_index]["rarity"]
