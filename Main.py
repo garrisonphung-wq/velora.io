@@ -1156,6 +1156,10 @@ player_godmode = False
 # Game theme ('day' or 'night') controlled via /p.theme.
 game_theme = "day"
 
+# Game weather ('sunny', 'rainy', 'cloudy', 'snowy', 'hail') via /p.weather.
+game_weather = "sunny"
+weather_particles = []
+
 # True while /p.mode peaceful is active: mobs do not chase or attack.
 game_peaceful_mode = False
 
@@ -17297,6 +17301,16 @@ while running:
                                         show_error("Usage: /revive_user [user]")
                                     else:
                                         dev_revive_user(" ".join(args))
+                                elif cmd in ("/p.weather", "/pick.weather") and acc_name_text.lower() == "devguard":
+                                    # /p.weather [sunny or rainy or cloudy or snowy or hail]
+                                    args = parts[1:]
+                                    valid_weathers = ("sunny", "rainy", "cloudy", "snowy", "hail")
+                                    if len(args) < 1 or args[0].lower() not in valid_weathers:
+                                        show_error("Usage: /p.weather [sunny or rainy or cloudy or snowy or hail]")
+                                    else:
+                                        game_weather = args[0].lower()
+                                        weather_particles.clear()
+                                        show_error(f"Weather set to {game_weather}")
                                 elif cmd in ("/p.theme", "/pick.theme") and acc_name_text.lower() == "devguard":
                                     # /p.theme [day or night] (or /pick.theme) - pick day or night theme
                                     args = parts[1:]
@@ -17461,6 +17475,8 @@ while running:
                                     "/tp_pos",
                                     "/clear_chat",
                                     "/clean_drops",
+                                    "/p.weather",
+                                    "/pick.weather",
                                     "/p.theme",
                                     "/pick.theme",
                                     "/p.petal_speed",
@@ -21730,6 +21746,103 @@ while running:
             screen.blit(points_text, flower_points_rect)
 
 
+        # ---------------- WEATHER EFFECTS ----------------
+        if game_weather != "sunny":
+            # Spawn weather particles to keep screen populated
+            target_count = 110 if game_weather in ("rainy", "snowy", "hail") else 24
+            while len(weather_particles) < target_count:
+                if game_weather == "rainy":
+                    weather_particles.append({
+                        "x": random.randint(-50, WIDTH + 50),
+                        "y": random.randint(-40, -10),
+                        "speed_y": random.uniform(14, 20),
+                        "speed_x": random.uniform(-3, -1),
+                        "len": random.randint(12, 18),
+                        "alpha": random.randint(140, 210)
+                    })
+                elif game_weather == "snowy":
+                    weather_particles.append({
+                        "x": random.randint(-50, WIDTH + 50),
+                        "y": random.randint(-30, -5),
+                        "speed_y": random.uniform(1.8, 3.8),
+                        "speed_x": random.uniform(-1.5, 0.5),
+                        "r": random.randint(2, 4),
+                        "wobble": random.uniform(0, 6.28)
+                    })
+                elif game_weather == "hail":
+                    weather_particles.append({
+                        "x": random.randint(-50, WIDTH + 50),
+                        "y": random.randint(-40, -10),
+                        "speed_y": random.uniform(16, 24),
+                        "speed_x": random.uniform(-2, 0),
+                        "r": random.randint(3, 5),
+                        "bounce": 0
+                    })
+                elif game_weather == "cloudy":
+                    weather_particles.append({
+                        "x": random.randint(-150, WIDTH + 150),
+                        "y": random.randint(0, HEIGHT),
+                        "speed_x": random.uniform(-0.6, -0.3),
+                        "r": random.randint(60, 110),
+                        "alpha": random.randint(25, 45)
+                    })
+
+            # Update and draw weather particles
+            for wp in weather_particles[:]:
+                if game_weather == "rainy":
+                    wp["x"] += wp["speed_x"]
+                    wp["y"] += wp["speed_y"]
+                    if wp["y"] > HEIGHT + 20:
+                        weather_particles.remove(wp)
+                    else:
+                        rain_surf = pygame.Surface((3, wp["len"]), pygame.SRCALPHA)
+                        rain_surf.fill((160, 205, 255, wp["alpha"]))
+                        screen.blit(rain_surf, (int(wp["x"]), int(wp["y"])))
+                elif game_weather == "snowy":
+                    wp["wobble"] += 0.05
+                    wp["x"] += wp["speed_x"] + math.sin(wp["wobble"]) * 0.8
+                    wp["y"] += wp["speed_y"]
+                    if wp["y"] > HEIGHT + 10:
+                        weather_particles.remove(wp)
+                    else:
+                        pygame.draw.circle(
+                            screen,
+                            (240, 245, 255),
+                            (int(wp["x"]), int(wp["y"])),
+                            wp["r"]
+                        )
+                elif game_weather == "hail":
+                    wp["x"] += wp["speed_x"]
+                    wp["y"] += wp["speed_y"]
+                    if wp["y"] > HEIGHT + 15:
+                        weather_particles.remove(wp)
+                    else:
+                        pygame.draw.circle(
+                            screen,
+                            (215, 235, 250),
+                            (int(wp["x"]), int(wp["y"])),
+                            wp["r"]
+                        )
+                        pygame.draw.circle(
+                            screen,
+                            (255, 255, 255),
+                            (int(wp["x"]), int(wp["y"])),
+                            max(1, wp["r"] - 2)
+                        )
+                elif game_weather == "cloudy":
+                    wp["x"] += wp["speed_x"]
+                    if wp["x"] < -180:
+                        wp["x"] = WIDTH + 180
+                        wp["y"] = random.randint(0, HEIGHT)
+                    cloud_surf = pygame.Surface((wp["r"] * 2, wp["r"] * 2), pygame.SRCALPHA)
+                    pygame.draw.circle(
+                        cloud_surf,
+                        (200, 210, 225, wp["alpha"]),
+                        (wp["r"], wp["r"]),
+                        wp["r"]
+                    )
+                    screen.blit(cloud_surf, (int(wp["x"] - wp["r"]), int(wp["y"] - wp["r"])))
+
         # ---------------- MINIMAP ----------------
         draw_minimap()
 
@@ -22306,6 +22419,7 @@ while running:
                 "/clean_drops",
                 "/p.petal_speed [slow or normal or fast]",
                 "/p.theme [day or night]",
+                "/p.weather [sunny or rainy or cloudy or snowy or hail]",
                 "/p.ghost [y or n]",
                 "/p.size [small or big]",
                 "/p.mode [peaceful or normal]",
@@ -22415,6 +22529,8 @@ while running:
                         word_color = (255, 140, 0)
                     elif word in ("[day", "or", "night]") and "[day" in words and "night]" in words:
                         word_color = (80, 200, 255)
+                    elif word in ("[sunny", "or", "rainy", "cloudy", "snowy", "hail]") and "[sunny" in words and "hail]" in words:
+                        word_color = (130, 220, 255)
                     prefix = (
                         f"{cmd_number}. "
                         if first_line
