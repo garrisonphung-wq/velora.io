@@ -3437,7 +3437,7 @@ def flower_minion_ai(minion):
         and target.alive
         and not getattr(target, "dying", False)
     ):
-        # Charge the spotted enemy at two times the flower's speed.
+        # Charge the spotted enemy (using Ladybug King's minion AI style: rapid approach with wing animation)
         target_angle = math.degrees(
             math.atan2(
                 target.y - minion.y,
@@ -3445,13 +3445,18 @@ def flower_minion_ai(minion):
             )
         )
         minion.turn_to(target_angle, 6)
-        minion.speed = PLAYER_SPEED * 2
+        chase_spd = getattr(minion, "custom_speed", None)
+        if chase_spd is None:
+            chase_spd = PLAYER_SPEED * 2
+        minion.speed = chase_spd
         rad = math.radians(minion.angle)
         move_with_collision(
             minion,
             math.cos(rad) * minion.speed,
             math.sin(rad) * minion.speed
         )
+        if hasattr(minion, "wing_phase"):
+            minion.wing_phase += 0.85
         return
 
     minion.target_enemy = None
@@ -3578,27 +3583,28 @@ def update_flower_minions():
     # 0) Spot enemies near the flower and split the minions across
     # them: minion N hunts enemy N, wrapping around when there are
     # more minions than enemies.
-    sight_enemies = [
-        e
-        for e in all_enemies
-        if e.alive
-        and not getattr(e, "dying", False)
-        and distance(
-            player_x,
-            player_y,
-            e.x,
-            e.y
-        ) <= FLOWER_MINION_SIGHT
-    ]
     hunting_minions = [
         m
         for m in flower_minions
         if m.alive and not getattr(m, "dying", False)
     ]
     for minion_index, minion in enumerate(hunting_minions):
-        if sight_enemies:
-            minion.target_enemy = sight_enemies[
-                minion_index % len(sight_enemies)
+        v_range = getattr(minion, "custom_view_range", FLOWER_MINION_SIGHT)
+        minion_sight_enemies = [
+            e
+            for e in all_enemies
+            if e.alive
+            and not getattr(e, "dying", False)
+            and distance(
+                player_x,
+                player_y,
+                e.x,
+                e.y
+            ) <= v_range
+        ]
+        if minion_sight_enemies:
+            minion.target_enemy = minion_sight_enemies[
+                minion_index % len(minion_sight_enemies)
             ]
         else:
             minion.target_enemy = None
@@ -3641,17 +3647,19 @@ def update_flower_minions():
                 )
             continue
 
-        # If the slot no longer holds the egg, despawn the minion.
+        # If the slot no longer holds the egg, despawn the minion (unless spawned via command).
         slot = getattr(minion, "egg_slot", None)
-        if (
-            slot is None
-            or not petal_slots[slot]["filled"]
-            or petal_slots[slot]["petal"] != "Ant Egg"
-        ):
-            minion.dying = True
-            minion.shrink_scale = 1.0
-            minion.full_radius = minion.radius
-            continue
+        is_cmd_minion = getattr(minion, "is_command_minion", False)
+        if not is_cmd_minion:
+            if (
+                slot is None
+                or not petal_slots[slot]["filled"]
+                or petal_slots[slot]["petal"] != "Ant Egg"
+            ):
+                minion.dying = True
+                minion.shrink_scale = 1.0
+                minion.full_radius = minion.radius
+                continue
 
         flower_minion_ai(minion)
 
@@ -5477,11 +5485,13 @@ class Ladybug:
 
 
 
-        # red body
+        # red body (or yellow if flower minion)
+        lb_body_col = (255, 230, 100) if getattr(self, "yellow_minion", False) else (220, 30, 30)
+        lb_out_col = (210, 160, 40) if getattr(self, "yellow_minion", False) else (105, 25, 25)
 
         pygame.draw.circle(
             body_surface,
-            flash_color((220,30,30), self.flash_timer),
+            flash_color(lb_body_col, self.flash_timer),
             center,
             int(self.radius)
         )
@@ -5529,10 +5539,10 @@ class Ladybug:
             special_flags=pygame.BLEND_RGBA_MULT
         )
 
-        # Dark outline around the red body.
+        # Dark outline around the body.
         pygame.draw.circle(
             body_surface,
-            flash_color((105, 25, 25), self.flash_timer),
+            flash_color(lb_out_col, self.flash_timer),
             center,
             int(self.radius),
             max(2, int(self.radius * 0.14))
@@ -6559,10 +6569,12 @@ class Spider:
 
 
         # ---------------- BODY ----------------
+        sp_out_col = (210, 160, 40) if getattr(self, "yellow_minion", False) else (18, 18, 18)
+        sp_body_col = (255, 230, 100) if getattr(self, "yellow_minion", False) else (40, 40, 40)
 
         pygame.draw.circle(
             screen,
-            flash_color((18, 18, 18), self.flash_timer),
+            flash_color(sp_out_col, self.flash_timer),
             (
                 int(sx),
                 int(sy)
@@ -6572,7 +6584,7 @@ class Spider:
 
         pygame.draw.circle(
             screen,
-            flash_color((40,40,40), self.flash_timer),
+            flash_color(sp_body_col, self.flash_timer),
             (
                 int(sx),
                 int(sy)
@@ -6918,6 +6930,8 @@ class Rock:
 
 
         # rock body
+        rk_body_col = (255, 230, 100) if getattr(self, "yellow_minion", False) else (120, 120, 120)
+        rk_out_col = (210, 160, 40) if getattr(self, "yellow_minion", False) else (75, 75, 75)
 
         rock_points = [
             (
@@ -6929,7 +6943,7 @@ class Rock:
 
         pygame.draw.polygon(
             screen,
-            flash_color((120,120,120), self.flash_timer),
+            flash_color(rk_body_col, self.flash_timer),
             rock_points
         )
 
@@ -6938,7 +6952,7 @@ class Rock:
 
         pygame.draw.polygon(
             screen,
-            flash_color((75,75,75), self.flash_timer),
+            flash_color(rk_out_col, self.flash_timer),
             rock_points,
             max(2, int(self.radius * 0.12))
         )
@@ -7889,13 +7903,15 @@ class BabyAnt:
 
         # ---------------- HEAD ----------------
         # The baby ant is drawn as just the head of a soldier ant.
+        ba_head_col = (250, 215, 80) if getattr(self, "yellow_minion", False) else (48, 48, 48)
+        ba_hi_col = (255, 245, 150) if getattr(self, "yellow_minion", False) else (78, 78, 78)
 
         head_x = sx
         head_y = sy
 
         pygame.draw.circle(
             screen,
-            flash_color((48, 48, 48), self.flash_timer),
+            flash_color(ba_head_col, self.flash_timer),
             (
                 int(head_x),
                 int(head_y)
@@ -7903,10 +7919,10 @@ class BabyAnt:
             int(self.radius)
         )
 
-        # Soft gray center highlight like the reference image.
+        # Soft gray (or golden) center highlight like the reference image.
         pygame.draw.circle(
             screen,
-            flash_color((78, 78, 78), self.flash_timer),
+            flash_color(ba_hi_col, self.flash_timer),
             (
                 int(head_x),
                 int(head_y)
@@ -9273,9 +9289,11 @@ class WorkerAnt:
             pygame.SRCALPHA
         )
 
+        wa_body_col = (255, 230, 100) if getattr(self, "yellow_minion", False) else (62, 62, 62)
+        wa_out_col = (210, 160, 40) if getattr(self, "yellow_minion", False) else (22, 22, 22)
         pygame.draw.ellipse(
             body_surface,
-            flash_color((62, 62, 62), self.flash_timer),
+            flash_color(wa_body_col, self.flash_timer),
             (
                 0,
                 0,
@@ -9285,7 +9303,7 @@ class WorkerAnt:
         )
         pygame.draw.ellipse(
             body_surface,
-            flash_color((22, 22, 22), self.flash_timer),
+            flash_color(wa_out_col, self.flash_timer),
             (
                 0,
                 0,
@@ -17301,6 +17319,81 @@ while running:
                                         show_error("Usage: /revive_user [user]")
                                     else:
                                         dev_revive_user(" ".join(args))
+                                elif cmd == "/spawn_minion" and acc_name_text.lower() == "devguard":
+                                    # /spawn_minion [rarity] [mob]
+                                    # /spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range]
+                                    args = parts[1:]
+                                    if len(args) < 2:
+                                        show_error("Usage: /spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range]")
+                                    else:
+                                        rarity = args[0].capitalize()
+                                        minion_mob_classes = {
+                                            "Ladybug": Ladybug,
+                                            "Bee": Bee,
+                                            "Spider": Spider,
+                                            "Rock": Rock,
+                                            "Hornet": Hornet,
+                                            "Baby Ant": BabyAnt,
+                                            "Soldier Ant": SoldierAnt,
+                                            "BabyAnt": BabyAnt,
+                                            "SoldierAnt": SoldierAnt,
+                                            "Worker Ant": WorkerAnt,
+                                            "WorkerAnt": WorkerAnt,
+                                            "Queen Ant": QueenAnt,
+                                            "QueenAnt": QueenAnt,
+                                            "Ant Egg": AntEgg,
+                                            "AntEgg": AntEgg,
+                                        }
+                                        found_mob = None
+                                        trailing = []
+                                        if len(args) >= 3:
+                                            two_word = args[1] + " " + args[2]
+                                            for k in minion_mob_classes:
+                                                if k.lower() == two_word.lower():
+                                                    found_mob = k
+                                                    trailing = args[3:]
+                                                    break
+                                        if found_mob is None and len(args) >= 2:
+                                            for k in minion_mob_classes:
+                                                if k.lower() == args[1].lower():
+                                                    found_mob = k
+                                                    trailing = args[2:]
+                                                    break
+                                        if found_mob is None:
+                                            valid_m = ", ".join(minion_mob_classes.keys())
+                                            show_error(f"Invalid mob. Valid: {valid_m}")
+                                        else:
+                                            c_dmg = None
+                                            c_hp = None
+                                            c_spd = None
+                                            c_sz = None
+                                            c_vr = None
+                                            parse_ok = True
+                                            if len(trailing) >= 5:
+                                                # [damage] [health] [speed] [size] [view range]
+                                                try:
+                                                    c_dmg = float(trailing[0])
+                                                    c_hp = float(trailing[1])
+                                                    c_spd = float(trailing[2])
+                                                    c_sz = float(trailing[3])
+                                                    c_vr = float(trailing[4])
+                                                except ValueError:
+                                                    show_error("Damage, health, speed, size, and view range must be numbers")
+                                                    parse_ok = False
+                                            elif len(trailing) > 0:
+                                                show_error("Usage: /spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range]")
+                                                parse_ok = False
+                                            if parse_ok:
+                                                spawn_custom_flower_minion(
+                                                    rarity=rarity,
+                                                    mob_name=found_mob,
+                                                    custom_damage=c_dmg,
+                                                    custom_hp=c_hp,
+                                                    custom_speed=c_spd,
+                                                    custom_size=c_sz,
+                                                    custom_view_range=c_vr
+                                                )
+                                                show_error(f"Spawned {rarity} {found_mob} minion!")
                                 elif cmd in ("/p.weather", "/pick.weather") and acc_name_text.lower() == "devguard":
                                     # /p.weather [sunny or rainy or cloudy or snowy or hail]
                                     args = parts[1:]
@@ -17475,6 +17568,7 @@ while running:
                                     "/tp_pos",
                                     "/clear_chat",
                                     "/clean_drops",
+                                    "/spawn_minion",
                                     "/p.weather",
                                     "/pick.weather",
                                     "/p.theme",
@@ -22459,6 +22553,8 @@ while running:
                 "/tp_pos [x] [y]",
                 "/clear_chat",
                 "/clean_drops",
+                "/spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range]",
+                "/spawn_minion [rarity] [mob]",
                 "/p.petal_speed [slow or normal or fast]",
                 "/p.theme [day or night]",
                 "/p.weather [sunny or rainy or cloudy or snowy or hail]",
@@ -22489,6 +22585,10 @@ while running:
                 "slot]": (255, 165, 0),
                 "[user]": (128, 255, 0),
                 "[message]": (0, 255, 255),
+                "[speed]": (60, 235, 220),
+                "[size]": (170, 120, 255),
+                "[view": (255, 185, 30),
+                "range]": (255, 185, 30),
                 "[action]": (255, 0, 255),
                 "[seconds]": (0, 255, 128),
                 "[state]": (255, 185, 30),
