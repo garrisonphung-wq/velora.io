@@ -17389,11 +17389,11 @@ while running:
                                     else:
                                         dev_revive_user(" ".join(args))
                                 elif cmd == "/spawn_minion" and acc_name_text.lower() == "devguard":
-                                    # /spawn_minion [rarity] [mob]
-                                    # /spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range]
+                                    # /spawn_minion [rarity] [mob] [amount]
+                                    # /spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range] [amount]
                                     args = parts[1:]
                                     if len(args) < 2:
-                                        show_error("Usage: /spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range]")
+                                        show_error("Usage: /spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range] [amount]")
                                     else:
                                         rarity = args[0].capitalize()
                                         minion_mob_classes = {
@@ -17437,32 +17437,46 @@ while running:
                                             c_spd = None
                                             c_sz = None
                                             c_vr = None
+                                            spawn_amount = 1
                                             parse_ok = True
                                             if len(trailing) >= 5:
-                                                # [damage] [health] [speed] [size] [view range]
+                                                # [damage] [health] [speed] [size] [view range] [amount]
                                                 try:
                                                     c_dmg = float(trailing[0])
                                                     c_hp = float(trailing[1])
                                                     c_spd = float(trailing[2])
                                                     c_sz = float(trailing[3])
                                                     c_vr = float(trailing[4])
+                                                    if len(trailing) >= 6:
+                                                        spawn_amount = max(1, int(trailing[5]))
                                                 except ValueError:
-                                                    show_error("Damage, health, speed, size, and view range must be numbers")
+                                                    show_error("Damage, health, speed, size, view range, and amount must be numbers")
                                                     parse_ok = False
-                                            elif len(trailing) > 0:
-                                                show_error("Usage: /spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range]")
+                                            elif len(trailing) == 1:
+                                                # [amount]
+                                                try:
+                                                    spawn_amount = max(1, int(trailing[0]))
+                                                except ValueError:
+                                                    show_error("Amount must be a number")
+                                                    parse_ok = False
+                                            elif len(trailing) > 1:
+                                                show_error("Usage: /spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range] [amount]")
                                                 parse_ok = False
                                             if parse_ok:
-                                                spawn_custom_flower_minion(
-                                                    rarity=rarity,
-                                                    mob_name=found_mob,
-                                                    custom_damage=c_dmg,
-                                                    custom_hp=c_hp,
-                                                    custom_speed=c_spd,
-                                                    custom_size=c_sz,
-                                                    custom_view_range=c_vr
-                                                )
-                                                show_error(f"Spawned {rarity} {found_mob} minion!")
+                                                for _ in range(spawn_amount):
+                                                    spawn_custom_flower_minion(
+                                                        rarity=rarity,
+                                                        mob_name=found_mob,
+                                                        custom_damage=c_dmg,
+                                                        custom_hp=c_hp,
+                                                        custom_speed=c_spd,
+                                                        custom_size=c_sz,
+                                                        custom_view_range=c_vr
+                                                    )
+                                                if spawn_amount > 1:
+                                                    show_error(f"Spawned {spawn_amount} {rarity} {found_mob} minions!")
+                                                else:
+                                                    show_error(f"Spawned {rarity} {found_mob} minion!")
                                 elif cmd in ("/p.weather", "/pick.weather") and acc_name_text.lower() == "devguard":
                                     # /p.weather [sunny or rainy or cloudy or snowy or hail]
                                     args = parts[1:]
@@ -22622,8 +22636,8 @@ while running:
                 "/tp_pos [x] [y]",
                 "/clear_chat",
                 "/clean_drops",
-                "/spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range]",
-                "/spawn_minion [rarity] [mob]",
+                "/spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range] [amount]",
+                "/spawn_minion [rarity] [mob] [amount]",
                 "/p.petal_speed [slow or normal or fast]",
                 "/p.theme [day or night]",
                 "/p.weather [sunny or rainy or cloudy or snowy or hail]",
