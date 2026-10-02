@@ -3444,7 +3444,10 @@ def flower_minion_ai(minion):
                 target.x - minion.x
             )
         )
-        minion.turn_to(target_angle, 6)
+        if hasattr(minion, "turn_to"):
+            minion.turn_to(target_angle, 6)
+        else:
+            minion.angle = target_angle
         chase_spd = getattr(minion, "custom_speed", None)
         if chase_spd is None:
             chase_spd = PLAYER_SPEED * 2
@@ -3539,7 +3542,8 @@ def flower_minion_ai(minion):
         minion.y += bounce_y * 2
 
     # Face the direction of travel around the ring.
-    minion.angle = math.degrees(new_angle + math.pi / 2)
+    if hasattr(minion, "angle"):
+        minion.angle = math.degrees(new_angle + math.pi / 2)
     minion.speed = 0
 
 
@@ -6754,6 +6758,16 @@ class Rock:
         self.king_minion_timer = 0
         self.king_orbit_slot = 0
         self.rock_volley_timer = 0
+        self.angle = 0
+        self.speed = 0
+
+    def turn_to(self, target_angle, speed=6):
+        difference = (target_angle - self.angle + 180) % 360 - 180
+        if abs(difference) <= speed:
+            self.angle = target_angle
+            return True
+        self.angle += speed if difference > 0 else -speed
+        return False
 
     def take_damage(self, amount):
 
