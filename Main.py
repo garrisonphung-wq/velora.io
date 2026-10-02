@@ -21748,44 +21748,86 @@ while running:
 
         # ---------------- WEATHER EFFECTS ----------------
         if game_weather != "sunny":
-            # Spawn weather particles to keep screen populated
-            target_count = 110 if game_weather in ("rainy", "snowy", "hail") else 24
-            while len(weather_particles) < target_count:
-                if game_weather == "rainy":
+            target_count = 140 if game_weather in ("rainy", "snowy", "hail") else 24
+            # On first start, distribute particles across the entire height so there is no gap/wave
+            if len(weather_particles) == 0:
+                for _ in range(target_count):
+                    init_y = random.randint(-40, HEIGHT)
+                    if game_weather == "rainy":
+                        weather_particles.append({
+                            "x": random.randint(-50, WIDTH + 50),
+                            "y": init_y,
+                            "speed_y": random.uniform(14, 20),
+                            "speed_x": random.uniform(-3, -1),
+                            "len": random.randint(12, 18),
+                            "alpha": random.randint(140, 210)
+                        })
+                    elif game_weather == "snowy":
+                        weather_particles.append({
+                            "x": random.randint(-50, WIDTH + 50),
+                            "y": init_y,
+                            "speed_y": random.uniform(1.8, 3.8),
+                            "speed_x": random.uniform(-1.5, 0.5),
+                            "r": random.randint(2, 4),
+                            "wobble": random.uniform(0, 6.28)
+                        })
+                    elif game_weather == "hail":
+                        weather_particles.append({
+                            "x": random.randint(-50, WIDTH + 50),
+                            "y": init_y,
+                            "speed_y": random.uniform(16, 24),
+                            "speed_x": random.uniform(-2, 0),
+                            "r": random.randint(3, 5),
+                            "bounce": 0
+                        })
+                    elif game_weather == "cloudy":
+                        weather_particles.append({
+                            "x": random.randint(-150, WIDTH + 150),
+                            "y": random.randint(0, HEIGHT),
+                            "speed_x": random.uniform(-0.6, -0.3),
+                            "r": random.randint(60, 110),
+                            "alpha": random.randint(25, 45)
+                        })
+
+            # Continuously spawn a few raindrops every single frame for smooth steady rainfall
+            if game_weather == "rainy":
+                for _ in range(random.randint(4, 7)):
                     weather_particles.append({
-                        "x": random.randint(-50, WIDTH + 50),
-                        "y": random.randint(-40, -10),
+                        "x": random.randint(-50, WIDTH + 80),
+                        "y": random.randint(-35, -5),
                         "speed_y": random.uniform(14, 20),
                         "speed_x": random.uniform(-3, -1),
                         "len": random.randint(12, 18),
                         "alpha": random.randint(140, 210)
                     })
-                elif game_weather == "snowy":
-                    weather_particles.append({
-                        "x": random.randint(-50, WIDTH + 50),
-                        "y": random.randint(-30, -5),
-                        "speed_y": random.uniform(1.8, 3.8),
-                        "speed_x": random.uniform(-1.5, 0.5),
-                        "r": random.randint(2, 4),
-                        "wobble": random.uniform(0, 6.28)
-                    })
-                elif game_weather == "hail":
-                    weather_particles.append({
-                        "x": random.randint(-50, WIDTH + 50),
-                        "y": random.randint(-40, -10),
-                        "speed_y": random.uniform(16, 24),
-                        "speed_x": random.uniform(-2, 0),
-                        "r": random.randint(3, 5),
-                        "bounce": 0
-                    })
-                elif game_weather == "cloudy":
-                    weather_particles.append({
-                        "x": random.randint(-150, WIDTH + 150),
-                        "y": random.randint(0, HEIGHT),
-                        "speed_x": random.uniform(-0.6, -0.3),
-                        "r": random.randint(60, 110),
-                        "alpha": random.randint(25, 45)
-                    })
+            else:
+                while len(weather_particles) < target_count:
+                    if game_weather == "snowy":
+                        weather_particles.append({
+                            "x": random.randint(-50, WIDTH + 50),
+                            "y": random.randint(-30, -5),
+                            "speed_y": random.uniform(1.8, 3.8),
+                            "speed_x": random.uniform(-1.5, 0.5),
+                            "r": random.randint(2, 4),
+                            "wobble": random.uniform(0, 6.28)
+                        })
+                    elif game_weather == "hail":
+                        weather_particles.append({
+                            "x": random.randint(-50, WIDTH + 50),
+                            "y": random.randint(-40, -10),
+                            "speed_y": random.uniform(16, 24),
+                            "speed_x": random.uniform(-2, 0),
+                            "r": random.randint(3, 5),
+                            "bounce": 0
+                        })
+                    elif game_weather == "cloudy":
+                        weather_particles.append({
+                            "x": random.randint(-150, WIDTH + 150),
+                            "y": random.randint(0, HEIGHT),
+                            "speed_x": random.uniform(-0.6, -0.3),
+                            "r": random.randint(60, 110),
+                            "alpha": random.randint(25, 45)
+                        })
 
             # Update and draw weather particles
             for wp in weather_particles[:]:
