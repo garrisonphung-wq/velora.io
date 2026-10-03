@@ -1191,6 +1191,12 @@ player_face_color = (0, 0, 0)
 # Active whirlpools list: [{"x", "y", "initial_damage", "dps", "duration", "max_duration", "radius", "damage_timer", "angle"}]
 active_whirlpools = []
 
+# Active black holes: [{"x", "y", "pull_speed", "duration", "max_duration", "radius", "angle"}]
+active_blackholes = []
+
+# Active shield domes: [{"x", "y", "radius", "duration", "max_duration", "pulse"}]
+active_shield_domes = []
+
 # How far the king and its minions will chase before giving up.
 KING_CHASE_RANGE = 700
 
@@ -17439,7 +17445,93 @@ while running:
                                             show_error(f"Whirlpool spawned! (dps: {dps_label}, size: {int(wp_radius)}, {wp_duration}s)")
                                         except ValueError:
                                             show_error("Damage, duration, and size must be numbers (dps can also be 'infinity')")
-                                elif cmd == "/delete_whirlpools" and acc_name_text.lower() == "devguard":
+                                elif cmd == "/spawn_blackhole" and acc_name_text.lower() == "devguard":
+                                    # /spawn_blackhole [pull speed] [duration] [size]
+                                    # Pulls enemies and petal drops inward toward an event horizon
+                                    args = parts[1:]
+                                    if len(args) < 3:
+                                        show_error("Usage: /spawn_blackhole [pull speed] [duration] [size]")
+                                    else:
+                                        try:
+                                            bh_speed = max(10.0, float(args[0]))
+                                            bh_duration = max(0.5, float(args[1]))
+                                            bh_radius = max(20.0, float(args[2]))
+                                            mouse_x, mouse_y = pygame.mouse.get_pos()
+                                            bh_world_x = mouse_x + camera_x
+                                            bh_world_y = mouse_y + camera_y
+                                            active_blackholes.append({
+                                                "x": bh_world_x,
+                                                "y": bh_world_y,
+                                                "pull_speed": bh_speed,
+                                                "duration": bh_duration,
+                                                "max_duration": bh_duration,
+                                                "radius": bh_radius,
+                                                "angle": 0.0,
+                                            })
+                                            show_error(f"Black hole spawned! (pull: {bh_speed}, size: {int(bh_radius)}, {bh_duration}s)")
+                                        except ValueError:
+                                            show_error("Pull speed, duration, and size must be numbers")
+                                elif cmd == "/delete_blackholes" and acc_name_text.lower() == "devguard":
+                                    # /delete_blackholes [amount] or /delete_blackholes
+                                    args = parts[1:]
+                                    if len(active_blackholes) == 0:
+                                        show_error("No active black holes to delete")
+                                    else:
+                                        if len(args) >= 1:
+                                            try:
+                                                del_cnt = int(args[0])
+                                                del_cnt = max(1, min(del_cnt, len(active_blackholes)))
+                                                del active_blackholes[:del_cnt]
+                                                show_error(f"Deleted {del_cnt} black hole(s)")
+                                            except ValueError:
+                                                show_error("Amount must be a whole number")
+                                        else:
+                                            cleared = len(active_blackholes)
+                                            active_blackholes.clear()
+                                            show_error(f"Deleted all ({cleared}) black hole(s)")
+                                elif cmd == "/spawn_shield_dome" and acc_name_text.lower() == "devguard":
+                                    # /spawn_shield_dome [radius] [duration]
+                                    # Spawns a protective energy dome that repels enemies and deflects projectiles
+                                    args = parts[1:]
+                                    if len(args) < 2:
+                                        show_error("Usage: /spawn_shield_dome [radius] [duration]")
+                                    else:
+                                        try:
+                                            sd_radius = max(20.0, float(args[0]))
+                                            sd_duration = max(0.5, float(args[1]))
+                                            mouse_x, mouse_y = pygame.mouse.get_pos()
+                                            sd_world_x = mouse_x + camera_x
+                                            sd_world_y = mouse_y + camera_y
+                                            active_shield_domes.append({
+                                                "x": sd_world_x,
+                                                "y": sd_world_y,
+                                                "radius": sd_radius,
+                                                "duration": sd_duration,
+                                                "max_duration": sd_duration,
+                                                "pulse": 0.0,
+                                            })
+                                            show_error(f"Shield dome spawned! (radius: {int(sd_radius)}, {sd_duration}s)")
+                                        except ValueError:
+                                            show_error("Radius and duration must be numbers")
+                                elif cmd == "/delete_shield_domes" and acc_name_text.lower() == "devguard":
+                                    # /delete_shield_domes [amount] or /delete_shield_domes
+                                    args = parts[1:]
+                                    if len(active_shield_domes) == 0:
+                                        show_error("No active shield domes to delete")
+                                    else:
+                                        if len(args) >= 1:
+                                            try:
+                                                del_cnt = int(args[0])
+                                                del_cnt = max(1, min(del_cnt, len(active_shield_domes)))
+                                                del active_shield_domes[:del_cnt]
+                                                show_error(f"Deleted {del_cnt} shield dome(s)")
+                                            except ValueError:
+                                                show_error("Amount must be a whole number")
+                                        else:
+                                            cleared = len(active_shield_domes)
+                                            active_shield_domes.clear()
+                                            show_error(f"Deleted all ({cleared}) shield dome(s)")
+
                                     # /delete_whirlpools [amount] or /delete_whirlpools - clear whirlpools
                                     args = parts[1:]
                                     if len(active_whirlpools) == 0:
@@ -17915,6 +18007,10 @@ while running:
                                     "/reload_petals",
                                     "/spawn_whirlpool",
                                     "/delete_whirlpools",
+                                    "/spawn_blackhole",
+                                    "/delete_blackholes",
+                                    "/spawn_shield_dome",
+                                    "/delete_shield_domes",
                                     "/magnet_petal_drops",
                                     "/magnet",
                                     "/trail_size",
@@ -19458,6 +19554,103 @@ while running:
                     enemy.knockback_x = 0
                     enemy.knockback_y = 0
 
+        # -------- BLACK HOLES UPDATE & PHYSICS --------
+        for bh in active_blackholes[:]:
+            bh["duration"] -= wp_dt
+            if bh["duration"] <= 0:
+                active_blackholes.remove(bh)
+                continue
+            bh["angle"] = (bh["angle"] + 180 * wp_dt) % 360
+
+            # Pull enemies
+            for enemy in all_enemies_pool:
+                if not enemy.alive or getattr(enemy, "dying", False):
+                    continue
+                bh_dx = bh["x"] - enemy.x
+                bh_dy = bh["y"] - enemy.y
+                bh_dist = math.hypot(bh_dx, bh_dy)
+                if bh_dist <= bh["radius"] + enemy.radius:
+                    if bh_dist > 5:
+                        pull_mag = min(bh_dist, (bh["pull_speed"] + (bh["radius"] - bh_dist) * 1.5) * wp_dt)
+                        enemy.x += (bh_dx / bh_dist) * pull_mag
+                        enemy.y += (bh_dy / bh_dist) * pull_mag
+                        # Spiral inward
+                        t_x = -bh_dy / bh_dist
+                        t_y = bh_dx / bh_dist
+                        enemy.x += t_x * (bh["pull_speed"] * 0.4 * wp_dt)
+                        enemy.y += t_y * (bh["pull_speed"] * 0.4 * wp_dt)
+                    else:
+                        enemy.x = bh["x"]
+                        enemy.y = bh["y"]
+                    enemy.knockback_x = 0
+                    enemy.knockback_y = 0
+
+            # Pull petal pickups (loot boxes)
+            for pickup in PICKUP_LIST:
+                if pickup.get("collecting") is not None:
+                    continue
+                p_dx = bh["x"] - pickup["x"]
+                p_dy = bh["y"] - pickup["y"]
+                p_dist = math.hypot(p_dx, p_dy)
+                if p_dist <= bh["radius"]:
+                    if p_dist > 5:
+                        p_speed = min(p_dist, (bh["pull_speed"] * 1.2) * wp_dt)
+                        pickup["x"] += (p_dx / p_dist) * p_speed
+                        pickup["y"] += (p_dy / p_dist) * p_speed
+
+        # -------- SHIELD DOMES UPDATE & PHYSICS --------
+        all_enemy_projectiles = (
+            king_stinger_projectiles
+            + king_rose_projectiles
+            + rock_projectiles
+            + soldier_wing_projectiles
+        )
+        for sd in active_shield_domes[:]:
+            sd["duration"] -= wp_dt
+            if sd["duration"] <= 0:
+                active_shield_domes.remove(sd)
+                continue
+            sd["pulse"] = (sd["pulse"] + 4.0 * wp_dt)
+
+            # Repel enemies from inside the dome
+            for enemy in all_enemies_pool:
+                if not enemy.alive or getattr(enemy, "dying", False):
+                    continue
+                sd_dx = enemy.x - sd["x"]
+                sd_dy = enemy.y - sd["y"]
+                sd_dist = math.hypot(sd_dx, sd_dy)
+                min_dist = sd["radius"] + enemy.radius
+                if sd_dist < min_dist:
+                    if sd_dist > 0.01:
+                        push_mag = (min_dist - sd_dist) + 120.0 * wp_dt
+                        enemy.x += (sd_dx / sd_dist) * push_mag
+                        enemy.y += (sd_dy / sd_dist) * push_mag
+                    else:
+                        enemy.x += min_dist
+
+            # Deflect / destroy enemy projectiles that hit the dome perimeter
+            for proj in all_enemy_projectiles:
+                if not getattr(proj, "alive", True):
+                    continue
+                # Determine projectile coords
+                p_x = getattr(proj, "x", None)
+                p_y = getattr(proj, "y", None)
+                if p_x is None and isinstance(proj, dict):
+                    p_x = proj.get("x")
+                    p_y = proj.get("y")
+                if p_x is not None and p_y is not None:
+                    p_dist = math.hypot(p_x - sd["x"], p_y - sd["y"])
+                    if p_dist <= sd["radius"] + 15:
+                        # Deflect projectile away or destroy it
+                        if hasattr(proj, "alive"):
+                            proj.alive = False
+                        if hasattr(proj, "vx"):
+                            proj.vx = -proj.vx * 1.5
+                            proj.vy = -proj.vy * 1.5
+                        elif isinstance(proj, dict):
+                            proj["alive"] = False
+
+
         for ladybug in ladybugs:
 
             move_with_collision(
@@ -20464,6 +20657,58 @@ while running:
                 pygame.draw.circle(v_surf, (10, 60, 140, 220), center_pt, max(6, int(r * 0.22)))
                 pygame.draw.circle(v_surf, (0, 20, 60, 240), center_pt, max(3, int(r * 0.12)))
                 screen.blit(v_surf, (sx - r - 4, sy - r - 4))
+
+        # -------- DRAW BLACK HOLES --------
+        for bh in active_blackholes:
+            sx = int(bh["x"] - camera_x)
+            sy = int(bh["y"] - camera_y)
+            r = int(bh["radius"])
+            if -r * 2 <= sx <= WIDTH + r * 2 and -r * 2 <= sy <= HEIGHT + r * 2:
+                bh_surf = pygame.Surface((r * 2 + 10, r * 2 + 10), pygame.SRCALPHA)
+                center_pt = (r + 5, r + 5)
+                # Outer purple gravitational lens glow
+                pygame.draw.circle(bh_surf, (80, 20, 140, 50), center_pt, r)
+                pygame.draw.circle(bh_surf, (140, 40, 220, 90), center_pt, int(r * 0.75))
+                # Swirling accretion disk spiral rings
+                bh_angle = math.radians(bh["angle"])
+                for arm in range(3):
+                    arm_offset = arm * (2 * math.pi / 3)
+                    pts = []
+                    for step in range(14):
+                        step_t = step / 13.0
+                        step_r = r * 0.2 + (r * 0.75) * step_t
+                        step_a = bh_angle + arm_offset + (step_t * 4.0)
+                        pts.append((int(center_pt[0] + math.cos(step_a) * step_r), int(center_pt[1] + math.sin(step_a) * step_r)))
+                    if len(pts) >= 2:
+                        pygame.draw.lines(bh_surf, (220, 130, 255, 180), False, pts, max(2, int(r * 0.04)))
+                # Inner event horizon (pure abyss black with sharp violet border)
+                horizon_r = max(8, int(r * 0.32))
+                pygame.draw.circle(bh_surf, (180, 60, 255, 220), center_pt, horizon_r + 3)
+                pygame.draw.circle(bh_surf, (5, 0, 15, 255), center_pt, horizon_r)
+                screen.blit(bh_surf, (sx - r - 5, sy - r - 5))
+
+        # -------- DRAW SHIELD DOMES --------
+        for sd in active_shield_domes:
+            sx = int(sd["x"] - camera_x)
+            sy = int(sd["y"] - camera_y)
+            r = int(sd["radius"])
+            if -r * 2 <= sx <= WIDTH + r * 2 and -r * 2 <= sy <= HEIGHT + r * 2:
+                sd_surf = pygame.Surface((r * 2 + 10, r * 2 + 10), pygame.SRCALPHA)
+                center_pt = (r + 5, r + 5)
+                # Shimmering energetic hexagonal/dome forcefield
+                pulse_wave = math.sin(sd["pulse"]) * 15
+                fill_alpha = int(45 + pulse_wave)
+                pygame.draw.circle(sd_surf, (0, 210, 255, fill_alpha), center_pt, r)
+                # Electric perimeter rings
+                pygame.draw.circle(sd_surf, (120, 240, 255, 210), center_pt, r, max(3, int(r * 0.035)))
+                pygame.draw.circle(sd_surf, (220, 255, 255, 140), center_pt, max(1, r - 3), 2)
+                # Hexagonal force lines
+                for angle_deg in range(0, 360, 60):
+                    a_rad = math.radians(angle_deg + sd["pulse"] * 10)
+                    px = center_pt[0] + math.cos(a_rad) * r
+                    py = center_pt[1] + math.sin(a_rad) * r
+                    pygame.draw.line(sd_surf, (100, 230, 255, 100), center_pt, (int(px), int(py)), 2)
+                screen.blit(sd_surf, (sx - r - 5, sy - r - 5))
 
         for ladybug in ladybugs:
             ladybug.draw()
@@ -23135,6 +23380,12 @@ while running:
                 "/spawn_whirlpool [damage] [damage each second] [whirlpool last seconds] [whirlpool size]",
                 "/delete_whirlpools [amount]",
                 "/delete_whirlpools",
+                "/spawn_blackhole [pull speed] [duration] [size]",
+                "/delete_blackholes [amount]",
+                "/delete_blackholes",
+                "/spawn_shield_dome [radius] [duration]",
+                "/delete_shield_domes [amount]",
+                "/delete_shield_domes",
                 "/magnet_petal_drops [state] [size]",
                 "/magnet_petal_drops [state]",
                 "/trail_size [size]",
@@ -23191,6 +23442,8 @@ while running:
                 "seconds]": (0, 255, 128),
                 "[state]": (255, 185, 30),
                 "[whirlpool": (0, 210, 255),
+                "[radius]": (100, 220, 255),
+                "[duration]": (255, 200, 80),
                 "[multiplier]": (60, 235, 220),
                 "[color]": (255, 150, 200),
                 "[hex]": (120, 220, 255),
@@ -23250,6 +23503,10 @@ while running:
                         and words[word_index + 1] == "slot]"
                     ):
                         word_color = (255, 165, 0)
+                    elif word == "[pull" and word_index + 1 < len(words) and words[word_index + 1] == "speed]":
+                        word_color = (255, 140, 60)
+                    elif word == "speed]" and "[pull" in words:
+                        word_color = (255, 140, 60)
                     elif word == "[damage" and word_index + 1 < len(words) and words[word_index + 1] == "each":
                         word_color = (255, 100, 100)
                     elif word in ("each", "second]") and "[damage" in words and "second]" in words:
