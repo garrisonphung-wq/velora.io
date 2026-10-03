@@ -11287,7 +11287,9 @@ def spawn_pickup(x, y, petal, rarity):
 def drop_mob_loot(enemy):
 
     mob_name = type(enemy).__name__
-    if mob_name == "BabyAnt":
+    if mob_name in ("HoleLadybug", "Hole Ladybug"):
+        mob_name = "Hole Ladybug"
+    elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
         mob_name = "Soldier Ant"
@@ -11571,6 +11573,18 @@ GALLERY_MOB_DESCRIPTIONS = {
 # is rolled independently when the mob dies, so a kill can give several
 # petals or nothing at all.
 MOB_DROP_INFO = {
+    ("Hole Ladybug", "Common"): [
+        ("Light", "Common", 40),
+        ("Light", "Unusual", 15),
+        ("Rose", "Common", 35),
+        ("Rose", "Unusual", 10),
+    ],
+    ("Hole Ladybug", "Unusual"): [
+        ("Light", "Common", 10),
+        ("Light", "Unusual", 45),
+        ("Rose", "Common", 8),
+        ("Rose", "Unusual", 42),
+    ],
     ("Ladybug", "Common"): [
         ("Light", "Common", 37),
         ("Light", "Unusual", 10),
@@ -11675,6 +11689,7 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
 
     enemy_classes = {
         "Ladybug": Ladybug,
+        "Hole Ladybug": HoleLadybug,
         "Bee": Bee,
         "Spider": Spider,
         "Rock": Rock,
