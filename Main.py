@@ -9410,9 +9410,12 @@ class WorkerAnt:
             math.sin(angle) * self.radius * 0.7
         )
 
+        wa_head_col = (250, 215, 80) if getattr(self, "yellow_minion", False) else (48, 48, 48)
+        wa_hi_col = (255, 245, 150) if getattr(self, "yellow_minion", False) else (78, 78, 78)
+
         pygame.draw.circle(
             screen,
-            flash_color((48, 48, 48), self.flash_timer),
+            flash_color(wa_head_col, self.flash_timer),
             (
                 int(head_x),
                 int(head_y)
@@ -9420,10 +9423,10 @@ class WorkerAnt:
             int(head_size)
         )
 
-        # Soft gray center highlight like the soldier ant.
+        # Soft highlight like the soldier ant / baby ant minion.
         pygame.draw.circle(
             screen,
-            flash_color((78, 78, 78), self.flash_timer),
+            flash_color(wa_hi_col, self.flash_timer),
             (
                 int(head_x),
                 int(head_y)
