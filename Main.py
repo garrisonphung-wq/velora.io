@@ -3435,14 +3435,11 @@ def spawn_king_minions():
             minion_class = {
                 "Ladybug": Ladybug,
                 "Spider": Spider,
-        "Hole Spider": HoleSpider,
-        "Hole Spider": HoleSpider,
+                "Hole Spider": HoleSpider,
                 "Rock": Rock,
-        "Hole Rock": HoleRock,
-        "Hole Rock": HoleRock,
+                "Hole Rock": HoleRock,
                 "Hornet": Hornet,
-        "Hole Hornet": HoleHornet,
-        "Hole Hornet": HoleHornet,
+                "Hole Hornet": HoleHornet,
                 "BabyAnt": BabyAnt,
                 "SoldierAnt": SoldierAnt,
                 "WorkerAnt": WorkerAnt,
@@ -3657,6 +3654,7 @@ def spawn_custom_flower_minion(rarity, mob_name, custom_damage=None, custom_hp=N
         "Spider": Spider,
         "Rock": Rock,
         "Hornet": Hornet,
+        "Hole Hornet": HoleHornet,
         "Baby Ant": BabyAnt,
         "Soldier Ant": SoldierAnt,
         "BabyAnt": BabyAnt,
@@ -11964,8 +11962,6 @@ def register_mob_kill(enemy):
         mob_name = "Hole Rock"
     elif mob_name in ("HoleHornet", "Hole Hornet"):
         mob_name = "Hole Hornet"
-    elif mob_name in ("HoleHornet", "Hole Hornet"):
-        mob_name = "Hole Hornet"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -12016,6 +12012,8 @@ def drop_mob_loot(enemy):
         mob_name = "Hole Spider"
     elif mob_name in ("HoleRock", "Hole Rock"):
         mob_name = "Hole Rock"
+    elif mob_name in ("HoleHornet", "Hole Hornet"):
+        mob_name = "Hole Hornet"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -12505,6 +12503,7 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
         "Rock": Rock,
         "Hole Rock": HoleRock,
         "Hornet": Hornet,
+        "Hole Hornet": HoleHornet,
         "Baby Ant": BabyAnt,
         "Soldier Ant": SoldierAnt,
         "Worker Ant": WorkerAnt,
