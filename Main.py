@@ -256,6 +256,7 @@ MOB_WEIGHT = {
     "HoleBee": 1.6,
     "HoleSpider": 2.0,
     "HoleRock": 4.0,
+    "HoleHornet": 2.0,
     "Bee": 0.8,
     "Spider": 1.1,
     "Rock": 1.0,
@@ -3440,6 +3441,8 @@ def spawn_king_minions():
         "Hole Rock": HoleRock,
         "Hole Rock": HoleRock,
                 "Hornet": Hornet,
+        "Hole Hornet": HoleHornet,
+        "Hole Hornet": HoleHornet,
                 "BabyAnt": BabyAnt,
                 "SoldierAnt": SoldierAnt,
                 "WorkerAnt": WorkerAnt,
@@ -5065,6 +5068,7 @@ mob_gallery_names = (
     "Rock",
     "Hole Rock",
     "Hornet",
+    "Hole Hornet",
     "Baby Ant",
     "Soldier Ant",
     "Worker Ant",
@@ -8402,6 +8406,210 @@ class Hornet:
                 self,
                 int(sx),
                 int(sy + self.radius + 15)
+            )
+
+# ---------------- HOLE HORNET ----------------
+# A nightmarish, eyeless void bio-interceptor native exclusively to Hole Land.
+# 2x size, 2x HP, 2x damage.
+# Morphologically warped: segmented obsidian armor, 4 trembling void wings,
+# dual rear-mounted void torpedo stingers, and twitching tendril antennae.
+class HoleHornet(Hornet):
+    is_hole_land_mob = True
+
+    def __init__(self):
+        super().__init__()
+        # 2x stats & size
+        self.radius = self.radius * 2
+        self.base_radius = self.radius
+        self.damage = 200
+        self.max_hp = 100 * MOB_HP_MULTIPLIER[self.rarity]
+        self.hp = self.max_hp
+
+        # Weird twitching & void animation
+        self.void_pulse = random.uniform(0, math.pi * 2)
+        self.wing_jitter = random.uniform(0, math.pi * 2)
+        self.twitch_timer = 0
+        self.follow_speed = 3.6
+        self.missile_cooldown = 70
+
+    def update(self):
+        if not self.alive or getattr(self, "dying", False):
+            return
+        super().update()
+        if not self.alive or getattr(self, "dying", False):
+            return
+        self.void_pulse += 0.09
+        self.wing_jitter += 0.50
+        self.twitch_timer += 1
+        if self.twitch_timer >= 35:
+            self.twitch_timer = 0
+            if random.random() < 0.35:
+                self.angle = (self.angle + random.uniform(-35, 35)) % 360
+
+    def draw(self):
+        if not self.alive:
+            return
+
+        sx = self.x - camera_x
+        sy = self.y - camera_y
+
+        if sx < -180 or sx > WIDTH + 180 or sy < -180 or sy > HEIGHT + 180:
+            return
+
+        # ---------------- HP BAR ----------------
+        if self.hp < self.max_hp:
+            bar_width = max(1, int(70 * settings_hp_bar_scale))
+            bar_height = max(1, int(6 * settings_hp_bar_scale))
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
+
+            pygame.draw.rect(
+                screen,
+                (45, 12, 60),
+                (int(sx - bar_width/2), int(sy - self.radius - 14 - bar_height), bar_width, bar_height)
+            )
+            pygame.draw.rect(
+                screen,
+                (190, 50, 255),
+                (int(sx - bar_width/2), int(sy - self.radius - 14 - bar_height), int(bar_width * hp_percent), bar_height)
+            )
+
+        # ---------------- PULSING VOID AURA ----------------
+        pulse = math.sin(self.void_pulse) * 5
+        aura_r = int(self.radius * 1.35 + pulse)
+        aura_surf = pygame.Surface((aura_r * 2 + 6, aura_r * 2 + 6), pygame.SRCALPHA)
+        pygame.draw.circle(aura_surf, (140, 25, 210, 42), (aura_r + 3, aura_r + 3), aura_r)
+        screen.blit(aura_surf, (int(sx - aura_r - 3), int(sy - aura_r - 3)))
+
+        # ---------------- WARPED SURFACE RENDERING ----------------
+        length = self.radius * 3.2
+        width = self.radius * 1.6
+        padding = self.radius * 2.2
+
+        surf_w = int(length + padding * 2)
+        surf_h = int(width + padding * 2)
+        hornet_surf = pygame.Surface((surf_w, surf_h), pygame.SRCALPHA)
+        cx = surf_w // 2
+        cy = surf_h // 2
+
+        # 1. FOUR TREMBLING VOID WINGS (electric cyan and neon violet membranes)
+        w_flap1 = math.sin(self.wing_jitter) * (self.radius * 0.32)
+        w_flap2 = math.cos(self.wing_jitter * 1.3) * (self.radius * 0.32)
+
+        # Main forewings
+        w1_pts = [
+            (cx - int(length * 0.05), cy - int(width * 0.35)),
+            (cx - int(length * 0.45), cy - int(width * 1.05 + w_flap1)),
+            (cx + int(length * 0.25), cy - int(width * 0.90 + w_flap2)),
+        ]
+        pygame.draw.polygon(hornet_surf, (0, 240, 255, 95), w1_pts)
+        pygame.draw.polygon(hornet_surf, (200, 60, 255, 190), w1_pts, 2)
+
+        w2_pts = [
+            (cx - int(length * 0.05), cy + int(width * 0.35)),
+            (cx - int(length * 0.45), cy + int(width * 1.05 + w_flap2)),
+            (cx + int(length * 0.25), cy + int(width * 0.90 + w_flap1)),
+        ]
+        pygame.draw.polygon(hornet_surf, (0, 240, 255, 95), w2_pts)
+        pygame.draw.polygon(hornet_surf, (200, 60, 255, 190), w2_pts, 2)
+
+        # Secondary hindwings
+        w3_pts = [
+            (cx - int(length * 0.25), cy - int(width * 0.25)),
+            (cx - int(length * 0.65), cy - int(width * 0.75 + w_flap2)),
+            (cx - int(length * 0.15), cy - int(width * 0.65 + w_flap1)),
+        ]
+        pygame.draw.polygon(hornet_surf, (180, 40, 240, 80), w3_pts)
+        pygame.draw.polygon(hornet_surf, (0, 240, 255, 160), w3_pts, 1)
+
+        w4_pts = [
+            (cx - int(length * 0.25), cy + int(width * 0.25)),
+            (cx - int(length * 0.65), cy + int(width * 0.75 + w_flap1)),
+            (cx - int(length * 0.15), cy + int(width * 0.65 + w_flap2)),
+        ]
+        pygame.draw.polygon(hornet_surf, (180, 40, 240, 80), w4_pts)
+        pygame.draw.polygon(hornet_surf, (0, 240, 255, 160), w4_pts, 1)
+
+        # 2. SEGMENTED OBSIDIAN BODY
+        # Rear segment (dark obsidian purple)
+        seg_rear_rect = pygame.Rect(int(cx - length * 0.46), int(cy - width * 0.36), int(length * 0.40), int(width * 0.72))
+        pygame.draw.ellipse(hornet_surf, flash_color((28, 8, 42), self.flash_timer), seg_rear_rect)
+        pygame.draw.ellipse(hornet_surf, flash_color((170, 45, 255), self.flash_timer), seg_rear_rect, 2)
+
+        # Mid thorax (deep midnight indigo)
+        seg_mid_rect = pygame.Rect(int(cx - length * 0.15), int(cy - width * 0.46), int(length * 0.38), int(width * 0.92))
+        pygame.draw.ellipse(hornet_surf, flash_color((18, 5, 32), self.flash_timer), seg_mid_rect)
+        pygame.draw.ellipse(hornet_surf, flash_color((0, 230, 255), self.flash_timer), seg_mid_rect, 2)
+
+        # Bio-mechanic glowing missile intake lines
+        for st_x in (cx - length * 0.04, cx + length * 0.08):
+            pygame.draw.line(
+                hornet_surf,
+                flash_color((0, 255, 240), self.flash_timer),
+                (st_x, cy - width * 0.38),
+                (st_x, cy + width * 0.38),
+                max(2, int(self.radius * 0.14))
+            )
+
+        # Completely eyeless head dome
+        head_cx = int(cx + length * 0.32)
+        head_r = int(self.radius * 0.55)
+        pygame.draw.circle(hornet_surf, flash_color((15, 3, 24), self.flash_timer), (head_cx, cy), head_r)
+        pygame.draw.circle(hornet_surf, flash_color((190, 60, 255), self.flash_timer), (head_cx, cy), head_r, 2)
+
+        # 3. DUAL REAR VOID MISSILE PODS / STINGERS
+        pod_base_x = int(cx - length * 0.46)
+        pod_tip_x = int(cx - length * 0.78)
+        upper_pod = [
+            (pod_base_x, cy - int(width * 0.20)),
+            (pod_base_x, cy - int(width * 0.04)),
+            (pod_tip_x, cy - int(width * 0.24)),
+        ]
+        pygame.draw.polygon(hornet_surf, flash_color((0, 240, 255), self.flash_timer), upper_pod)
+
+        lower_pod = [
+            (pod_base_x, cy + int(width * 0.04)),
+            (pod_base_x, cy + int(width * 0.20)),
+            (pod_tip_x, cy + int(width * 0.24)),
+        ]
+        pygame.draw.polygon(hornet_surf, flash_color((0, 240, 255), self.flash_timer), lower_pod)
+
+        # 4. TWISTING VOID ANTENNAE
+        ant_col = flash_color((160, 50, 240), self.flash_timer)
+        ant_node_col = flash_color((0, 255, 255), self.flash_timer)
+        # Upper antenna
+        pygame.draw.lines(
+            hornet_surf, ant_col, False,
+            [
+                (head_cx + int(head_r * 0.5), cy - int(head_r * 0.4)),
+                (head_cx + int(head_r * 1.3), cy - int(head_r * 1.1)),
+                (head_cx + int(head_r * 1.8), cy - int(head_r * 0.7)),
+            ],
+            max(2, int(self.radius * 0.14))
+        )
+        pygame.draw.circle(hornet_surf, ant_node_col, (head_cx + int(head_r * 1.8), cy - int(head_r * 0.7)), max(3, int(self.radius * 0.16)))
+
+        # Lower antenna
+        pygame.draw.lines(
+            hornet_surf, ant_col, False,
+            [
+                (head_cx + int(head_r * 0.5), cy + int(head_r * 0.4)),
+                (head_cx + int(head_r * 1.2), cy + int(head_r * 1.3)),
+                (head_cx + int(head_r * 1.9), cy + int(head_r * 1.4)),
+            ],
+            max(2, int(self.radius * 0.14))
+        )
+        pygame.draw.circle(hornet_surf, ant_node_col, (head_cx + int(head_r * 1.9), cy + int(head_r * 1.4)), max(3, int(self.radius * 0.16)))
+
+        # Blit rotated
+        rot_surf = pygame.transform.rotate(hornet_surf, -self.angle)
+        screen.blit(rot_surf, rot_surf.get_rect(center=(int(sx), int(sy))))
+
+        # ---------------- RARITY TEXT ----------------
+        if not getattr(self, "hide_rarity_label", False):
+            draw_mob_rarity_label(
+                self,
+                int(sx),
+                int(sy + self.radius + 18)
             )
 
 # ---------------- BABY ANT ----------------
@@ -11754,6 +11962,10 @@ def register_mob_kill(enemy):
         mob_name = "Hole Spider"
     elif mob_name in ("HoleRock", "Hole Rock"):
         mob_name = "Hole Rock"
+    elif mob_name in ("HoleHornet", "Hole Hornet"):
+        mob_name = "Hole Hornet"
+    elif mob_name in ("HoleHornet", "Hole Hornet"):
+        mob_name = "Hole Hornet"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -12036,6 +12248,7 @@ GALLERY_ICON_RADIUS = {
     "Rock": 11,
     "Hole Rock": 9,
     "Hornet": 11,
+    "Hole Hornet": 11,
     "Baby Ant": 8,
     "Soldier Ant": 10,
     "Worker Ant": 10,
@@ -12077,6 +12290,10 @@ GALLERY_MOB_DESCRIPTIONS = {
     "Hornet": (
         "it uses missles to attack."
     ),
+    "Hole Hornet": (
+        "A 2x eyeless void hornet from Hole Land equipped with twin rear-mounted "
+        "void torpedo launchers and rapid strike agility."
+    ),
     "Baby Ant": (
         "its the baby of the ant colony."
     ),
@@ -12102,6 +12319,22 @@ GALLERY_MOB_DESCRIPTIONS = {
 # is rolled independently when the mob dies, so a kill can give several
 # petals or nothing at all.
 MOB_DROP_INFO = {
+    ("Hole Hornet", "Common"): [
+        ("Missile", "Common", 38),
+        ("Missile", "Unusual", 14),
+        ("Wing", "Common", 32),
+        ("Wing", "Unusual", 12),
+        ("Stinger", "Common", 30),
+        ("Stinger", "Unusual", 10),
+    ],
+    ("Hole Hornet", "Unusual"): [
+        ("Missile", "Common", 12),
+        ("Missile", "Unusual", 46),
+        ("Wing", "Common", 10),
+        ("Wing", "Unusual", 42),
+        ("Stinger", "Common", 8),
+        ("Stinger", "Unusual", 40),
+    ],
     ("Hole Rock", "Common"): [
         ("Rock", "Common", 35),
         ("Rock", "Unusual", 14),
@@ -16909,6 +17142,7 @@ bees = []
 spiders = []
 rocks = []
 hornets = []
+hole_hornets = []
 baby_ants = []
 soldier_ants = []
 worker_ants = []
@@ -17831,6 +18065,8 @@ while running:
                                             "HoleSpider": (HoleSpider, hole_spiders),
                                             "Hole Rock": (HoleRock, hole_rocks),
                                             "HoleRock": (HoleRock, hole_rocks),
+                                            "Hole Hornet": (HoleHornet, hole_hornets),
+                                            "HoleHornet": (HoleHornet, hole_hornets),
                                             "Bee": (Bee, bees),
                                             "Spider": (Spider, spiders),
                                             "Rock": (Rock, rocks),
@@ -20374,6 +20610,7 @@ while running:
             + hole_bees
             + hole_spiders
             + hole_rocks
+            + hole_hornets
             + bees
             + spiders
             + rocks
@@ -20866,6 +21103,37 @@ while running:
             if rock.flash_timer > 0:
                 rock.flash_timer -= 1
 
+
+        for hh in hole_hornets:
+            move_with_collision(
+                hh,
+                hh.knockback_x,
+                hh.knockback_y
+            )
+            hh.knockback_x *= 0.85
+            hh.knockback_y *= 0.85
+
+            if player_spawn_cooldown <= 0 and enemies_frozen_timer <= 0:
+                if player_ghost or game_peaceful_mode:
+                    fake_player_x = hh.x + 99999
+                    fake_player_y = hh.y + 99999
+                    real_px, real_py = player_x, player_y
+                    player_x, player_y = fake_player_x, fake_player_y
+                    try:
+                        hh.update()
+                    finally:
+                        player_x, player_y = real_px, real_py
+                else:
+                    hh.update()
+
+            if hh.attack_cooldown > 0:
+                hh.attack_cooldown -= 1
+
+            if hh.petal_attack_cooldown > 0:
+                hh.petal_attack_cooldown -= 1
+
+            if hh.flash_timer > 0:
+                hh.flash_timer -= 1
 
         for hornet in hornets:
 
@@ -21443,6 +21711,28 @@ while running:
 
 
 
+        for hh in hole_hornets:
+            if hh.alive:
+                d = distance(player_x, player_y, hh.x, hh.y)
+                if d < PLAYER_RADIUS + hh.radius and not player_dead:
+                    if player_spawn_cooldown <= 0:
+                        if (
+                            hh.attack_cooldown == 0
+                            and not player_ghost
+                            and not game_peaceful_mode
+                        ):
+                            player_hp -= get_enemy_attack_damage(hh)
+                            if player_hp < 0:
+                                player_hp = 0
+
+                            player_flash_timer = 4
+                            push_player_from(hh, 6.0)
+
+                            if player_hp == 0:
+                                kill_player(hh)
+
+                            hh.attack_cooldown = 2
+
         for hornet in hornets:
 
             if hornet.alive:
@@ -21877,6 +22167,9 @@ while running:
 
         for rock in rocks:
             rock.draw()
+
+        for hh in hole_hornets:
+            hh.draw()
 
         for hornet in hornets:
             hornet.draw()
@@ -22791,6 +23084,7 @@ while running:
                         hole_bees +
                         hole_spiders +
                         hole_rocks +
+                        hole_hornets +
                         bees +
                         spiders +
                         rocks +
@@ -22867,6 +23161,7 @@ while running:
                             hole_bees +
                             hole_spiders +
                             hole_rocks +
+                            hole_hornets +
                             bees +
                             spiders +
                             rocks +
@@ -23249,6 +23544,7 @@ while running:
             + hole_bees
             + hole_spiders
             + hole_rocks
+            + hole_hornets
             + bees
             + spiders
             + rocks
@@ -23607,6 +23903,7 @@ while running:
                 hole_bees,
                 hole_spiders,
                 hole_rocks,
+                hole_hornets,
                 bees,
                 spiders,
                 rocks,
