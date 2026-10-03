@@ -1273,6 +1273,11 @@ ROCK_VOLLEY_INTERVAL = 480      # 8 seconds
 ROCK_KING_VOLLEY_INTERVAL = 120 # 2 seconds
 ROCK_PROJECTILE_SPEED = 6
 ROCK_PROJECTILE_LIFETIME = 150
+
+# Hole Ladybug yellow orb projectiles
+HOLE_LADYBUG_PROJECTILE_SPEED = 7
+HOLE_LADYBUG_PROJECTILE_LIFETIME = 140
+hole_ladybug_projectiles = []
 rock_projectiles = []
 
 # Spider king webs: transparent webs that slow the flower.
@@ -3095,6 +3100,51 @@ def update_hornet_missiles():
                 missile["shrink"] = 1.0
 
 
+def update_hole_ladybug_projectiles():
+    global player_hp
+    for orb in hole_ladybug_projectiles[:]:
+        if orb.get("dying"):
+            orb["shrink"] -= 0.18
+            if orb["shrink"] <= 0:
+                hole_ladybug_projectiles.remove(orb)
+            continue
+
+        orb["timer"] -= 1
+        if orb["timer"] <= 0:
+            orb["dying"] = True
+            orb["shrink"] = 1.0
+            continue
+
+        orb["x"] += orb["dx"]
+        orb["y"] += orb["dy"]
+
+        orb_r = orb.get("radius", 10)
+        if (
+            orb["x"] <= orb_r
+            or orb["x"] >= WORLD_WIDTH - orb_r
+            or orb["y"] <= orb_r
+            or orb["y"] >= WORLD_HEIGHT - orb_r
+        ):
+            orb["dying"] = True
+            orb["shrink"] = 1.0
+
+        # Hits flower's petals
+        projectile_hits_petals(
+            orb,
+            orb["damage"],
+            orb_r
+        )
+
+        # Hits flower body
+        if (
+            not player_dead
+            and distance(orb["x"], orb["y"], player_x, player_y) <= PLAYER_RADIUS + orb_r
+        ):
+            if projectile_hits_flower(orb, orb["damage"]):
+                orb["dying"] = True
+                orb["shrink"] = 1.0
+
+
 def update_rock_projectiles():
     # Move rock projectiles and damage the flower on contact.
     # Petals can destroy them.
@@ -3583,6 +3633,7 @@ def flower_minion_ai(minion):
 def spawn_custom_flower_minion(rarity, mob_name, custom_damage=None, custom_hp=None, custom_speed=None, custom_size=None, custom_view_range=None):
     enemy_classes = {
         "Ladybug": Ladybug,
+        "Hole Ladybug": HoleLadybug,
         "Bee": Bee,
         "Spider": Spider,
         "Rock": Rock,
@@ -4990,6 +5041,7 @@ new_button_panel_rect.x = -new_button_panel_rect.width
 new_button_panel_slide_velocity = 0.0
 mob_gallery_names = (
     "Ladybug",
+    "Hole Ladybug",
     "Bee",
     "Spider",
     "Rock",
@@ -5460,6 +5512,9 @@ class Ladybug:
 
         self.hp -= int(amount)
         self.flash_timer = 4
+        # When damaged, become angry and chase the player
+        if not getattr(self, "is_minion", False):
+            self.angry = True
 
         if self.hp <= 0:
 
@@ -5757,6 +5812,7 @@ class HoleLadybug(Ladybug):
         self.twitch_timer = 0
         self.speed = 2.8
         self.max_speed = 2.8
+        self.shoot_cooldown = 0
 
     def update(self):
         super().update()
@@ -5767,6 +5823,28 @@ class HoleLadybug(Ladybug):
             self.twitch_timer = 0
             if random.random() < 0.35:
                 self.angle += random.uniform(-40, 40)
+
+        # When chasing the player, shoot yellow circle projectiles
+        if self.shoot_cooldown > 0:
+            self.shoot_cooldown -= 1
+        if self.angry and not player_dead and not player_ghost:
+            p_dist = distance(self.x, self.y, player_x, player_y)
+            if p_dist < 800 and self.shoot_cooldown <= 0:
+                self.shoot_cooldown = random.randint(45, 75)
+                aim_angle = math.atan2(player_y - self.y, player_x - self.x)
+                orb_r = max(6, int(self.radius * 0.22))
+                hole_ladybug_projectiles.append({
+                    "x": self.x + math.cos(aim_angle) * (self.radius + orb_r),
+                    "y": self.y + math.sin(aim_angle) * (self.radius + orb_r),
+                    "dx": math.cos(aim_angle) * HOLE_LADYBUG_PROJECTILE_SPEED,
+                    "dy": math.sin(aim_angle) * HOLE_LADYBUG_PROJECTILE_SPEED,
+                    "damage": max(10, int(self.damage * 0.4)),
+                    "hp": max(15, int(self.max_hp * 0.15)),
+                    "max_hp": max(15, int(self.max_hp * 0.15)),
+                    "radius": orb_r,
+                    "timer": HOLE_LADYBUG_PROJECTILE_LIFETIME,
+                    "owner": self
+                })
 
     def draw(self):
         if not self.alive:
@@ -5861,10 +5939,10 @@ class HoleLadybug(Ladybug):
         head_y = sy + math.sin(angle) * head_dist
         head_r = int(self.radius * 0.42)
 
-        # Head circle
+        # Eyeless dark abyss head circle with glowing void outline
         pygame.draw.circle(
             screen,
-            flash_color((15, 5, 25), self.flash_timer),
+            flash_color((10, 3, 18), self.flash_timer),
             (int(head_x), int(head_y)),
             head_r
         )
@@ -5873,18 +5951,8 @@ class HoleLadybug(Ladybug):
             flash_color((180, 60, 255), self.flash_timer),
             (int(head_x), int(head_y)),
             head_r,
-            2
+            max(2, int(head_r * 0.18))
         )
-
-        # Two glowing eerie white/cyan eyes
-        eye_offset_angle = 0.55
-        eye_dist = head_r * 0.55
-        for eye_side in (-1, 1):
-            ea = angle + eye_side * eye_offset_angle
-            ex = head_x + math.cos(ea) * eye_dist
-            ey = head_y + math.sin(ea) * eye_dist
-            pygame.draw.circle(screen, (255, 255, 255), (int(ex), int(ey)), max(2, int(head_r * 0.28)))
-            pygame.draw.circle(screen, (0, 240, 255), (int(ex), int(ey)), max(1, int(head_r * 0.16)))
 
         # ---------------- RARITY TEXT ----------------
         if not getattr(self, "hide_rarity_label", False):
@@ -11164,7 +11232,9 @@ def register_mob_kill(enemy):
     global mob_gallery_unlocks
 
     mob_name = type(enemy).__name__
-    if mob_name == "BabyAnt":
+    if mob_name in ("HoleLadybug", "Hole Ladybug"):
+        mob_name = "Hole Ladybug"
+    elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
         mob_name = "Soldier Ant"
@@ -11430,6 +11500,7 @@ def draw_mob_rarity_label(mob, label_x, label_y):
 # icons grow and shrink constantly).
 GALLERY_ICON_RADIUS = {
     "Ladybug": 12,
+    "Hole Ladybug": 14,
     "Bee": 9,
     "Spider": 11,
     "Rock": 11,
@@ -11446,6 +11517,10 @@ GALLERY_MOB_DESCRIPTIONS = {
     "Ladybug": (
         "A calm red circle thing that wanders the grass. It never "
         "starts fights, but it will bite back when bothered."
+    ),
+    "Hole Ladybug": (
+        "A weird 2x abyss ladybug native to Hole Land. Completely eyeless, "
+        "it fires yellow energy orbs when chasing intruders."
     ),
     "Bee": (
         "this striped animal is harmless until you attack it, "
@@ -19821,6 +19896,7 @@ while running:
             + king_rose_projectiles
             + rock_projectiles
             + soldier_wing_projectiles
+            + hole_ladybug_projectiles
         )
         for sd in active_shield_domes[:]:
             sd["duration"] -= wp_dt
@@ -21153,6 +21229,20 @@ while running:
                     2
                 )
 
+        # ---------------- HOLE LADYBUG YELLOW ORBS ----------------
+        for orb in hole_ladybug_projectiles:
+            ox = orb["x"] - camera_x
+            oy = orb["y"] - camera_y
+            if -50 <= ox <= WIDTH + 50 and -50 <= oy <= HEIGHT + 50:
+                shrink = orb.get("shrink", 1.0)
+                orb_r = max(2, int(orb.get("radius", 10) * shrink))
+                # Outer glowing yellow ring
+                pygame.draw.circle(screen, (255, 235, 100), (int(ox), int(oy)), orb_r + 2)
+                # Vibrant solid yellow circle
+                pygame.draw.circle(screen, (255, 215, 0), (int(ox), int(oy)), orb_r)
+                # Bright white core
+                pygame.draw.circle(screen, (255, 255, 200), (int(ox), int(oy)), max(1, orb_r // 2))
+
         # ---------------- ROCK PROJECTILES ----------------
 
         for rock_p in rock_projectiles:
@@ -22382,6 +22472,7 @@ while running:
         update_king_webs()
         update_rock_projectiles()
         update_hornet_missiles()
+        update_hole_ladybug_projectiles()
 
         for i in range(PETAL_SLOTS):
 
