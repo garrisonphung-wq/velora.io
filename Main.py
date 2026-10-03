@@ -11928,6 +11928,7 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
         "Ladybug": Ladybug,
         "Hole Ladybug": HoleLadybug,
         "Bee": Bee,
+        "Hole Bee": HoleBee,
         "Spider": Spider,
         "Rock": Rock,
         "Hornet": Hornet,
@@ -11971,7 +11972,9 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
                 "time",
                 "timer",
                 "leg_phase",
-                "wing_phase"
+                "wing_phase",
+                "wing_jitter",
+                "void_pulse"
             ):
                 if hasattr(enemy, animation_attribute):
                     setattr(enemy, animation_attribute, 0)
