@@ -1175,7 +1175,11 @@ show_hud = True
 # Player movement particle trail ('none', 'rainbow', 'fire', 'sparkle') controlled via /p.trail.
 player_trail = "none"
 player_trail_last_sec = 0.5
+player_trail_size_mult = 1.0
 player_trail_particles = []
+
+# Magnet mode (True = pull all nearby petal drops toward player) controlled via /magnet.
+player_magnet = False
 
 # How far the king and its minions will chase before giving up.
 KING_CHASE_RANGE = 700
@@ -17329,6 +17333,32 @@ while running:
                                     # /unfreeze - unfreeze all enemies
                                     enemies_frozen_timer = 0
                                     show_error("Enemies unfrozen")
+                                elif cmd == "/magnet" and acc_name_text.lower() == "devguard":
+                                    # /magnet [state] - pull petal drops toward flower
+                                    args = parts[1:]
+                                    if len(args) < 1 or args[0].lower() not in ("on", "off", "true", "false", "1", "0", "y", "n"):
+                                        show_error("Usage: /magnet [state] (on/off)")
+                                    elif args[0].lower() in ("on", "true", "1", "y"):
+                                        player_magnet = True
+                                        show_error("Magnet ON")
+                                    else:
+                                        player_magnet = False
+                                        show_error("Magnet OFF")
+                                elif cmd == "/trail_size" and acc_name_text.lower() == "devguard":
+                                    # /trail_size [size] - adjust trail particle size multiplier
+                                    args = parts[1:]
+                                    if len(args) < 1:
+                                        show_error("Usage: /trail_size [size]")
+                                    else:
+                                        try:
+                                            new_size = float(args[0])
+                                            if new_size <= 0:
+                                                show_error("Size must be greater than 0")
+                                            else:
+                                                player_trail_size_mult = min(10.0, max(0.1, new_size))
+                                                show_error(f"Trail size set to {player_trail_size_mult}x")
+                                        except ValueError:
+                                            show_error("Size must be a number")
                                 elif cmd in ("/hud", "/p.hud", "/pick.hud") and acc_name_text.lower() == "devguard":
                                     # /hud [state] (on/off) - toggle HUD visibility
                                     args = parts[1:]
@@ -17722,6 +17752,8 @@ while running:
                                     "/freez_enemies",
                                     "/unfreeze",
                                     "/godmode",
+                                    "/magnet",
+                                    "/trail_size",
                                     "/hud",
                                     "/p.hud",
                                     "/pick.hud",
@@ -18991,7 +19023,7 @@ while running:
                             "vx": random.uniform(-0.6, 0.6) - move_x * 0.4,
                             "vy": random.uniform(-0.6, 0.6) - move_y * 0.4,
                             "life": trail_life_frames, "max_life": trail_life_frames,
-                            "size": random.uniform(PLAYER_RADIUS * 0.35, PLAYER_RADIUS * 0.6),
+                            "size": random.uniform(PLAYER_RADIUS * 0.35, PLAYER_RADIUS * 0.6) * player_trail_size_mult,
                             "color": col,
                             "type": "circle"
                         })
@@ -19002,7 +19034,7 @@ while running:
                             "vx": random.uniform(-0.8, 0.8) - move_x * 0.5,
                             "vy": random.uniform(-0.8, 0.8) - move_y * 0.5 - random.uniform(0.5, 1.5),
                             "life": trail_life_frames, "max_life": trail_life_frames,
-                            "size": random.uniform(PLAYER_RADIUS * 0.35, PLAYER_RADIUS * 0.65),
+                            "size": random.uniform(PLAYER_RADIUS * 0.35, PLAYER_RADIUS * 0.65) * player_trail_size_mult,
                             "color": random.choice(fire_cols),
                             "type": "flame"
                         })
@@ -19013,7 +19045,7 @@ while running:
                             "vx": random.uniform(-1.2, 1.2),
                             "vy": random.uniform(-1.2, 1.2),
                             "life": trail_life_frames, "max_life": trail_life_frames,
-                            "size": random.uniform(PLAYER_RADIUS * 0.25, PLAYER_RADIUS * 0.5),
+                            "size": random.uniform(PLAYER_RADIUS * 0.25, PLAYER_RADIUS * 0.5) * player_trail_size_mult,
                             "color": random.choice(sparkle_cols),
                             "type": "star",
                             "rot": random.uniform(0, 360),
@@ -19088,6 +19120,16 @@ while running:
         for pickup in PICKUP_LIST[:]:
 
             pickup["timer"] -= pickup_dt
+
+            # If magnet is enabled, continuously pull all active pickups toward the player
+            if player_magnet and not player_dead and pickup.get("collecting") is None:
+                mag_dx = player_x - pickup["x"]
+                mag_dy = player_y - pickup["y"]
+                mag_dist = math.hypot(mag_dx, mag_dy)
+                if mag_dist > 5:
+                    mag_speed = min(mag_dist, 700.0 * pickup_dt + (mag_dist * 4.0 * pickup_dt))
+                    pickup["x"] += (mag_dx / mag_dist) * mag_speed
+                    pickup["y"] += (mag_dy / mag_dist) * mag_speed
 
             # A collected pickup shrinks away quickly instead of vanishing
             # instantly.
@@ -22812,6 +22854,8 @@ while running:
                 "/freez_enemies [seconds]",
                 "/unfreeze",
                 "/godmode [state]",
+                "/magnet [state]",
+                "/trail_size [size]",
                 "/hud [state]",
                 "/speed [multiplier]",
                 "/tp_pos [x] [y]",
