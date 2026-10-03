@@ -17439,6 +17439,24 @@ while running:
                                             show_error(f"Whirlpool spawned! (dps: {dps_label}, size: {int(wp_radius)}, {wp_duration}s)")
                                         except ValueError:
                                             show_error("Damage, duration, and size must be numbers (dps can also be 'infinity')")
+                                elif cmd == "/delete_whirlpools" and acc_name_text.lower() == "devguard":
+                                    # /delete_whirlpools [amount] or /delete_whirlpools - clear whirlpools
+                                    args = parts[1:]
+                                    if len(active_whirlpools) == 0:
+                                        show_error("No active whirlpools to delete")
+                                    else:
+                                        if len(args) >= 1:
+                                            try:
+                                                del_cnt = int(args[0])
+                                                del_cnt = max(1, min(del_cnt, len(active_whirlpools)))
+                                                del active_whirlpools[:del_cnt]
+                                                show_error(f"Deleted {del_cnt} whirlpool(s)")
+                                            except ValueError:
+                                                show_error("Amount must be a whole number")
+                                        else:
+                                            cleared = len(active_whirlpools)
+                                            active_whirlpools.clear()
+                                            show_error(f"Deleted all ({cleared}) whirlpool(s)")
                                 elif cmd == "/godmode" and acc_name_text.lower() == "devguard":
                                     # /godmode [state] - toggle complete invincibility
                                     args = parts[1:]
@@ -17896,6 +17914,7 @@ while running:
                                     "/godmode",
                                     "/reload_petals",
                                     "/spawn_whirlpool",
+                                    "/delete_whirlpools",
                                     "/magnet_petal_drops",
                                     "/magnet",
                                     "/trail_size",
@@ -23114,6 +23133,8 @@ while running:
                 "/godmode [state]",
                 "/reload_petals",
                 "/spawn_whirlpool [damage] [damage each second] [whirlpool last seconds] [whirlpool size]",
+                "/delete_whirlpools [amount]",
+                "/delete_whirlpools",
                 "/magnet_petal_drops [state] [size]",
                 "/magnet_petal_drops [state]",
                 "/trail_size [size]",
