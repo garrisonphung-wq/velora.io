@@ -5732,6 +5732,168 @@ class Ladybug:
                 int(sy + self.radius + 15)
             )
 
+# ---------------- HOLE LADYBUG ----------------
+# A weird abyss-corrupted Ladybug native exclusively to Hole Land.
+# Exactly 2x the stats & size of a normal ladybug with eerie pulsing void aesthetics.
+class HoleLadybug(Ladybug):
+    is_hole_land_mob = True
+
+    def __init__(self):
+        super().__init__()
+        # 2x size of regular ladybug
+        self.radius = self.radius * 2
+        self.base_radius = self.radius
+
+        # 2x damage and 2x HP of regular ladybug
+        self.damage = 100
+        self.max_hp = (
+            100 *
+            MOB_HP_MULTIPLIER[self.rarity]
+        )
+        self.hp = self.max_hp
+
+        # Weird void pulsation and twitching
+        self.void_pulse = random.uniform(0, math.pi * 2)
+        self.twitch_timer = 0
+        self.speed = 2.8
+        self.max_speed = 2.8
+
+    def update(self):
+        super().update()
+        self.void_pulse += 0.08
+        self.twitch_timer += 1
+        # Weird erratic twitching: sudden small angle snaps
+        if self.twitch_timer >= 45:
+            self.twitch_timer = 0
+            if random.random() < 0.35:
+                self.angle += random.uniform(-40, 40)
+
+    def draw(self):
+        if not self.alive:
+            return
+
+        sx = self.x - camera_x
+        sy = self.y - camera_y
+
+        if (
+            sx < -150 or
+            sx > WIDTH + 150 or
+            sy < -150 or
+            sy > HEIGHT + 150
+        ):
+            return
+
+        # ---------------- HP BAR ----------------
+        if self.hp < self.max_hp:
+            bar_width = max(1, int(70 * settings_hp_bar_scale))
+            bar_height = max(1, int(6 * settings_hp_bar_scale))
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
+
+            pygame.draw.rect(
+                screen,
+                (60, 20, 90),
+                (int(sx - bar_width/2), int(sy - self.radius - 12 - bar_height), bar_width, bar_height)
+            )
+            pygame.draw.rect(
+                screen,
+                (180, 50, 255),
+                (int(sx - bar_width/2), int(sy - self.radius - 12 - bar_height), int(bar_width * hp_percent), bar_height)
+            )
+
+        angle = math.radians(self.angle)
+        size = self.radius * 2
+
+        # Weird aura pulsing around hole ladybug
+        pulse_val = math.sin(self.void_pulse) * 4
+        aura_r = int(self.radius + 6 + pulse_val)
+        aura_surf = pygame.Surface((aura_r * 2 + 4, aura_r * 2 + 4), pygame.SRCALPHA)
+        pygame.draw.circle(aura_surf, (150, 40, 230, 45), (aura_r + 2, aura_r + 2), aura_r)
+        screen.blit(aura_surf, (int(sx - aura_r - 2), int(sy - aura_r - 2)))
+
+        # ---------------- WEIRD BODY SURFACE ----------------
+        body_surface = pygame.Surface((int(size), int(size)), pygame.SRCALPHA)
+        center = (int(self.radius), int(self.radius))
+
+        # Deep cosmic void dark-purple body with corrupted streaks
+        hl_body_col = (45, 12, 65)
+        hl_out_col = (180, 60, 255)
+
+        pygame.draw.circle(
+            body_surface,
+            flash_color(hl_body_col, self.flash_timer),
+            center,
+            int(self.radius)
+        )
+
+        # Weird glowing cyan/purple eye-spots on shell
+        for spot in self.spots:
+            spot_r = max(2, int(spot["size"]))
+            sp_x = int(self.radius + spot["x"])
+            sp_y = int(self.radius + spot["y"])
+            # Glowing void spot
+            pygame.draw.circle(
+                body_surface,
+                flash_color((0, 230, 255), self.flash_timer),
+                (sp_x, sp_y),
+                spot_r
+            )
+            pygame.draw.circle(
+                body_surface,
+                flash_color((180, 0, 255), self.flash_timer),
+                (sp_x, sp_y),
+                max(1, spot_r - 2)
+            )
+
+        # Body outline
+        pygame.draw.circle(
+            body_surface,
+            flash_color(hl_out_col, self.flash_timer),
+            center,
+            int(self.radius),
+            max(2, int(self.radius * 0.10))
+        )
+
+        screen.blit(body_surface, (int(sx - self.radius), int(sy - self.radius)))
+
+        # ---------------- WEIRD HEAD & GLOWING EYES ----------------
+        head_dist = self.radius * 0.8
+        head_x = sx + math.cos(angle) * head_dist
+        head_y = sy + math.sin(angle) * head_dist
+        head_r = int(self.radius * 0.42)
+
+        # Head circle
+        pygame.draw.circle(
+            screen,
+            flash_color((15, 5, 25), self.flash_timer),
+            (int(head_x), int(head_y)),
+            head_r
+        )
+        pygame.draw.circle(
+            screen,
+            flash_color((180, 60, 255), self.flash_timer),
+            (int(head_x), int(head_y)),
+            head_r,
+            2
+        )
+
+        # Two glowing eerie white/cyan eyes
+        eye_offset_angle = 0.55
+        eye_dist = head_r * 0.55
+        for eye_side in (-1, 1):
+            ea = angle + eye_side * eye_offset_angle
+            ex = head_x + math.cos(ea) * eye_dist
+            ey = head_y + math.sin(ea) * eye_dist
+            pygame.draw.circle(screen, (255, 255, 255), (int(ex), int(ey)), max(2, int(head_r * 0.28)))
+            pygame.draw.circle(screen, (0, 240, 255), (int(ex), int(ey)), max(1, int(head_r * 0.16)))
+
+        # ---------------- RARITY TEXT ----------------
+        if not getattr(self, "hide_rarity_label", False):
+            draw_mob_rarity_label(
+                self,
+                int(sx),
+                int(sy + self.radius + 18)
+            )
+
 class Bee:
 
     def __init__(self):
@@ -11564,6 +11726,7 @@ def update_boss_hp():
 
     all_enemies = (
         ladybugs +
+        hole_ladybugs +
         bees +
         spiders +
         rocks +
@@ -16044,6 +16207,7 @@ player_x, player_y = 25, WORLD_HEIGHT - PLAYER_RADIUS
 
 # Initialize enemy lists (no enemies spawned - all spawning code removed)
 ladybugs = []
+hole_ladybugs = []
 bees = []
 spiders = []
 rocks = []
@@ -16261,6 +16425,7 @@ while running:
 
     all_enemies = (
         ladybugs
+        + hole_ladybugs
         + bees
         + spiders
         + rocks
@@ -16961,6 +17126,8 @@ while running:
                                         rarity = args[0].capitalize()
                                         enemy_classes = {
                                             "Ladybug": (Ladybug, ladybugs),
+                                            "Hole Ladybug": (HoleLadybug, hole_ladybugs),
+                                            "HoleLadybug": (HoleLadybug, hole_ladybugs),
                                             "Bee": (Bee, bees),
                                             "Spider": (Spider, spiders),
                                             "Rock": (Rock, rocks),
@@ -19500,6 +19667,7 @@ while running:
         # -------- WHIRLPOOLS UPDATE & PHYSICS --------
         all_enemies_pool = (
             ladybugs
+            + hole_ladybugs
             + bees
             + spiders
             + rocks
@@ -19734,6 +19902,31 @@ while running:
 
             if ladybug.attack_cooldown > 0:
                 ladybug.attack_cooldown -= 1
+
+        for hlb in hole_ladybugs:
+            move_with_collision(
+                hlb,
+                hlb.knockback_x,
+                hlb.knockback_y
+            )
+            hlb.knockback_x *= 0.85
+            hlb.knockback_y *= 0.85
+
+            if player_spawn_cooldown <= 0 and enemies_frozen_timer <= 0:
+                if player_ghost or game_peaceful_mode:
+                    fake_player_x = hlb.x + 99999
+                    fake_player_y = hlb.y + 99999
+                    real_px, real_py = player_x, player_y
+                    player_x, player_y = fake_player_x, fake_player_y
+                    try:
+                        hlb.update()
+                    finally:
+                        player_x, player_y = real_px, real_py
+                else:
+                    hlb.update()
+
+            if hlb.attack_cooldown > 0:
+                hlb.attack_cooldown -= 1
 
             if ladybug.petal_attack_cooldown > 0:
                 ladybug.petal_attack_cooldown -= 1
@@ -20202,6 +20395,21 @@ while running:
                     if petal_hp[i] > petal_max_hp[i]:
                         petal_hp[i] = petal_max_hp[i]
 
+
+        # enemy touching player
+        for hlb in hole_ladybugs:
+            if hlb.alive:
+                d = distance(player_x, player_y, hlb.x, hlb.y)
+                if d < PLAYER_RADIUS + hlb.radius and not player_dead:
+                    if player_spawn_cooldown <= 0:
+                        if hlb.attack_cooldown == 0 and not player_ghost and not game_peaceful_mode:
+                            player_hp -= get_enemy_attack_damage(hlb)
+                            if player_hp < 0:
+                                player_hp = 0
+                            hlb.attack_cooldown = 30
+                            bounce_player(hlb.x, hlb.y, 4)
+                            if player_hp == 0:
+                                kill_player(hlb)
 
         # enemy touching player
         for ladybug in ladybugs:
@@ -20765,6 +20973,9 @@ while running:
 
         for ladybug in ladybugs:
             ladybug.draw()
+
+        for hlb in hole_ladybugs:
+            hlb.draw()
 
         for bee in bees:
             bee.draw()
@@ -21742,6 +21953,7 @@ while running:
 
                         all_enemies = (
                             ladybugs +
+                            hole_ladybugs +
                             bees +
                             spiders +
                             rocks +
@@ -22120,6 +22332,7 @@ while running:
 
         all_enemies = (
             ladybugs
+            + hole_ladybugs
             + bees
             + spiders
             + rocks
@@ -22473,6 +22686,7 @@ while running:
             # Enemy hitboxes
             all_enemy_lists = [
                 ladybugs,
+                hole_ladybugs,
                 bees,
                 spiders,
                 rocks,
