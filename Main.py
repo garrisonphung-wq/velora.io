@@ -24559,36 +24559,35 @@ while running:
             )
 
 
-        if show_hud:
-            pygame.draw.rect(
-                screen,
-                (50,50,50),
-                hp_button_rect,
-                border_radius=8
-            )
-            pygame.draw.rect(
-                screen,
-                (15, 15, 15),
-                hp_button_rect,
-                3,
-                border_radius=8
-            )
+        pygame.draw.rect(
+            screen,
+            (50,50,50),
+            hp_button_rect,
+            border_radius=8
+        )
+        pygame.draw.rect(
+            screen,
+            (15, 15, 15),
+            hp_button_rect,
+            3,
+            border_radius=8
+        )
 
-            hp_font = game_hp_font
+        hp_font = game_hp_font
 
-            hp_button_text = hp_font.render(
-                "HP",
-                True,
-                (255,255,255)
-            )
+        hp_button_text = hp_font.render(
+            "HP",
+            True,
+            (255,255,255)
+        )
 
-            screen.blit(
-                hp_button_text,
-                (
-                    hp_button_rect.centerx - hp_button_text.get_width()//2,
-                    hp_button_rect.centery - hp_button_text.get_height()//2
-                )
+        screen.blit(
+            hp_button_text,
+            (
+                hp_button_rect.centerx - hp_button_text.get_width()//2,
+                hp_button_rect.centery - hp_button_text.get_height()//2
             )
+        )
 
         # Draw the craft panel last so it stays in front of the HP controls.
         if craft_panel_rect.y < HEIGHT + 20:
