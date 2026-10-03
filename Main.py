@@ -17333,11 +17333,11 @@ while running:
                                     # /unfreeze - unfreeze all enemies
                                     enemies_frozen_timer = 0
                                     show_error("Enemies unfrozen")
-                                elif cmd == "/magnet" and acc_name_text.lower() == "devguard":
-                                    # /magnet [state] - pull petal drops toward flower
+                                elif cmd in ("/magnet_petal_drops", "/magnet") and acc_name_text.lower() == "devguard":
+                                    # /magnet_petal_drops [state] - pull petal drops toward flower
                                     args = parts[1:]
                                     if len(args) < 1 or args[0].lower() not in ("on", "off", "true", "false", "1", "0", "y", "n"):
-                                        show_error("Usage: /magnet [state] (on/off)")
+                                        show_error("Usage: /magnet_petal_drops [state] (on/off)")
                                     elif args[0].lower() in ("on", "true", "1", "y"):
                                         player_magnet = True
                                         show_error("Magnet ON")
@@ -17752,6 +17752,7 @@ while running:
                                     "/freez_enemies",
                                     "/unfreeze",
                                     "/godmode",
+                                    "/magnet_petal_drops",
                                     "/magnet",
                                     "/trail_size",
                                     "/hud",
@@ -22854,7 +22855,7 @@ while running:
                 "/freez_enemies [seconds]",
                 "/unfreeze",
                 "/godmode [state]",
-                "/magnet [state]",
+                "/magnet_petal_drops [state]",
                 "/trail_size [size]",
                 "/hud [state]",
                 "/speed [multiplier]",
