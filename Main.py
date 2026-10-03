@@ -1203,6 +1203,9 @@ active_shield_domes = []
 
 # Dimension / Realm tracking: "regular" (normal biome) or "hole_land"
 current_dimension = "regular"
+pre_hole_land_x = 25
+pre_hole_land_y = 2000
+pre_hole_land_grid_color = (60, 180, 75)
 hole_land_banner_timer = 0
 hole_land_banner_alpha = 0
 
@@ -16271,9 +16274,22 @@ def respawn_player():
     killer_name = None
     killer_rarity = None
     global current_dimension
-    current_dimension = "regular"
+    global pre_hole_land_x
+    global pre_hole_land_y
+    global pre_hole_land_grid_color
+    global game_grid_color
+    global game_target_grid_color
 
-    player_x, player_y = 25, WORLD_HEIGHT - PLAYER_RADIUS
+    if current_dimension == "hole_land":
+        # Respawn back to where the flower came from before entering Hole Land
+        player_x = pre_hole_land_x
+        player_y = pre_hole_land_y
+        current_dimension = "regular"
+        game_grid_color = pre_hole_land_grid_color
+        game_target_grid_color = pre_hole_land_grid_color
+    else:
+        current_dimension = "regular"
+        player_x, player_y = 25, WORLD_HEIGHT - PLAYER_RADIUS
 
     for i in range(PETAL_SLOTS):
         if petal_slots[i]["filled"]:
@@ -19874,6 +19890,9 @@ while running:
                     p_horizon = max(10.0, bh["radius"] * 0.22)
                     if pbh_dist <= p_horizon:
                         if current_dimension != "hole_land":
+                            pre_hole_land_x = bh["x"]
+                            pre_hole_land_y = bh["y"]
+                            pre_hole_land_grid_color = game_target_grid_color if game_target_grid_color != (0, 0, 0) else (60, 180, 75)
                             current_dimension = "hole_land"
                             game_grid_color = (0, 0, 0)
                             game_target_grid_color = (0, 0, 0)
