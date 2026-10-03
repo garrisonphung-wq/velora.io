@@ -1197,6 +1197,11 @@ active_blackholes = []
 # Active shield domes: [{"x", "y", "radius", "duration", "max_duration", "pulse"}]
 active_shield_domes = []
 
+# Dimension / Realm tracking: "regular" (normal biome) or "hole_land"
+current_dimension = "regular"
+hole_land_banner_timer = 0
+hole_land_banner_alpha = 0
+
 # How far the king and its minions will chase before giving up.
 KING_CHASE_RANGE = 700
 
@@ -16019,6 +16024,8 @@ def respawn_player():
     player_rot_vel = 0
     killer_name = None
     killer_rarity = None
+    global current_dimension
+    current_dimension = "regular"
 
     player_x, player_y = 25, WORLD_HEIGHT - PLAYER_RADIUS
 
@@ -17020,6 +17027,10 @@ while running:
                                                 mouse_x, mouse_y = pygame.mouse.get_pos()
                                                 world_x = mouse_x + camera_x
                                                 world_y = mouse_y + camera_y
+                                                # Mobs from hole land cannot be spawned to regular biome
+                                                if current_dimension == "regular" and getattr(mob_class, "is_hole_land_mob", False):
+                                                    show_error("Hole land mobs cannot be spawned in regular biomes!")
+                                                    continue
                                                 for _ in range(amount):
                                                     enemy = mob_class()
                                                     enemy.rarity = rarity
@@ -19608,22 +19619,22 @@ while running:
                 pbh_dy = bh["y"] - player_y
                 pbh_dist = math.hypot(pbh_dx, pbh_dy)
                 if pbh_dist <= bh["radius"] + PLAYER_RADIUS:
-                    # Check center event horizon: devours the player if not in godmode
+                    # Check center event horizon: teleports the player into "hole land"
                     p_horizon = max(10.0, bh["radius"] * 0.22)
                     if pbh_dist <= p_horizon:
-                        if not getattr(globals(), "player_godmode", False):
-                            player_dead = True
-                            player_death_timer = PLAYER_DEATH_DURATION
-                            killer_name = "Black Hole"
-                            killer_rarity = "Cosmic"
-                            player_hp = 0
+                        if current_dimension != "hole_land":
+                            current_dimension = "hole_land"
+                            game_grid_color = (0, 0, 0)
+                            game_target_grid_color = (0, 0, 0)
+                            player_x = WORLD_WIDTH // 2
+                            player_y = WORLD_HEIGHT // 2
+                            player_vel_x = 0
+                            player_vel_y = 0
                             player_bounce_x = 0
                             player_bounce_y = 0
-                            for i in range(PETAL_SLOTS):
-                                petal_alive[i] = False
-                                petal_hp[i] = 0
-                                petal_respawn_timer[i] = PETAL_RELOAD[petal_slots[i]["petal"]]
-                            save_player()
+                            hole_land_banner_timer = 180
+                            hole_land_banner_alpha = 255
+                            show_error("Entering Hole Land...")
                     else:
                         p_pull = min(pbh_dist, (bh["pull_speed"] + (bh["radius"] - pbh_dist) * 1.5) * wp_dt)
                         player_x += (pbh_dx / pbh_dist) * p_pull
@@ -20572,8 +20583,12 @@ while running:
         screen.fill(game_grid_color)
 
         # Compute grass colors based on current game grid color
-        grass_color = game_grid_color
-        grass_border = tuple(max(0, c - 10) for c in game_grid_color)
+        if current_dimension == "hole_land":
+            grass_color = (0, 0, 0)
+            grass_border = (20, 20, 25)
+        else:
+            grass_color = game_grid_color
+            grass_border = tuple(max(0, c - 10) for c in game_grid_color)
 
         # Draw grass tiles
         start_x = int(camera_x // GRASS_SIZE) - 1
@@ -25990,6 +26005,19 @@ while running:
                 2,
                 border_radius=5
             )
+
+        # ---------------- HOLE LAND BANNER ----------------
+        if hole_land_banner_timer > 0:
+            hole_land_banner_timer -= 2
+            if hole_land_banner_timer < 60:
+                hole_land_banner_alpha = int(255 * (hole_land_banner_timer / 60.0))
+            banner_surf = pygame.Surface((WIDTH, 80), pygame.SRCALPHA)
+            banner_surf.fill((0, 0, 0, int(hole_land_banner_alpha * 0.85)))
+            hl_title_font = pygame.font.Font(None, 44)
+            hl_title = hl_title_font.render("H O L E   L A N D", True, (190, 80, 255))
+            hl_title.set_alpha(hole_land_banner_alpha)
+            banner_surf.blit(hl_title, (WIDTH // 2 - hl_title.get_width() // 2, 22))
+            screen.blit(banner_surf, (0, 100))
 
         # ---------------- SPAWN MESSAGE ----------------
 
