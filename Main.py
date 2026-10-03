@@ -252,12 +252,16 @@ HEAVY_KNOCKBACK_MULTIPLIER = {
 
 MOB_WEIGHT = {
     "Ladybug": 1.0,
+    "HoleLadybug": 2.0,
     "Bee": 0.8,
     "Spider": 1.1,
     "Rock": 1.0,
     "Hornet": 1.0,
     "BabyAnt": 0.7,
-    "SoldierAnt": 1.2
+    "SoldierAnt": 1.2,
+    "WorkerAnt": 1.0,
+    "QueenAnt": 3.0,
+    "AntEgg": 0.5
 }
 
 MOB_WEIGHT_MULTIPLIER = {
@@ -20484,14 +20488,22 @@ while running:
                 d = distance(player_x, player_y, hlb.x, hlb.y)
                 if d < PLAYER_RADIUS + hlb.radius and not player_dead:
                     if player_spawn_cooldown <= 0:
-                        if hlb.attack_cooldown == 0 and not player_ghost and not game_peaceful_mode:
+                        if (
+                            hlb.attack_cooldown == 0
+                            and not player_ghost
+                            and not game_peaceful_mode
+                        ):
                             player_hp -= get_enemy_attack_damage(hlb)
                             if player_hp < 0:
                                 player_hp = 0
-                            hlb.attack_cooldown = 30
-                            bounce_player(hlb.x, hlb.y, 4)
+
+                            player_flash_timer = 4
+                            push_player_from(hlb, 6.0)
+
                             if player_hp == 0:
                                 kill_player(hlb)
+
+                            hlb.attack_cooldown = 2
 
         # enemy touching player
         for ladybug in ladybugs:
@@ -21977,6 +21989,7 @@ while running:
 
                     all_enemies = (
                         ladybugs +
+                        hole_ladybugs +
                         bees +
                         spiders +
                         rocks +
@@ -22134,8 +22147,8 @@ while running:
                                         )
 
                                         weight = (
-                                            MOB_WEIGHT[type(enemy).__name__] *
-                                            MOB_WEIGHT_MULTIPLIER[enemy.rarity]
+                                            MOB_WEIGHT.get(type(enemy).__name__, 1.0) *
+                                            MOB_WEIGHT_MULTIPLIER.get(enemy.rarity, 1.0)
                                         )
 
                                         enemy.knockback_x += dx * knockback / weight
