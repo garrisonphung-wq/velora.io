@@ -22362,13 +22362,13 @@ while running:
             # flower body + outline
             pygame.draw.circle(
                 screen,
-                (225, 225, 0),
+                player_body_color,
                 (fcx, fcy),
                 PLAYER_RADIUS
             )
             pygame.draw.circle(
                 screen,
-                (230, 200, 40),
+                player_outline_color,
                 (fcx, fcy),
                 PLAYER_RADIUS,
                 5
@@ -22382,14 +22382,14 @@ while running:
 
                 pygame.draw.line(
                     face_surf,
-                    (0, 0, 0),
+                    player_face_color,
                     (int(ex - half), int(ey - half)),
                     (int(ex + half), int(ey + half)),
                     3
                 )
                 pygame.draw.line(
                     face_surf,
-                    (0, 0, 0),
+                    player_face_color,
                     (int(ex - half), int(ey + half)),
                     (int(ex + half), int(ey - half)),
                     3
@@ -22397,7 +22397,7 @@ while running:
 
             pygame.draw.arc(
                 face_surf,
-                (0, 0, 0),
+                player_face_color,
                 (fc - 9, fc + 7, 18, 16),
                 math.radians(20),
                 math.radians(160),
