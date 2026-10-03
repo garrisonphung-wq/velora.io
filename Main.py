@@ -255,6 +255,7 @@ MOB_WEIGHT = {
     "HoleLadybug": 2.0,
     "HoleBee": 1.6,
     "HoleSpider": 2.0,
+    "HoleRock": 4.0,
     "Bee": 0.8,
     "Spider": 1.1,
     "Rock": 1.0,
@@ -3436,6 +3437,8 @@ def spawn_king_minions():
         "Hole Spider": HoleSpider,
         "Hole Spider": HoleSpider,
                 "Rock": Rock,
+        "Hole Rock": HoleRock,
+        "Hole Rock": HoleRock,
                 "Hornet": Hornet,
                 "BabyAnt": BabyAnt,
                 "SoldierAnt": SoldierAnt,
@@ -4370,6 +4373,7 @@ PETALS = [
     "Bone",
     "Web",
     "Rock",
+    "Hole Rock",
     "Faster",
     "Magnet",
     "Bubble",
@@ -7719,6 +7723,139 @@ class Rock:
                 self,
                 int(sx),
                 int(sy + self.radius + 15)
+            )
+
+# ---------------- HOLE ROCK ----------------
+# A violently jagged, spike-encrusted obsidian mineral native to Hole Land.
+# 2x size, 2x HP, 2x damage.
+# ~80% more spikier: 14 to 20 alternating deeply recessed valleys and razor-sharp
+# protruding spikes with glowing void crystal tips and pulsing fissures.
+class HoleRock(Rock):
+    is_hole_land_mob = True
+
+    def __init__(self):
+        super().__init__()
+        # 2x stats & size
+        self.radius = self.radius * 2
+        self.base_radius = self.radius
+        self.damage = int(self.damage * 2)
+        self.max_hp = int(self.max_hp * 2)
+        self.hp = self.max_hp
+
+        # ~80% more spikier: alternating deep valleys and elongated jutting spikes
+        spike_count = random.randint(14, 20)
+        self.shape_points = []
+        for i in range(spike_count):
+            angle = (math.pi * 2 * i / spike_count) + random.uniform(-0.15, 0.15)
+            # Alternating valleys (0.45 - 0.65) and extreme protruding spikes (1.65 - 2.15)
+            if i % 2 == 1:
+                dist = random.uniform(1.65, 2.15)  # 80%+ spike protrusion
+            else:
+                dist = random.uniform(0.45, 0.65)  # deep valley cleft
+            self.shape_points.append((math.cos(angle) * dist, math.sin(angle) * dist))
+
+        # Void animation
+        self.void_pulse = random.uniform(0, math.pi * 2)
+        self.twitch_timer = 0
+
+    def update(self):
+        if not self.alive or getattr(self, "dying", False):
+            return
+        super().update()
+        if not self.alive or getattr(self, "dying", False):
+            return
+        self.void_pulse += 0.08
+        self.twitch_timer += 1
+        if self.twitch_timer >= 50:
+            self.twitch_timer = 0
+            if random.random() < 0.3:
+                self.angle = (self.angle + random.uniform(-30, 30)) % 360
+
+    def draw(self):
+        if not self.alive:
+            return
+
+        sx = self.x - camera_x
+        sy = self.y - camera_y
+
+        if sx < -180 or sx > WIDTH + 180 or sy < -180 or sy > HEIGHT + 180:
+            return
+
+        # ---------------- HP BAR ----------------
+        if self.hp < self.max_hp:
+            bar_width = max(1, int(80 * settings_hp_bar_scale))
+            bar_height = max(1, int(6 * settings_hp_bar_scale))
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
+
+            pygame.draw.rect(
+                screen,
+                (45, 12, 60),
+                (int(sx - bar_width/2), int(sy - self.radius * 1.5 - 12 - bar_height), bar_width, bar_height)
+            )
+            pygame.draw.rect(
+                screen,
+                (190, 50, 255),
+                (int(sx - bar_width/2), int(sy - self.radius * 1.5 - 12 - bar_height), int(bar_width * hp_percent), bar_height)
+            )
+
+        # ---------------- PULSING VOID AURA ----------------
+        pulse = math.sin(self.void_pulse) * 4
+        aura_r = int(self.radius * 1.6 + pulse)
+        aura_surf = pygame.Surface((aura_r * 2 + 6, aura_r * 2 + 6), pygame.SRCALPHA)
+        pygame.draw.circle(aura_surf, (120, 20, 200, 38), (aura_r + 3, aura_r + 3), aura_r)
+        screen.blit(aura_surf, (int(sx - aura_r - 3), int(sy - aura_r - 3)))
+
+        # ---------------- 80% SPIKIER ROCK POLYGON ----------------
+        rock_points = [
+            (
+                int(sx + point_x * self.radius),
+                int(sy + point_y * self.radius)
+            )
+            for point_x, point_y in self.shape_points
+        ]
+
+        # Dark abyss body fill
+        hl_rock_body = (25, 8, 38)
+        hl_rock_out = (180, 50, 255)
+        pygame.draw.polygon(
+            screen,
+            flash_color(hl_rock_body, self.flash_timer),
+            rock_points
+        )
+
+        # Corrupted glowing jagged perimeter
+        pygame.draw.polygon(
+            screen,
+            flash_color(hl_rock_out, self.flash_timer),
+            rock_points,
+            max(2, int(self.radius * 0.10))
+        )
+
+        # Electric glowing crystals at outer spike tips
+        for i, (point_x, point_y) in enumerate(self.shape_points):
+            if i % 2 == 1:  # Outer spike apex
+                tip_px = int(sx + point_x * self.radius)
+                tip_py = int(sy + point_y * self.radius)
+                pygame.draw.circle(
+                    screen,
+                    flash_color((0, 240, 255), self.flash_timer),
+                    (tip_px, tip_py),
+                    max(2, int(self.radius * 0.08))
+                )
+
+        # Internal glowing void fissures radiating from core
+        fissure_col = flash_color((150, 30, 230), self.flash_timer)
+        for i in range(0, len(self.shape_points), 3):
+            vx, vy = self.shape_points[i]
+            target_pt = (int(sx + vx * self.radius * 0.65), int(sy + vy * self.radius * 0.65))
+            draw_clean_line(screen, fissure_col, (int(sx), int(sy)), target_pt, max(1, int(self.radius * 0.06)))
+
+        # ---------------- RARITY TEXT ----------------
+        if not getattr(self, "hide_rarity_label", False):
+            draw_mob_rarity_label(
+                self,
+                int(sx),
+                int(sy + self.radius * 1.5 + 16)
             )
 
 class Hornet:
@@ -11615,6 +11752,10 @@ def register_mob_kill(enemy):
         mob_name = "Hole Bee"
     elif mob_name in ("HoleSpider", "Hole Spider"):
         mob_name = "Hole Spider"
+    elif mob_name in ("HoleRock", "Hole Rock"):
+        mob_name = "Hole Rock"
+    elif mob_name in ("HoleRock", "Hole Rock"):
+        mob_name = "Hole Rock"
     elif mob_name in ("HoleSpider", "Hole Spider"):
         mob_name = "Hole Spider"
     elif mob_name == "BabyAnt":
@@ -11893,6 +12034,7 @@ GALLERY_ICON_RADIUS = {
     "Spider": 11,
     "Hole Spider": 13,
     "Rock": 11,
+    "Hole Rock": 9,
     "Hornet": 11,
     "Baby Ant": 8,
     "Soldier Ant": 10,
@@ -11928,6 +12070,10 @@ GALLERY_MOB_DESCRIPTIONS = {
     "Rock": (
         "its just a grey rock but becareful from its throwed rocks."
     ),
+    "Hole Rock": (
+        "A 2x abyss rock covered in 80% longer razor-sharp void spikes, "
+        "flinging volatile shards of jagged dark matter."
+    ),
     "Hornet": (
         "it uses missles to attack."
     ),
@@ -11956,6 +12102,24 @@ GALLERY_MOB_DESCRIPTIONS = {
 # is rolled independently when the mob dies, so a kill can give several
 # petals or nothing at all.
 MOB_DROP_INFO = {
+    ("Hole Rock", "Common"): [
+        ("Rock", "Common", 35),
+        ("Rock", "Unusual", 14),
+        ("Heavy", "Common", 28),
+        ("Heavy", "Unusual", 10),
+        ("Boubloom", "Common", 1.2),
+        ("Boulder", "Common", 0.3),
+    ],
+    ("Hole Rock", "Unusual"): [
+        ("Rock", "Common", 12),
+        ("Rock", "Unusual", 45),
+        ("Heavy", "Common", 10),
+        ("Heavy", "Unusual", 45),
+        ("Boubloom", "Common", 2.0),
+        ("Boubloom", "Unusual", 0.4),
+        ("Boulder", "Common", 1.5),
+        ("Boulder", "Unusual", 0.2),
+    ],
     ("Hole Spider", "Common"): [
         ("Web", "Common", 40),
         ("Web", "Unusual", 14),
@@ -16738,6 +16902,7 @@ ladybugs = []
 hole_ladybugs = []
 hole_bees = []
 hole_spiders = []
+hole_rocks = []
 bees = []
 spiders = []
 rocks = []
@@ -17662,6 +17827,8 @@ while running:
                                             "HoleBee": (HoleBee, hole_bees),
                                             "Hole Spider": (HoleSpider, hole_spiders),
                                             "HoleSpider": (HoleSpider, hole_spiders),
+                                            "Hole Rock": (HoleRock, hole_rocks),
+                                            "HoleRock": (HoleRock, hole_rocks),
                                             "Bee": (Bee, bees),
                                             "Spider": (Spider, spiders),
                                             "Rock": (Rock, rocks),
@@ -20204,6 +20371,7 @@ while running:
             + hole_ladybugs
             + hole_bees
             + hole_spiders
+            + hole_rocks
             + bees
             + spiders
             + rocks
@@ -20624,6 +20792,37 @@ while running:
             if spider.flash_timer > 0:
                 spider.flash_timer -= 1
 
+
+        for hr in hole_rocks:
+            move_with_collision(
+                hr,
+                hr.knockback_x,
+                hr.knockback_y
+            )
+            hr.knockback_x *= 0.85
+            hr.knockback_y *= 0.85
+
+            if player_spawn_cooldown <= 0 and enemies_frozen_timer <= 0:
+                if player_ghost or game_peaceful_mode:
+                    fake_player_x = hr.x + 99999
+                    fake_player_y = hr.y + 99999
+                    real_px, real_py = player_x, player_y
+                    player_x, player_y = fake_player_x, fake_player_y
+                    try:
+                        hr.update()
+                    finally:
+                        player_x, player_y = real_px, real_py
+                else:
+                    hr.update()
+
+            if hr.attack_cooldown > 0:
+                hr.attack_cooldown -= 1
+
+            if hr.petal_attack_cooldown > 0:
+                hr.petal_attack_cooldown -= 1
+
+            if hr.flash_timer > 0:
+                hr.flash_timer -= 1
 
         for rock in rocks:
 
@@ -21183,6 +21382,28 @@ while running:
 
 
 
+        for hr in hole_rocks:
+            if hr.alive:
+                d = distance(player_x, player_y, hr.x, hr.y)
+                if d < PLAYER_RADIUS + hr.radius and not player_dead:
+                    if player_spawn_cooldown <= 0:
+                        if (
+                            hr.attack_cooldown == 0
+                            and not player_ghost
+                            and not game_peaceful_mode
+                        ):
+                            player_hp -= get_enemy_attack_damage(hr)
+                            if player_hp < 0:
+                                player_hp = 0
+
+                            player_flash_timer = 4
+                            push_player_from(hr, 6.0)
+
+                            if player_hp == 0:
+                                kill_player(hr)
+
+                            hr.attack_cooldown = 2
+
         for rock in rocks:
 
             if rock.alive:
@@ -21648,6 +21869,9 @@ while running:
 
         for spider in spiders:
             spider.draw()
+
+        for hr in hole_rocks:
+            hr.draw()
 
         for rock in rocks:
             rock.draw()
@@ -22564,6 +22788,7 @@ while running:
                         hole_ladybugs +
                         hole_bees +
                         hole_spiders +
+                        hole_rocks +
                         bees +
                         spiders +
                         rocks +
@@ -22639,6 +22864,7 @@ while running:
                             hole_ladybugs +
                             hole_bees +
                             hole_spiders +
+                            hole_rocks +
                             bees +
                             spiders +
                             rocks +
@@ -23020,6 +23246,7 @@ while running:
             + hole_ladybugs
             + hole_bees
             + hole_spiders
+            + hole_rocks
             + bees
             + spiders
             + rocks
@@ -23377,6 +23604,7 @@ while running:
                 hole_ladybugs,
                 hole_bees,
                 hole_spiders,
+                hole_rocks,
                 bees,
                 spiders,
                 rocks,
