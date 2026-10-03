@@ -1169,6 +1169,9 @@ petal_rot_speed_mult = 1.0
 # Player movement speed multiplier controlled via /p.speed.
 player_speed_mult = 1.0
 
+# HUD visibility (True = show HUD, False = hide HUD) controlled via /hud or /p.hud.
+show_hud = True
+
 # How far the king and its minions will chase before giving up.
 KING_CHASE_RANGE = 700
 
@@ -17321,6 +17324,17 @@ while running:
                                     # /unfreeze - unfreeze all enemies
                                     enemies_frozen_timer = 0
                                     show_error("Enemies unfrozen")
+                                elif cmd in ("/hud", "/p.hud", "/pick.hud") and acc_name_text.lower() == "devguard":
+                                    # /hud [state] (on/off) - toggle HUD visibility
+                                    args = parts[1:]
+                                    if len(args) < 1 or args[0].lower() not in ("on", "off", "true", "false", "1", "0", "y", "n"):
+                                        show_error("Usage: /hud [state] (on/off)")
+                                    elif args[0].lower() in ("on", "true", "1", "y"):
+                                        show_hud = True
+                                        show_error("HUD ON")
+                                    else:
+                                        show_hud = False
+                                        show_error("HUD OFF")
                                 elif cmd == "/godmode" and acc_name_text.lower() == "devguard":
                                     # /godmode [state] - toggle complete invincibility
                                     args = parts[1:]
@@ -17681,6 +17695,9 @@ while running:
                                     "/freez_enemies",
                                     "/unfreeze",
                                     "/godmode",
+                                    "/hud",
+                                    "/p.hud",
+                                    "/pick.hud",
                                     "/speed",
                                     "/p.speed",
                                     "/tp_pos",
@@ -20581,128 +20598,128 @@ while running:
 
         start_x = WIDTH // 2 - total_width // 2
 
+        if show_hud:
+                    for i in range(PETAL_SLOTS * 2):
 
-        for i in range(PETAL_SLOTS * 2):
+                        # Main slots: indices 0 to PETAL_SLOTS-1
+                        # Swap slots: indices PETAL_SLOTS to PETAL_SLOTS*2-1
+                        if i < PETAL_SLOTS:
+                            # Main equip slot
+                            row = i // slots_per_row
+                            col = i % slots_per_row
+                            slot = petal_slots[i]
+                        else:
+                            # Swap slot
+                            swap_idx = i - PETAL_SLOTS
+                            row = (swap_idx // slots_per_row) + 1
+                            col = swap_idx % slots_per_row
+                            slot = swap_petal_slots[swap_idx]
 
-            # Main slots: indices 0 to PETAL_SLOTS-1
-            # Swap slots: indices PETAL_SLOTS to PETAL_SLOTS*2-1
-            if i < PETAL_SLOTS:
-                # Main equip slot
-                row = i // slots_per_row
-                col = i % slots_per_row
-                slot = petal_slots[i]
-            else:
-                # Swap slot
-                swap_idx = i - PETAL_SLOTS
-                row = (swap_idx // slots_per_row) + 1
-                col = swap_idx % slots_per_row
-                slot = swap_petal_slots[swap_idx]
+                        if row < 0 or row >= 2:
+                            continue
 
-            if row < 0 or row >= 2:
-                continue
+                        x = start_x + col * (PETAL_SLOT_SIZE + PETAL_SLOT_GAP)
 
-            x = start_x + col * (PETAL_SLOT_SIZE + PETAL_SLOT_GAP)
-
-            y = PETAL_BAR_Y + row * (PETAL_SLOT_SIZE + PETAL_SLOT_GAP)
+                        y = PETAL_BAR_Y + row * (PETAL_SLOT_SIZE + PETAL_SLOT_GAP)
 
 
-            # Slot color
+                        # Slot color
 
-            slot_color = (90,90,90)
-            border_color = (160,160,160)
+                        slot_color = (90,90,90)
+                        border_color = (160,160,160)
 
-            if slot["filled"]:
+                        if slot["filled"]:
 
-                if slot["rarity"] in RARITY_COLORS:
+                            if slot["rarity"] in RARITY_COLORS:
 
-                    slot_color = RARITY_COLORS[
-                        slot["rarity"]
-                    ]
+                                slot_color = RARITY_COLORS[
+                                    slot["rarity"]
+                                ]
 
-                border_color = (
-                    max(slot_color[0] - 40, 0),
-                    max(slot_color[1] - 40, 0),
-                    max(slot_color[2] - 40, 0)
-                )
+                            border_color = (
+                                max(slot_color[0] - 40, 0),
+                                max(slot_color[1] - 40, 0),
+                                max(slot_color[2] - 40, 0)
+                            )
 
-            # Draw slot background
+                        # Draw slot background
 
-            if i < PETAL_SLOTS and slot.get("filled", False):
-                # Main equip slots with a petal filled: show rarity box
-                draw_rarity_slot(
-                    x,
-                    y,
-                    PETAL_SLOT_SIZE,
-                    slot.get("rarity", "Common")
-                )
-            else:
-                # Empty slot (swap slots or main slot without a petal): just gray box
-                pygame.draw.rect(
-                    screen,
-                    (90,90,90),
-                    (
-                        x,
-                        y,
-                        PETAL_SLOT_SIZE,
-                        PETAL_SLOT_SIZE
-                    ),
-                    border_radius=8
-                )
+                        if i < PETAL_SLOTS and slot.get("filled", False):
+                            # Main equip slots with a petal filled: show rarity box
+                            draw_rarity_slot(
+                                x,
+                                y,
+                                PETAL_SLOT_SIZE,
+                                slot.get("rarity", "Common")
+                            )
+                        else:
+                            # Empty slot (swap slots or main slot without a petal): just gray box
+                            pygame.draw.rect(
+                                screen,
+                                (90,90,90),
+                                (
+                                    x,
+                                    y,
+                                    PETAL_SLOT_SIZE,
+                                    PETAL_SLOT_SIZE
+                                ),
+                                border_radius=8
+                            )
 
-            # Draw basic petal image only for filled main slots
+                        # Draw basic petal image only for filled main slots
 
-            if i < PETAL_SLOTS and slot.get("filled", False):
+                        if i < PETAL_SLOTS and slot.get("filled", False):
 
-                petal_type = slot.get("petal", "Basic")
-                rarity = slot.get("rarity", "Common")
+                            petal_type = slot.get("petal", "Basic")
+                            rarity = slot.get("rarity", "Common")
 
-                slot_sprite = make_petal_surface(
-                    petal_type,
-                    0,
-                    0,
-                    rarity,
-                    size_scale=1.4
-                )
-                sprite_rect = slot_sprite.get_bounding_rect()
-                if sprite_rect.w > 0 and sprite_rect.h > 0:
-                    slot_sprite = slot_sprite.subsurface(sprite_rect)
-                cx = x + PETAL_SLOT_SIZE // 2
-                cy = y + PETAL_SLOT_SIZE // 2
-                screen.blit(
-                    slot_sprite,
-                    (
-                        cx - slot_sprite.get_width() // 2,
-                        cy - slot_sprite.get_height() // 2
-                    )
-                )
+                            slot_sprite = make_petal_surface(
+                                petal_type,
+                                0,
+                                0,
+                                rarity,
+                                size_scale=1.4
+                            )
+                            sprite_rect = slot_sprite.get_bounding_rect()
+                            if sprite_rect.w > 0 and sprite_rect.h > 0:
+                                slot_sprite = slot_sprite.subsurface(sprite_rect)
+                            cx = x + PETAL_SLOT_SIZE // 2
+                            cy = y + PETAL_SLOT_SIZE // 2
+                            screen.blit(
+                                slot_sprite,
+                                (
+                                    cx - slot_sprite.get_width() // 2,
+                                    cy - slot_sprite.get_height() // 2
+                                )
+                            )
 
-            # ---------------- HP UPGRADE BUTTON --------------
+                        # ---------------- HP UPGRADE BUTTON --------------
 
-            # Respawn timer number above slot
+                        # Respawn timer number above slot
 
-            if i < PETAL_SLOTS:
+                        if i < PETAL_SLOTS:
 
-                if not petal_alive[i] and petal_respawn_timer[i] > 0:
+                            if not petal_alive[i] and petal_respawn_timer[i] > 0:
 
-                    font = respawn_timer_font
+                                font = respawn_timer_font
 
-                    seconds = math.ceil(
-                        petal_respawn_timer[i] / FPS
-                    )
+                                seconds = math.ceil(
+                                    petal_respawn_timer[i] / FPS
+                                )
 
-                    text = font.render(
-                        str(seconds),
-                        True,
-                        (255,255,255)
-                    )
+                                text = font.render(
+                                    str(seconds),
+                                    True,
+                                    (255,255,255)
+                                )
 
-                    screen.blit(
-                        text,
-                        (
-                            x + PETAL_SLOT_SIZE//2 - text.get_width()//2,
-                            y - 30
-                        )
-                    )
+                                screen.blit(
+                                    text,
+                                    (
+                                        x + PETAL_SLOT_SIZE//2 - text.get_width()//2,
+                                        y - 30
+                                    )
+                                )
 
 
         # Compute total visual elements so all petals and lights
@@ -21247,7 +21264,7 @@ while running:
                                 (bar_x, bar_y, int(bar_width * hp_percent), bar_height)
                             )
 
-                if petal_hp[i] < petal_max_hp[i]:
+                if show_hud and petal_hp[i] < petal_max_hp[i]:
 
                     bar_width = 35
                     bar_height = 5
@@ -21307,7 +21324,7 @@ while running:
                 # Draw player
 
 
-                if boss_hp > 0:
+                if show_hud and boss_hp > 0:
 
                     font = large_hud_font
 
@@ -21502,40 +21519,39 @@ while running:
         # body
         # ---------------- PLAYER HP BAR ----------------
 
-        bar_width = 80
-        bar_height = 8
+        if show_hud:
+            bar_width = 80
+            bar_height = 8
 
-        hp_percent = max(
-            0,
-            min(
-                player_hp / PLAYER_MAX_HP,
-                1
+            hp_percent = max(
+                0,
+                min(
+                    player_hp / PLAYER_MAX_HP,
+                    1
+                )
             )
-        )
 
-
-        pygame.draw.rect(
-            screen,
-            (210, 45, 45),
-            (
-                player_center_x - bar_width//2,
-                player_center_y - PLAYER_RADIUS - 25,
-                bar_width,
-                bar_height
+            pygame.draw.rect(
+                screen,
+                (210, 45, 45),
+                (
+                    player_center_x - bar_width//2,
+                    player_center_y - PLAYER_RADIUS - 25,
+                    bar_width,
+                    bar_height
+                )
             )
-        )
 
-
-        pygame.draw.rect(
-            screen,
-            (0,255,0),
-            (
-                player_center_x - bar_width//2,
-                player_center_y - PLAYER_RADIUS - 25,
-                int(bar_width * hp_percent),
-                bar_height
+            pygame.draw.rect(
+                screen,
+                (0,255,0),
+                (
+                    player_center_x - bar_width//2,
+                    player_center_y - PLAYER_RADIUS - 25,
+                    int(bar_width * hp_percent),
+                    bar_height
+                )
             )
-        )
         player_center_x = WIDTH // 2
         player_center_y = HEIGHT // 2
 
@@ -21900,8 +21916,8 @@ while running:
             face_surf.get_rect(center=(int(player_center_x), int(player_center_y)))
         )
 
-        # Show the flower's name / XP / level / points only when alive.
-        if not player_dead:
+        # Show the flower's name / XP / level / points only when alive and show_hud is True.
+        if not player_dead and show_hud:
 
             # Center the flower's name above the flower and HP bar.
             flower_name_text = flower_name_font.render(
@@ -22669,6 +22685,7 @@ while running:
                 "/freez_enemies [seconds]",
                 "/unfreeze",
                 "/godmode [state]",
+                "/hud [state]",
                 "/speed [multiplier]",
                 "/tp_pos [x] [y]",
                 "/clear_chat",
@@ -24542,35 +24559,36 @@ while running:
             )
 
 
-        pygame.draw.rect(
-            screen,
-            (50,50,50),
-            hp_button_rect,
-            border_radius=8
-        )
-        pygame.draw.rect(
-            screen,
-            (15, 15, 15),
-            hp_button_rect,
-            3,
-            border_radius=8
-        )
-
-        hp_font = game_hp_font
-
-        hp_button_text = hp_font.render(
-            "HP",
-            True,
-            (255,255,255)
-        )
-
-        screen.blit(
-            hp_button_text,
-            (
-                hp_button_rect.centerx - hp_button_text.get_width()//2,
-                hp_button_rect.centery - hp_button_text.get_height()//2
+        if show_hud:
+            pygame.draw.rect(
+                screen,
+                (50,50,50),
+                hp_button_rect,
+                border_radius=8
             )
-        )
+            pygame.draw.rect(
+                screen,
+                (15, 15, 15),
+                hp_button_rect,
+                3,
+                border_radius=8
+            )
+
+            hp_font = game_hp_font
+
+            hp_button_text = hp_font.render(
+                "HP",
+                True,
+                (255,255,255)
+            )
+
+            screen.blit(
+                hp_button_text,
+                (
+                    hp_button_rect.centerx - hp_button_text.get_width()//2,
+                    hp_button_rect.centery - hp_button_text.get_height()//2
+                )
+            )
 
         # Draw the craft panel last so it stays in front of the HP controls.
         if craft_panel_rect.y < HEIGHT + 20:
