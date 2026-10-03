@@ -5819,7 +5819,11 @@ class HoleLadybug(Ladybug):
         self.shoot_cooldown = 0
 
     def update(self):
+        if not self.alive or getattr(self, "dying", False):
+            return
         super().update()
+        if not self.alive or getattr(self, "dying", False):
+            return
         self.void_pulse += 0.08
         self.twitch_timer += 1
         # Weird erratic twitching: sudden small angle snaps
@@ -5831,7 +5835,7 @@ class HoleLadybug(Ladybug):
         # When chasing the player, shoot yellow circle projectiles
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
-        if self.angry and not player_dead and not player_ghost:
+        if self.alive and not getattr(self, "dying", False) and self.angry and not player_dead and not player_ghost:
             p_dist = distance(self.x, self.y, player_x, player_y)
             if p_dist < 800 and self.shoot_cooldown <= 0:
                 self.shoot_cooldown = random.randint(45, 75)
