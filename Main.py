@@ -19570,18 +19570,22 @@ while running:
                 bh_dy = bh["y"] - enemy.y
                 bh_dist = math.hypot(bh_dx, bh_dy)
                 if bh_dist <= bh["radius"] + enemy.radius:
-                    if bh_dist > 5:
-                        pull_mag = min(bh_dist, (bh["pull_speed"] + (bh["radius"] - bh_dist) * 1.5) * wp_dt)
-                        enemy.x += (bh_dx / bh_dist) * pull_mag
-                        enemy.y += (bh_dy / bh_dist) * pull_mag
-                        # Spiral inward
-                        t_x = -bh_dy / bh_dist
-                        t_y = bh_dx / bh_dist
-                        enemy.x += t_x * (bh["pull_speed"] * 0.4 * wp_dt)
-                        enemy.y += t_y * (bh["pull_speed"] * 0.4 * wp_dt)
-                    else:
-                        enemy.x = bh["x"]
-                        enemy.y = bh["y"]
+                    # Event horizon / center check: when reaching the very center, the mob instantly disappears
+                    horizon_thresh = max(10.0, bh["radius"] * 0.22)
+                    if bh_dist <= horizon_thresh:
+                        enemy.alive = False
+                        enemy.dying = False
+                        cleanup_king(enemy)
+                        continue
+
+                    pull_mag = min(bh_dist, (bh["pull_speed"] + (bh["radius"] - bh_dist) * 1.5) * wp_dt)
+                    enemy.x += (bh_dx / bh_dist) * pull_mag
+                    enemy.y += (bh_dy / bh_dist) * pull_mag
+                    # Spiral inward
+                    t_x = -bh_dy / bh_dist
+                    t_y = bh_dx / bh_dist
+                    enemy.x += t_x * (bh["pull_speed"] * 0.4 * wp_dt)
+                    enemy.y += t_y * (bh["pull_speed"] * 0.4 * wp_dt)
                     enemy.knockback_x = 0
                     enemy.knockback_y = 0
 
