@@ -1178,8 +1178,9 @@ player_trail_last_sec = 0.5
 player_trail_size_mult = 1.0
 player_trail_particles = []
 
-# Magnet mode (True = pull all nearby petal drops toward player) controlled via /magnet.
+# Magnet mode (True = pull all nearby petal drops toward player) controlled via /magnet_petal_drops.
 player_magnet = False
+player_magnet_range = None  # None = infinite / whole screen, or a float radius
 
 # How far the king and its minions will chase before giving up.
 KING_CHASE_RANGE = 700
@@ -17334,13 +17335,22 @@ while running:
                                     enemies_frozen_timer = 0
                                     show_error("Enemies unfrozen")
                                 elif cmd in ("/magnet_petal_drops", "/magnet") and acc_name_text.lower() == "devguard":
-                                    # /magnet_petal_drops [state] - pull petal drops toward flower
+                                    # /magnet_petal_drops [state] [size] - pull petal drops within [size] range (or whole map)
                                     args = parts[1:]
                                     if len(args) < 1 or args[0].lower() not in ("on", "off", "true", "false", "1", "0", "y", "n"):
-                                        show_error("Usage: /magnet_petal_drops [state] (on/off)")
+                                        show_error("Usage: /magnet_petal_drops [state] [size]")
                                     elif args[0].lower() in ("on", "true", "1", "y"):
                                         player_magnet = True
-                                        show_error("Magnet ON")
+                                        if len(args) >= 2:
+                                            try:
+                                                player_magnet_range = max(10.0, float(args[1]))
+                                                show_error(f"Magnet ON (range: {int(player_magnet_range)})")
+                                            except ValueError:
+                                                player_magnet_range = None
+                                                show_error("Magnet ON (all drops)")
+                                        else:
+                                            player_magnet_range = None
+                                            show_error("Magnet ON (all drops)")
                                     else:
                                         player_magnet = False
                                         show_error("Magnet OFF")
@@ -19122,15 +19132,16 @@ while running:
 
             pickup["timer"] -= pickup_dt
 
-            # If magnet is enabled, continuously pull all active pickups toward the player
+            # If magnet is enabled, continuously pull active pickups within magnet range toward the player
             if player_magnet and not player_dead and pickup.get("collecting") is None:
                 mag_dx = player_x - pickup["x"]
                 mag_dy = player_y - pickup["y"]
                 mag_dist = math.hypot(mag_dx, mag_dy)
-                if mag_dist > 5:
-                    mag_speed = min(mag_dist, 700.0 * pickup_dt + (mag_dist * 4.0 * pickup_dt))
-                    pickup["x"] += (mag_dx / mag_dist) * mag_speed
-                    pickup["y"] += (mag_dy / mag_dist) * mag_speed
+                if player_magnet_range is None or mag_dist <= player_magnet_range:
+                    if mag_dist > 5:
+                        mag_speed = min(mag_dist, 700.0 * pickup_dt + (mag_dist * 4.0 * pickup_dt))
+                        pickup["x"] += (mag_dx / mag_dist) * mag_speed
+                        pickup["y"] += (mag_dy / mag_dist) * mag_speed
 
             # A collected pickup shrinks away quickly instead of vanishing
             # instantly.
@@ -22855,6 +22866,7 @@ while running:
                 "/freez_enemies [seconds]",
                 "/unfreeze",
                 "/godmode [state]",
+                "/magnet_petal_drops [state] [size]",
                 "/magnet_petal_drops [state]",
                 "/trail_size [size]",
                 "/hud [state]",
