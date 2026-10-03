@@ -17542,6 +17542,27 @@ while running:
                                         PLAYER_RADIUS = 25
                                         PETAL_RADIUS = 12
                                         show_error("Big size ON")
+                                elif cmd == "/delete_minion" and acc_name_text.lower() == "devguard":
+                                    # /delete_minion [amount] (or /delete_minion to delete all)
+                                    args = parts[1:]
+                                    active_minions = [m for m in flower_minions if m.alive and not getattr(m, "dying", False)]
+                                    if not active_minions:
+                                        show_error("No minions to delete")
+                                    else:
+                                        delete_count = len(active_minions)
+                                        if len(args) >= 1:
+                                            try:
+                                                delete_count = max(1, min(int(args[0]), len(active_minions)))
+                                            except ValueError:
+                                                show_error("Amount must be a number")
+                                                delete_count = 0
+                                        if delete_count > 0:
+                                            # Shrink away the minions smoothly
+                                            for m in active_minions[-delete_count:]:
+                                                m.dying = True
+                                                m.shrink_scale = 1.0
+                                                m.full_radius = m.radius
+                                            show_error(f"Deleted {delete_count} minion{'s' if delete_count > 1 else ''}")
                                 elif cmd == "/despawn_mobs" and acc_name_text.lower() == "devguard":
                                     # /despawn_mobs - shrink away every
                                     # enemy on the map
@@ -17668,6 +17689,7 @@ while running:
                                     "/pick.size",
                                     "/p.mode",
                                     "/pick.mode",
+                                    "/delete_minion",
                                     "/despawn_mobs",
                                     "/rarity_to",
                                     "/s.enemy_increase",
@@ -22647,6 +22669,8 @@ while running:
                 "/p.ghost [y or n]",
                 "/p.size [small or big]",
                 "/p.mode [peaceful or normal]",
+                "/delete_minion [amount]",
+                "/delete_minion",
                 "/despawn_mobs",
                 "/revive_user [user]",
                 "/rarity_to [rarity]",
