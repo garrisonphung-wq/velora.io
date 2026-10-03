@@ -19602,6 +19602,40 @@ while running:
                         pickup["x"] += (p_dx / p_dist) * p_speed
                         pickup["y"] += (p_dy / p_dist) * p_speed
 
+            # Pull player flower
+            if not player_dead:
+                pbh_dx = bh["x"] - player_x
+                pbh_dy = bh["y"] - player_y
+                pbh_dist = math.hypot(pbh_dx, pbh_dy)
+                if pbh_dist <= bh["radius"] + PLAYER_RADIUS:
+                    # Check center event horizon: devours the player if not in godmode
+                    p_horizon = max(10.0, bh["radius"] * 0.22)
+                    if pbh_dist <= p_horizon:
+                        if not getattr(globals(), "player_godmode", False):
+                            player_dead = True
+                            player_death_timer = PLAYER_DEATH_DURATION
+                            killer_name = "Black Hole"
+                            killer_rarity = "Cosmic"
+                            player_hp = 0
+                            player_bounce_x = 0
+                            player_bounce_y = 0
+                            for i in range(PETAL_SLOTS):
+                                petal_alive[i] = False
+                                petal_hp[i] = 0
+                                petal_respawn_timer[i] = PETAL_RELOAD[petal_slots[i]["petal"]]
+                            save_player()
+                    else:
+                        p_pull = min(pbh_dist, (bh["pull_speed"] + (bh["radius"] - pbh_dist) * 1.5) * wp_dt)
+                        player_x += (pbh_dx / pbh_dist) * p_pull
+                        player_y += (pbh_dy / pbh_dist) * p_pull
+                        # Spiral inward
+                        p_tx = -pbh_dy / pbh_dist
+                        p_ty = pbh_dx / pbh_dist
+                        player_x += p_tx * (bh["pull_speed"] * 0.35 * wp_dt)
+                        player_y += p_ty * (bh["pull_speed"] * 0.35 * wp_dt)
+                        player_bounce_x = 0
+                        player_bounce_y = 0
+
         # -------- SHIELD DOMES UPDATE & PHYSICS --------
         all_enemy_projectiles = (
             king_stinger_projectiles
