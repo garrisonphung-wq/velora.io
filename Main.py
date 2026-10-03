@@ -4373,7 +4373,6 @@ PETALS = [
     "Bone",
     "Web",
     "Rock",
-    "Hole Rock",
     "Faster",
     "Magnet",
     "Bubble",
@@ -5064,6 +5063,7 @@ mob_gallery_names = (
     "Spider",
     "Hole Spider",
     "Rock",
+    "Hole Rock",
     "Hornet",
     "Baby Ant",
     "Soldier Ant",
@@ -11754,10 +11754,6 @@ def register_mob_kill(enemy):
         mob_name = "Hole Spider"
     elif mob_name in ("HoleRock", "Hole Rock"):
         mob_name = "Hole Rock"
-    elif mob_name in ("HoleRock", "Hole Rock"):
-        mob_name = "Hole Rock"
-    elif mob_name in ("HoleSpider", "Hole Spider"):
-        mob_name = "Hole Spider"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -11804,6 +11800,10 @@ def drop_mob_loot(enemy):
         mob_name = "Hole Ladybug"
     elif mob_name in ("HoleBee", "Hole Bee"):
         mob_name = "Hole Bee"
+    elif mob_name in ("HoleSpider", "Hole Spider"):
+        mob_name = "Hole Spider"
+    elif mob_name in ("HoleRock", "Hole Rock"):
+        mob_name = "Hole Rock"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -12268,7 +12268,9 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
         "Bee": Bee,
         "Hole Bee": HoleBee,
         "Spider": Spider,
+        "Hole Spider": HoleSpider,
         "Rock": Rock,
+        "Hole Rock": HoleRock,
         "Hornet": Hornet,
         "Baby Ant": BabyAnt,
         "Soldier Ant": SoldierAnt,
