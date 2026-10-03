@@ -17563,6 +17563,17 @@ while running:
                                                 m.shrink_scale = 1.0
                                                 m.full_radius = m.radius
                                             show_error(f"Deleted {delete_count} minion{'s' if delete_count > 1 else ''}")
+                                elif cmd == "/kill_all_enemies" and acc_name_text.lower() == "devguard":
+                                    # /kill_all_enemies - instantly defeat all enemies, dropping their loot & xp
+                                    killed = 0
+                                    for enemy in all_enemies:
+                                        if not enemy.alive:
+                                            continue
+                                        if getattr(enemy, "dying", False):
+                                            continue
+                                        enemy.take_damage(enemy.hp + 999999)
+                                        killed += 1
+                                    show_error(f"Defeated {killed} enemies!")
                                 elif cmd == "/despawn_mobs" and acc_name_text.lower() == "devguard":
                                     # /despawn_mobs - shrink away every
                                     # enemy on the map
@@ -17690,6 +17701,7 @@ while running:
                                     "/p.mode",
                                     "/pick.mode",
                                     "/delete_minion",
+                                    "/kill_all_enemies",
                                     "/despawn_mobs",
                                     "/rarity_to",
                                     "/s.enemy_increase",
@@ -22671,6 +22683,7 @@ while running:
                 "/p.mode [peaceful or normal]",
                 "/delete_minion [amount]",
                 "/delete_minion",
+                "/kill_all_enemies",
                 "/despawn_mobs",
                 "/revive_user [user]",
                 "/rarity_to [rarity]",
