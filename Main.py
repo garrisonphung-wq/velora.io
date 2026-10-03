@@ -1188,6 +1188,9 @@ player_body_color = (225, 225, 0)
 player_outline_color = (230, 200, 40)
 player_face_color = (0, 0, 0)
 
+# Active whirlpools list: [{"x", "y", "initial_damage", "dps", "duration", "max_duration", "radius", "damage_timer", "angle"}]
+active_whirlpools = []
+
 # How far the king and its minions will chase before giving up.
 KING_CHASE_RANGE = 700
 
@@ -17386,6 +17389,51 @@ while running:
                                     else:
                                         show_hud = False
                                         show_error("HUD OFF")
+                                elif cmd == "/reload_petals" and acc_name_text.lower() == "devguard":
+                                    # /reload_petals - instantly reload and restore all equipped petals to full HP
+                                    for i in range(PETAL_SLOTS):
+                                        if petal_slots[i]["filled"]:
+                                            petal_alive[i] = True
+                                            petal_hp[i] = petal_max_hp[i]
+                                            petal_cooldowns[i] = 0
+                                            petal_respawn_timer[i] = 0
+                                            petal_deploy[i] = 1.0
+                                            if petal_slots[i]["petal"] == "Light":
+                                                light_count = get_petal_count("Light", petal_slots[i]["rarity"])
+                                                light_hp[i] = [petal_max_hp[i]] * light_count
+                                                light_cooldowns[i] = [0] * light_count
+                                                light_alive[i] = [True] * light_count
+                                    show_error("All petals reloaded to max HP!")
+                                elif cmd == "/spawn_whirlpool" and acc_name_text.lower() == "devguard":
+                                    # /spawn_whirlpool [damage] [damage each second] [whirlpool last seconds] [whirlpool size]
+                                    # Traps enemies inside, pulls them toward center, and deals continuous dps
+                                    args = parts[1:]
+                                    if len(args) < 4:
+                                        show_error("Usage: /spawn_whirlpool [damage] [damage each second] [whirlpool last seconds] [whirlpool size]")
+                                    else:
+                                        try:
+                                            wp_init_dmg = float(args[0])
+                                            wp_dps = float(args[1])
+                                            wp_duration = max(0.5, float(args[2]))
+                                            wp_radius = max(20.0, float(args[3]))
+                                            mouse_x, mouse_y = pygame.mouse.get_pos()
+                                            wp_world_x = mouse_x + camera_x
+                                            wp_world_y = mouse_y + camera_y
+                                            active_whirlpools.append({
+                                                "x": wp_world_x,
+                                                "y": wp_world_y,
+                                                "initial_damage": wp_init_dmg,
+                                                "dps": wp_dps,
+                                                "duration": wp_duration,
+                                                "max_duration": wp_duration,
+                                                "radius": wp_radius,
+                                                "damage_timer": 0.0,
+                                                "angle": 0.0,
+                                                "hit_enemies": set(),
+                                            })
+                                            show_error(f"Whirlpool spawned! (size: {int(wp_radius)}, {wp_duration}s)")
+                                        except ValueError:
+                                            show_error("Damage, dps, duration, and size must be numbers")
                                 elif cmd == "/godmode" and acc_name_text.lower() == "devguard":
                                     # /godmode [state] - toggle complete invincibility
                                     args = parts[1:]
@@ -17841,6 +17889,8 @@ while running:
                                     "/freez_enemies",
                                     "/unfreeze",
                                     "/godmode",
+                                    "/reload_petals",
+                                    "/spawn_whirlpool",
                                     "/magnet_petal_drops",
                                     "/magnet",
                                     "/trail_size",
@@ -19316,6 +19366,71 @@ while running:
         camera_x = player_x - WIDTH // 2
         camera_y = player_y - HEIGHT // 2
 
+        # -------- WHIRLPOOLS UPDATE & PHYSICS --------
+        all_enemies_pool = (
+            ladybugs
+            + bees
+            + spiders
+            + rocks
+            + hornets
+            + baby_ants
+            + soldier_ants
+            + worker_ants
+            + queen_ants
+            + ant_eggs
+        )
+        wp_dt = dt / 1000.0
+        for wp in active_whirlpools[:]:
+            wp["duration"] -= wp_dt
+            if wp["duration"] <= 0:
+                active_whirlpools.remove(wp)
+                continue
+            wp["angle"] = (wp["angle"] + 240 * wp_dt) % 360
+            wp["damage_timer"] += wp_dt
+            dps_tick = False
+            if wp["damage_timer"] >= 1.0:
+                wp["damage_timer"] -= 1.0
+                dps_tick = True
+
+            for enemy in all_enemies_pool:
+                if not enemy.alive or getattr(enemy, "dying", False):
+                    continue
+                w_dx = wp["x"] - enemy.x
+                w_dy = wp["y"] - enemy.y
+                w_dist = math.hypot(w_dx, w_dy)
+                if w_dist <= wp["radius"] + enemy.radius:
+                    # Trapped inside whirlpool!
+                    # Initial damage on first entry
+                    enemy_id = id(enemy)
+                    if enemy_id not in wp["hit_enemies"]:
+                        wp["hit_enemies"].add(enemy_id)
+                        if wp["initial_damage"] > 0:
+                            enemy.take_damage(wp["initial_damage"])
+
+                    # Periodic DPS
+                    if dps_tick and wp["dps"] > 0:
+                        enemy.take_damage(wp["dps"])
+
+                    # Strong gravitational pull towards whirlpool center (cannot escape)
+                    if w_dist > 4:
+                        pull_speed = min(w_dist, max(180.0, (wp["radius"] - w_dist) * 2.0 + 260.0) * wp_dt)
+                        enemy.x += (w_dx / w_dist) * pull_speed
+                        enemy.y += (w_dy / w_dist) * pull_speed
+
+                        # Swirling vortex tangential movement
+                        tangent_x = -w_dy / w_dist
+                        tangent_y = w_dx / w_dist
+                        swirl_speed = 140.0 * wp_dt
+                        enemy.x += tangent_x * swirl_speed
+                        enemy.y += tangent_y * swirl_speed
+                    else:
+                        enemy.x = wp["x"]
+                        enemy.y = wp["y"]
+
+                    # Cancel normal enemy knockback velocity while trapped
+                    enemy.knockback_x = 0
+                    enemy.knockback_y = 0
+
         for ladybug in ladybugs:
 
             move_with_collision(
@@ -20285,6 +20400,43 @@ while running:
                         center=(int(web_x), int(web_y))
                     )
                 )
+
+        # -------- DRAW WHIRLPOOLS --------
+        for wp in active_whirlpools:
+            sx = int(wp["x"] - camera_x)
+            sy = int(wp["y"] - camera_y)
+            r = int(wp["radius"])
+            # Only draw if on screen
+            if -r * 2 <= sx <= WIDTH + r * 2 and -r * 2 <= sy <= HEIGHT + r * 2:
+                # Semi-transparent vortex surface
+                v_surf = pygame.Surface((r * 2 + 8, r * 2 + 8), pygame.SRCALPHA)
+                center_pt = (r + 4, r + 4)
+                # Outer fade water ring
+                pygame.draw.circle(v_surf, (0, 160, 230, 70), center_pt, r)
+                # Concentric swirling vortex arms
+                num_rings = max(3, int(r // 20))
+                for ri in range(1, num_rings + 1):
+                    ring_r = int(r * (ri / num_rings))
+                    ring_alpha = int(90 + (1.0 - ri / num_rings) * 110)
+                    pygame.draw.circle(v_surf, (40, 200, 255, ring_alpha), center_pt, ring_r, max(2, int(r * 0.03)))
+                # Spiral swirling arms
+                base_a = math.radians(wp["angle"])
+                for arm in range(4):
+                    arm_offset = arm * (math.pi / 2)
+                    pts = []
+                    for step in range(12):
+                        step_t = step / 11.0
+                        step_r = r * step_t
+                        step_a = base_a + arm_offset + (step_t * 3.5)
+                        pt_x = center_pt[0] + math.cos(step_a) * step_r
+                        pt_y = center_pt[1] + math.sin(step_a) * step_r
+                        pts.append((int(pt_x), int(pt_y)))
+                    if len(pts) >= 2:
+                        pygame.draw.lines(v_surf, (180, 240, 255, 170), False, pts, max(2, int(r * 0.04)))
+                # Deep center eye of the whirlpool
+                pygame.draw.circle(v_surf, (10, 60, 140, 220), center_pt, max(6, int(r * 0.22)))
+                pygame.draw.circle(v_surf, (0, 20, 60, 240), center_pt, max(3, int(r * 0.12)))
+                screen.blit(v_surf, (sx - r - 4, sy - r - 4))
 
         for ladybug in ladybugs:
             ladybug.draw()
@@ -22952,6 +23104,8 @@ while running:
                 "/freez_enemies [seconds]",
                 "/unfreeze",
                 "/godmode [state]",
+                "/reload_petals",
+                "/spawn_whirlpool [damage] [damage each second] [whirlpool last seconds] [whirlpool size]",
                 "/magnet_petal_drops [state] [size]",
                 "/magnet_petal_drops [state]",
                 "/trail_size [size]",
@@ -23007,6 +23161,7 @@ while running:
                 "[last": (0, 255, 128),
                 "seconds]": (0, 255, 128),
                 "[state]": (255, 185, 30),
+                "[whirlpool": (0, 210, 255),
                 "[multiplier]": (60, 235, 220),
                 "[color]": (255, 150, 200),
                 "[hex]": (120, 220, 255),
@@ -23066,6 +23221,14 @@ while running:
                         and words[word_index + 1] == "slot]"
                     ):
                         word_color = (255, 165, 0)
+                    elif word == "[damage" and word_index + 1 < len(words) and words[word_index + 1] == "each":
+                        word_color = (255, 100, 100)
+                    elif word in ("each", "second]") and "[damage" in words and "second]" in words:
+                        word_color = (255, 100, 100)
+                    elif word in ("[whirlpool", "last", "seconds]") and "[whirlpool" in words and "seconds]" in words:
+                        word_color = (0, 220, 255)
+                    elif word in ("[whirlpool", "size]") and "[whirlpool" in words and "size]" in words:
+                        word_color = (170, 120, 255)
                     elif word == "[mob" and word_index + 1 < len(words):
                         next_w = words[word_index + 1]
                         if next_w == "damage]":
