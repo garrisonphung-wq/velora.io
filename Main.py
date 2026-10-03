@@ -19903,6 +19903,12 @@ while running:
             if ladybug.attack_cooldown > 0:
                 ladybug.attack_cooldown -= 1
 
+            if ladybug.petal_attack_cooldown > 0:
+                ladybug.petal_attack_cooldown -= 1
+
+            if ladybug.flash_timer > 0:
+                ladybug.flash_timer -= 1
+
         for hlb in hole_ladybugs:
             move_with_collision(
                 hlb,
@@ -19928,11 +19934,11 @@ while running:
             if hlb.attack_cooldown > 0:
                 hlb.attack_cooldown -= 1
 
-            if ladybug.petal_attack_cooldown > 0:
-                ladybug.petal_attack_cooldown -= 1
+            if hlb.petal_attack_cooldown > 0:
+                hlb.petal_attack_cooldown -= 1
 
-            if ladybug.flash_timer > 0:
-                ladybug.flash_timer -= 1
+            if hlb.flash_timer > 0:
+                hlb.flash_timer -= 1
 
 
         for bee in bees:
