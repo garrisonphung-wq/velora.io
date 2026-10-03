@@ -253,6 +253,7 @@ HEAVY_KNOCKBACK_MULTIPLIER = {
 MOB_WEIGHT = {
     "Ladybug": 1.0,
     "HoleLadybug": 2.0,
+    "HoleBee": 1.6,
     "Bee": 0.8,
     "Spider": 1.1,
     "Rock": 1.0,
@@ -3642,6 +3643,8 @@ def spawn_custom_flower_minion(rarity, mob_name, custom_damage=None, custom_hp=N
         "Ladybug": Ladybug,
         "Hole Ladybug": HoleLadybug,
         "Bee": Bee,
+        "Hole Bee": HoleBee,
+        "Hole Bee": HoleBee,
         "Spider": Spider,
         "Rock": Rock,
         "Hornet": Hornet,
@@ -5050,6 +5053,7 @@ mob_gallery_names = (
     "Ladybug",
     "Hole Ladybug",
     "Bee",
+    "Hole Bee",
     "Spider",
     "Rock",
     "Hornet",
@@ -6493,6 +6497,215 @@ class Bee:
                 self,
                 int(sx),
                 int(sy + self.radius + 15)
+            )
+
+# ---------------- HOLE BEE ----------------
+# A deeply weird, corrupted abyss insect native exclusively to Hole Land.
+# 2x stats & size of regular Bee.
+# Morphologically warped: segmented chitin body, 4 erratic fluttering void wings,
+# dual jagged stingers, and twisting tendril antennae.
+class HoleBee(Bee):
+    is_hole_land_mob = True
+
+    def __init__(self):
+        super().__init__()
+        # 2x stats & size of regular Bee
+        self.radius = self.radius * 2
+        self.base_radius = self.radius
+        self.damage = 200
+        self.max_hp = 100 * MOB_HP_MULTIPLIER[self.rarity]
+        self.hp = self.max_hp
+
+        # Weird twitching & void animation
+        self.void_pulse = random.uniform(0, math.pi * 2)
+        self.wing_jitter = random.uniform(0, math.pi * 2)
+        self.twitch_timer = 0
+        self.chase_speed = 3.6
+        self.wander_speed = 0.5
+        self.speed = self.wander_speed
+        self.max_speed = self.chase_speed
+
+    def update(self):
+        if not self.alive or getattr(self, "dying", False):
+            return
+        super().update()
+        if not self.alive or getattr(self, "dying", False):
+            return
+        self.void_pulse += 0.09
+        self.wing_jitter += 0.45
+        self.twitch_timer += 1
+        # Erratic unpredictable twitching
+        if self.twitch_timer >= 35:
+            self.twitch_timer = 0
+            if random.random() < 0.4:
+                self.angle += random.uniform(-45, 45)
+
+    def draw(self):
+        if not self.alive:
+            return
+
+        sx = self.x - camera_x
+        sy = self.y - camera_y
+
+        if sx < -160 or sx > WIDTH + 160 or sy < -160 or sy > HEIGHT + 160:
+            return
+
+        # ---------------- HP BAR ----------------
+        if self.hp < self.max_hp:
+            bar_width = max(1, int(65 * settings_hp_bar_scale))
+            bar_height = max(1, int(6 * settings_hp_bar_scale))
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
+
+            pygame.draw.rect(
+                screen,
+                (50, 15, 75),
+                (int(sx - bar_width/2), int(sy - self.radius - 14 - bar_height), bar_width, bar_height)
+            )
+            pygame.draw.rect(
+                screen,
+                (200, 40, 255),
+                (int(sx - bar_width/2), int(sy - self.radius - 14 - bar_height), int(bar_width * hp_percent), bar_height)
+            )
+
+        # ---------------- PULSING VOID AURA ----------------
+        pulse = math.sin(self.void_pulse) * 5
+        aura_r = int(self.radius * 1.35 + pulse)
+        aura_surf = pygame.Surface((aura_r * 2 + 6, aura_r * 2 + 6), pygame.SRCALPHA)
+        pygame.draw.circle(aura_surf, (140, 30, 220, 45), (aura_r + 3, aura_r + 3), aura_r)
+        screen.blit(aura_surf, (int(sx - aura_r - 3), int(sy - aura_r - 3)))
+
+        # ---------------- WARPED SURFACE RENDERING ----------------
+        length = self.radius * 3.4
+        width = self.radius * 1.8
+        padding = self.radius * 2.2
+
+        surf_w = int(length + padding * 2)
+        surf_h = int(width + padding * 2)
+        bee_surf = pygame.Surface((surf_w, surf_h), pygame.SRCALPHA)
+        cx = surf_w // 2
+        cy = surf_h // 2
+
+        # 1. FOUR FLUTTERING WEIRD VOID WINGS (translucent cyan-violet membranous fins)
+        wing_w = int(self.radius * 1.5)
+        wing_h = int(self.radius * 0.75)
+        w_flap1 = math.sin(self.wing_jitter) * (self.radius * 0.3)
+        w_flap2 = math.cos(self.wing_jitter * 1.2) * (self.radius * 0.3)
+
+        # Left wings (top and bottom offset)
+        w1_pts = [
+            (cx - int(length * 0.05), cy - int(width * 0.35)),
+            (cx - int(length * 0.45), cy - int(width * 0.95 + w_flap1)),
+            (cx + int(length * 0.25), cy - int(width * 0.85 + w_flap2)),
+        ]
+        pygame.draw.polygon(bee_surf, (0, 240, 255, 90), w1_pts)
+        pygame.draw.polygon(bee_surf, (180, 50, 255, 180), w1_pts, 2)
+
+        w2_pts = [
+            (cx - int(length * 0.05), cy + int(width * 0.35)),
+            (cx - int(length * 0.45), cy + int(width * 0.95 + w_flap2)),
+            (cx + int(length * 0.25), cy + int(width * 0.85 + w_flap1)),
+        ]
+        pygame.draw.polygon(bee_surf, (0, 240, 255, 90), w2_pts)
+        pygame.draw.polygon(bee_surf, (180, 50, 255, 180), w2_pts, 2)
+
+        # Secondary smaller back wings
+        w3_pts = [
+            (cx - int(length * 0.25), cy - int(width * 0.25)),
+            (cx - int(length * 0.65), cy - int(width * 0.70 + w_flap2)),
+            (cx - int(length * 0.15), cy - int(width * 0.60 + w_flap1)),
+        ]
+        pygame.draw.polygon(bee_surf, (180, 40, 240, 80), w3_pts)
+        pygame.draw.polygon(bee_surf, (0, 240, 255, 160), w3_pts, 1)
+
+        w4_pts = [
+            (cx - int(length * 0.25), cy + int(width * 0.25)),
+            (cx - int(length * 0.65), cy + int(width * 0.70 + w_flap1)),
+            (cx - int(length * 0.15), cy + int(width * 0.60 + w_flap2)),
+        ]
+        pygame.draw.polygon(bee_surf, (180, 40, 240, 80), w4_pts)
+        pygame.draw.polygon(bee_surf, (0, 240, 255, 160), w4_pts, 1)
+
+        # 2. SEGMENTED WARPED CHITIN BODY
+        # Segment A: Rear Abdomen (dark obsidian violet)
+        seg_rear_rect = pygame.Rect(int(cx - length * 0.48), int(cy - width * 0.38), int(length * 0.42), int(width * 0.76))
+        pygame.draw.ellipse(bee_surf, flash_color((30, 8, 45), self.flash_timer), seg_rear_rect)
+        pygame.draw.ellipse(bee_surf, flash_color((170, 45, 255), self.flash_timer), seg_rear_rect, 2)
+
+        # Segment B: Middle Thorax (eerie dark indigo)
+        seg_mid_rect = pygame.Rect(int(cx - length * 0.15), int(cy - width * 0.48), int(length * 0.38), int(width * 0.96))
+        pygame.draw.ellipse(bee_surf, flash_color((20, 5, 35), self.flash_timer), seg_mid_rect)
+        pygame.draw.ellipse(bee_surf, flash_color((0, 230, 255), self.flash_timer), seg_mid_rect, 2)
+
+        # Corrupted neon glowing rib stripes on thorax
+        for st_x in (cx - length * 0.05, cx + length * 0.08):
+            pygame.draw.line(
+                bee_surf,
+                flash_color((0, 255, 240), self.flash_timer),
+                (st_x, cy - width * 0.40),
+                (st_x, cy + width * 0.40),
+                max(2, int(self.radius * 0.16))
+            )
+
+        # Segment C: Weird Eyeless Head (tilted jagged dome)
+        head_cx = int(cx + length * 0.32)
+        head_r = int(self.radius * 0.58)
+        pygame.draw.circle(bee_surf, flash_color((15, 3, 25), self.flash_timer), (head_cx, cy), head_r)
+        pygame.draw.circle(bee_surf, flash_color((190, 60, 255), self.flash_timer), (head_cx, cy), head_r, 2)
+
+        # 3. DUAL JAGGED SPLIT STINGERS AT TAIL
+        stinger_base_x = int(cx - length * 0.48)
+        stinger_tip_x = int(cx - length * 0.72)
+        stinger_upper = [
+            (stinger_base_x, cy - int(width * 0.18)),
+            (stinger_base_x, cy - int(width * 0.04)),
+            (stinger_tip_x, cy - int(width * 0.22)),
+        ]
+        pygame.draw.polygon(bee_surf, flash_color((0, 240, 255), self.flash_timer), stinger_upper)
+
+        stinger_lower = [
+            (stinger_base_x, cy + int(width * 0.04)),
+            (stinger_base_x, cy + int(width * 0.18)),
+            (stinger_tip_x, cy + int(width * 0.22)),
+        ]
+        pygame.draw.polygon(bee_surf, flash_color((0, 240, 255), self.flash_timer), stinger_lower)
+
+        # 4. TWISTED ASYMMETRIC TENDRIL ANTENNAE WITH GLOWING NODES
+        ant_col = flash_color((160, 50, 240), self.flash_timer)
+        ant_node_col = flash_color((0, 255, 255), self.flash_timer)
+        # Upper antenna
+        pygame.draw.lines(
+            bee_surf, ant_col, False,
+            [
+                (head_cx + int(head_r * 0.5), cy - int(head_r * 0.4)),
+                (head_cx + int(head_r * 1.3), cy - int(head_r * 1.1)),
+                (head_cx + int(head_r * 1.7), cy - int(head_r * 0.7)),
+            ],
+            max(2, int(self.radius * 0.14))
+        )
+        pygame.draw.circle(bee_surf, ant_node_col, (head_cx + int(head_r * 1.7), cy - int(head_r * 0.7)), max(3, int(self.radius * 0.16)))
+
+        # Lower antenna (curved differently for asymmetric weirdness)
+        pygame.draw.lines(
+            bee_surf, ant_col, False,
+            [
+                (head_cx + int(head_r * 0.5), cy + int(head_r * 0.4)),
+                (head_cx + int(head_r * 1.1), cy + int(head_r * 1.3)),
+                (head_cx + int(head_r * 1.8), cy + int(head_r * 1.4)),
+            ],
+            max(2, int(self.radius * 0.14))
+        )
+        pygame.draw.circle(bee_surf, ant_node_col, (head_cx + int(head_r * 1.8), cy + int(head_r * 1.4)), max(3, int(self.radius * 0.16)))
+
+        # Blit rotated
+        rot_surf = pygame.transform.rotate(bee_surf, -self.angle)
+        screen.blit(rot_surf, rot_surf.get_rect(center=(int(sx), int(sy))))
+
+        # ---------------- RARITY TEXT ----------------
+        if not getattr(self, "hide_rarity_label", False):
+            draw_mob_rarity_label(
+                self,
+                int(sx),
+                int(sy + self.radius + 18)
             )
 
 # ---------------- SPIDER ----------------
@@ -11245,6 +11458,8 @@ def register_mob_kill(enemy):
     mob_name = type(enemy).__name__
     if mob_name in ("HoleLadybug", "Hole Ladybug"):
         mob_name = "Hole Ladybug"
+    elif mob_name in ("HoleBee", "Hole Bee"):
+        mob_name = "Hole Bee"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -11289,6 +11504,8 @@ def drop_mob_loot(enemy):
     mob_name = type(enemy).__name__
     if mob_name in ("HoleLadybug", "Hole Ladybug"):
         mob_name = "Hole Ladybug"
+    elif mob_name in ("HoleBee", "Hole Bee"):
+        mob_name = "Hole Bee"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -11515,6 +11732,7 @@ GALLERY_ICON_RADIUS = {
     "Ladybug": 12,
     "Hole Ladybug": 14,
     "Bee": 9,
+    "Hole Bee": 11,
     "Spider": 11,
     "Rock": 11,
     "Hornet": 11,
@@ -11532,12 +11750,15 @@ GALLERY_MOB_DESCRIPTIONS = {
         "starts fights, but it will bite back when bothered."
     ),
     "Hole Ladybug": (
-        "A weird 2x abyss ladybug native to Hole Land. Completely eyeless, "
-        "it fires yellow energy orbs when chasing intruders."
+        "ladybugs from blackholes might not exist."
     ),
     "Bee": (
         "this striped animal is harmless until you attack it, "
         "it is very dangerous when you touch it."
+    ),
+    "Hole Bee": (
+        "A grotesque 2x abyss bee from Hole Land. Possesses segmented chitin, "
+        "four vibrating void wings, and dual stingers."
     ),
     "Spider": (
         "you don't want to go to its webs."
@@ -11573,6 +11794,22 @@ GALLERY_MOB_DESCRIPTIONS = {
 # is rolled independently when the mob dies, so a kill can give several
 # petals or nothing at all.
 MOB_DROP_INFO = {
+    ("Hole Bee", "Common"): [
+        ("Stinger", "Common", 30),
+        ("Stinger", "Unusual", 12),
+        ("Pollen", "Common", 40),
+        ("Pollen", "Unusual", 14),
+        ("Honey", "Common", 35),
+        ("Honey", "Unusual", 10),
+    ],
+    ("Hole Bee", "Unusual"): [
+        ("Stinger", "Common", 10),
+        ("Stinger", "Unusual", 45),
+        ("Pollen", "Common", 10),
+        ("Pollen", "Unusual", 45),
+        ("Honey", "Common", 8),
+        ("Honey", "Unusual", 40),
+    ],
     ("Hole Ladybug", "Common"): [
         ("Light", "Common", 40),
         ("Light", "Unusual", 15),
@@ -16322,6 +16559,7 @@ player_x, player_y = 25, WORLD_HEIGHT - PLAYER_RADIUS
 # Initialize enemy lists (no enemies spawned - all spawning code removed)
 ladybugs = []
 hole_ladybugs = []
+hole_bees = []
 bees = []
 spiders = []
 rocks = []
@@ -17242,6 +17480,8 @@ while running:
                                             "Ladybug": (Ladybug, ladybugs),
                                             "Hole Ladybug": (HoleLadybug, hole_ladybugs),
                                             "HoleLadybug": (HoleLadybug, hole_ladybugs),
+                                            "Hole Bee": (HoleBee, hole_bees),
+                                            "HoleBee": (HoleBee, hole_bees),
                                             "Bee": (Bee, bees),
                                             "Spider": (Spider, spiders),
                                             "Rock": (Rock, rocks),
@@ -19782,6 +20022,7 @@ while running:
         all_enemies_pool = (
             ladybugs
             + hole_ladybugs
+            + hole_bees
             + bees
             + spiders
             + rocks
@@ -20057,6 +20298,37 @@ while running:
 
             if hlb.flash_timer > 0:
                 hlb.flash_timer -= 1
+
+        for hb in hole_bees:
+            move_with_collision(
+                hb,
+                hb.knockback_x,
+                hb.knockback_y
+            )
+            hb.knockback_x *= 0.85
+            hb.knockback_y *= 0.85
+
+            if player_spawn_cooldown <= 0 and enemies_frozen_timer <= 0:
+                if player_ghost or game_peaceful_mode:
+                    fake_player_x = hb.x + 99999
+                    fake_player_y = hb.y + 99999
+                    real_px, real_py = player_x, player_y
+                    player_x, player_y = fake_player_x, fake_player_y
+                    try:
+                        hb.update()
+                    finally:
+                        player_x, player_y = real_px, real_py
+                else:
+                    hb.update()
+
+            if hb.attack_cooldown > 0:
+                hb.attack_cooldown -= 1
+
+            if hb.petal_attack_cooldown > 0:
+                hb.petal_attack_cooldown -= 1
+
+            if hb.flash_timer > 0:
+                hb.flash_timer -= 1
 
 
         for bee in bees:
@@ -20542,6 +20814,28 @@ while running:
                                 kill_player(hlb)
 
                             hlb.attack_cooldown = 2
+
+        for hb in hole_bees:
+            if hb.alive:
+                d = distance(player_x, player_y, hb.x, hb.y)
+                if d < PLAYER_RADIUS + hb.radius and not player_dead:
+                    if player_spawn_cooldown <= 0:
+                        if (
+                            hb.attack_cooldown == 0
+                            and not player_ghost
+                            and not game_peaceful_mode
+                        ):
+                            player_hp -= get_enemy_attack_damage(hb)
+                            if player_hp < 0:
+                                player_hp = 0
+
+                            player_flash_timer = 4
+                            push_player_from(hb, 6.0)
+
+                            if player_hp == 0:
+                                kill_player(hb)
+
+                            hb.attack_cooldown = 2
 
         # enemy touching player
         for ladybug in ladybugs:
@@ -21108,6 +21402,9 @@ while running:
 
         for hlb in hole_ladybugs:
             hlb.draw()
+
+        for hb in hole_bees:
+            hb.draw()
 
         for bee in bees:
             bee.draw()
@@ -22028,6 +22325,7 @@ while running:
                     all_enemies = (
                         ladybugs +
                         hole_ladybugs +
+                        hole_bees +
                         bees +
                         spiders +
                         rocks +
@@ -22101,6 +22399,7 @@ while running:
                         all_enemies = (
                             ladybugs +
                             hole_ladybugs +
+                            hole_bees +
                             bees +
                             spiders +
                             rocks +
@@ -22480,6 +22779,7 @@ while running:
         all_enemies = (
             ladybugs
             + hole_ladybugs
+            + hole_bees
             + bees
             + spiders
             + rocks
@@ -22835,6 +23135,7 @@ while running:
             all_enemy_lists = [
                 ladybugs,
                 hole_ladybugs,
+                hole_bees,
                 bees,
                 spiders,
                 rocks,
