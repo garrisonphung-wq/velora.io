@@ -1174,6 +1174,7 @@ show_hud = True
 
 # Player movement particle trail ('none', 'rainbow', 'fire', 'sparkle') controlled via /p.trail.
 player_trail = "none"
+player_trail_last_sec = 0.5
 player_trail_particles = []
 
 # How far the king and its minions will chase before giving up.
@@ -17522,18 +17523,27 @@ while running:
                                         game_target_grid_color = (60, 180, 75)
                                         show_error("Day theme ON")
                                 elif cmd in ("/p.trail", "/pick.trail") and acc_name_text.lower() == "devguard":
-                                    # /p.trail [none or rainbow or fire or sparkle] - pick movement trail
+                                    # /p.trail [none or rainbow or fire or sparkle] [last seconds]
                                     args = parts[1:]
                                     valid_trails = ("none", "rainbow", "fire", "sparkle")
                                     if len(args) < 1 or args[0].lower() not in valid_trails:
-                                        show_error("Usage: /p.trail [none or rainbow or fire or sparkle]")
+                                        show_error("Usage: /p.trail [none or rainbow or fire or sparkle] [last seconds]")
                                     else:
                                         player_trail = args[0].lower()
                                         player_trail_particles.clear()
+                                        if len(args) >= 2:
+                                            try:
+                                                player_trail_last_sec = max(0.05, float(args[1]))
+                                            except ValueError:
+                                                player_trail_last_sec = 0.5
+                                                show_error("Last seconds must be a number; default to 0.5s")
+                                        else:
+                                            player_trail_last_sec = 0.5
+
                                         if player_trail == "none":
                                             show_error("Movement trail OFF")
                                         else:
-                                            show_error(f"Movement trail set to {player_trail}")
+                                            show_error(f"Movement trail set to {player_trail} ({player_trail_last_sec}s)")
                                 elif cmd in ("/p.petal_speed", "/pick.petal_speed") and acc_name_text.lower() == "devguard":
                                     # /p.petal_speed [slow or normal or fast] - pick petal rotation speed
                                     args = parts[1:]
@@ -18958,7 +18968,8 @@ while running:
             player_y += move_y * move_speed
 
             if player_trail != "none" and (move_x != 0 or move_y != 0):
-                # Spawn trail particles behind the flower
+                # Spawn trail particles behind the flower with lifetime based on player_trail_last_sec
+                trail_life_frames = max(3, int(player_trail_last_sec * FPS))
                 for _ in range(2):
                     offset_angle = random.uniform(0, 2 * math.pi)
                     offset_dist = random.uniform(0, PLAYER_RADIUS * 0.7)
@@ -18979,7 +18990,7 @@ while running:
                             "x": px, "y": py,
                             "vx": random.uniform(-0.6, 0.6) - move_x * 0.4,
                             "vy": random.uniform(-0.6, 0.6) - move_y * 0.4,
-                            "life": 32, "max_life": 32,
+                            "life": trail_life_frames, "max_life": trail_life_frames,
                             "size": random.uniform(PLAYER_RADIUS * 0.35, PLAYER_RADIUS * 0.6),
                             "color": col,
                             "type": "circle"
@@ -18990,7 +19001,7 @@ while running:
                             "x": px, "y": py,
                             "vx": random.uniform(-0.8, 0.8) - move_x * 0.5,
                             "vy": random.uniform(-0.8, 0.8) - move_y * 0.5 - random.uniform(0.5, 1.5),
-                            "life": 26, "max_life": 26,
+                            "life": trail_life_frames, "max_life": trail_life_frames,
                             "size": random.uniform(PLAYER_RADIUS * 0.35, PLAYER_RADIUS * 0.65),
                             "color": random.choice(fire_cols),
                             "type": "flame"
@@ -19001,7 +19012,7 @@ while running:
                             "x": px, "y": py,
                             "vx": random.uniform(-1.2, 1.2),
                             "vy": random.uniform(-1.2, 1.2),
-                            "life": 24, "max_life": 24,
+                            "life": trail_life_frames, "max_life": trail_life_frames,
                             "size": random.uniform(PLAYER_RADIUS * 0.25, PLAYER_RADIUS * 0.5),
                             "color": random.choice(sparkle_cols),
                             "type": "star",
@@ -22808,6 +22819,7 @@ while running:
                 "/clean_drops",
                 "/spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range] [amount]",
                 "/spawn_minion [rarity] [mob] [amount]",
+                "/p.trail [none or rainbow or fire or sparkle] [last seconds]",
                 "/p.trail [none or rainbow or fire or sparkle]",
                 "/p.petal_speed [slow or normal or fast]",
                 "/p.theme [day or night]",
@@ -22848,6 +22860,8 @@ while running:
                 "range]": (255, 185, 30),
                 "[action]": (255, 0, 255),
                 "[seconds]": (0, 255, 128),
+                "[last": (0, 255, 128),
+                "seconds]": (0, 255, 128),
                 "[state]": (255, 185, 30),
                 "[multiplier]": (60, 235, 220),
                 "[x]": (190, 120, 255),
