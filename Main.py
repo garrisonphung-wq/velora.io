@@ -1981,7 +1981,7 @@ def draw_projectile_hp_bar(sx, sy, radius, hp, max_hp):
         (
             bar_x,
             bar_y,
-            int(bar_width * max(0.0, hp / max_hp)),
+            int(bar_width * max(0.0, min(1.0, hp / max_hp))),
             bar_height
         )
     )
@@ -5502,7 +5502,7 @@ class Ladybug:
                 int(5 * settings_hp_bar_scale)
             )
 
-            hp_percent = self.hp / self.max_hp
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
 
 
             pygame.draw.rect(
@@ -5995,7 +5995,7 @@ class Bee:
 
 
 
-            hp_percent = self.hp / self.max_hp
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
 
 
 
@@ -6521,7 +6521,7 @@ class Spider:
                 int(5 * settings_hp_bar_scale)
             )
 
-            hp_percent = self.hp / self.max_hp
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
 
             pygame.draw.rect(
                 screen,
@@ -6986,7 +6986,7 @@ class Rock:
                 int(6 * settings_hp_bar_scale)
             )
 
-            hp_percent = self.hp / self.max_hp
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
 
             pygame.draw.rect(
                 screen,
@@ -7426,7 +7426,7 @@ class Hornet:
                 int(5 * settings_hp_bar_scale)
             )
 
-            hp_percent = self.hp / self.max_hp
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
 
 
             pygame.draw.rect(
@@ -9513,7 +9513,7 @@ class WorkerAnt:
                 int(5 * settings_hp_bar_scale)
             )
 
-            hp_percent = self.hp / self.max_hp
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
 
             pygame.draw.rect(
                 screen,
@@ -21414,7 +21414,7 @@ while running:
                         if light_hp[i][li] < petal_max_hp[i]:
                             bar_width = 20
                             bar_height = 4
-                            hp_percent = light_hp[i][li] / petal_max_hp[i]
+                            hp_percent = max(0.0, min(1.0, light_hp[i][li] / max(1, petal_max_hp[i])))
                             bar_orbit = petal_orbit_distance(
                                 i,
                                 40 if petal_slots[i]["petal"] == "Moon" else 0
@@ -21450,9 +21450,12 @@ while running:
                     bar_width = 35
                     bar_height = 5
 
-                    hp_percent = (
-                        petal_hp[i] /
-                        petal_max_hp[i]
+                    hp_percent = max(
+                        0.0,
+                        min(
+                            1.0,
+                            petal_hp[i] / max(1, petal_max_hp[i])
+                        )
                     )
 
                     bar_orbit = petal_orbit_distance(
@@ -21527,7 +21530,7 @@ while running:
                     bar_width = 600
                     bar_height = 25
 
-                    hp_percent = boss_hp / boss_max_hp
+                    hp_percent = max(0.0, min(1.0, boss_hp / max(1, boss_max_hp)))
 
 
                     pygame.draw.rect(
