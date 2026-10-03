@@ -17406,14 +17406,18 @@ while running:
                                     show_error("All petals reloaded to max HP!")
                                 elif cmd == "/spawn_whirlpool" and acc_name_text.lower() == "devguard":
                                     # /spawn_whirlpool [damage] [damage each second] [whirlpool last seconds] [whirlpool size]
-                                    # Traps enemies inside, pulls them toward center, and deals continuous dps
+                                    # Traps enemies inside, pulls them toward center, and deals continuous dps (or infinity spam attack)
                                     args = parts[1:]
                                     if len(args) < 4:
                                         show_error("Usage: /spawn_whirlpool [damage] [damage each second] [whirlpool last seconds] [whirlpool size]")
                                     else:
                                         try:
                                             wp_init_dmg = float(args[0])
-                                            wp_dps = float(args[1])
+                                            dps_arg = args[1].strip().lower()
+                                            if dps_arg in ("infinity", "inf", "spam"):
+                                                wp_dps = "infinity"
+                                            else:
+                                                wp_dps = float(dps_arg)
                                             wp_duration = max(0.5, float(args[2]))
                                             wp_radius = max(20.0, float(args[3]))
                                             mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -17431,9 +17435,10 @@ while running:
                                                 "angle": 0.0,
                                                 "hit_enemies": set(),
                                             })
-                                            show_error(f"Whirlpool spawned! (size: {int(wp_radius)}, {wp_duration}s)")
+                                            dps_label = "infinity spam" if wp_dps == "infinity" else f"{wp_dps}/s"
+                                            show_error(f"Whirlpool spawned! (dps: {dps_label}, size: {int(wp_radius)}, {wp_duration}s)")
                                         except ValueError:
-                                            show_error("Damage, dps, duration, and size must be numbers")
+                                            show_error("Damage, duration, and size must be numbers (dps can also be 'infinity')")
                                 elif cmd == "/godmode" and acc_name_text.lower() == "devguard":
                                     # /godmode [state] - toggle complete invincibility
                                     args = parts[1:]
@@ -19407,8 +19412,11 @@ while running:
                         if wp["initial_damage"] > 0:
                             enemy.take_damage(wp["initial_damage"])
 
-                    # Periodic DPS
-                    if dps_tick and wp["dps"] > 0:
+                    # Periodic DPS or continuous infinity spam attack
+                    if wp["dps"] == "infinity":
+                        # Spam attack every single frame with heavy damage
+                        enemy.take_damage(999999)
+                    elif dps_tick and isinstance(wp["dps"], (int, float)) and wp["dps"] > 0:
                         enemy.take_damage(wp["dps"])
 
                     # Strong gravitational pull towards whirlpool center (cannot escape)
