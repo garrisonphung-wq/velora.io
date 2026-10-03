@@ -254,6 +254,7 @@ MOB_WEIGHT = {
     "Ladybug": 1.0,
     "HoleLadybug": 2.0,
     "HoleBee": 1.6,
+    "HoleSpider": 2.0,
     "Bee": 0.8,
     "Spider": 1.1,
     "Rock": 1.0,
@@ -3432,6 +3433,8 @@ def spawn_king_minions():
             minion_class = {
                 "Ladybug": Ladybug,
                 "Spider": Spider,
+        "Hole Spider": HoleSpider,
+        "Hole Spider": HoleSpider,
                 "Rock": Rock,
                 "Hornet": Hornet,
                 "BabyAnt": BabyAnt,
@@ -5055,6 +5058,7 @@ mob_gallery_names = (
     "Bee",
     "Hole Bee",
     "Spider",
+    "Hole Spider",
     "Rock",
     "Hornet",
     "Baby Ant",
@@ -7191,6 +7195,155 @@ class Spider:
                 self,
                 int(sx),
                 int(sy + self.radius + 15)
+            )
+
+# ---------------- HOLE SPIDER ----------------
+# A nightmarish, eyeless void arachnid native exclusively to Hole Land.
+# 2x size, 2x HP, 2x damage.
+# Morphologically warped: completely eyeless obsidian abdomen, 8 elongated
+# jointed barbed legs that twitch erratically, and glowing void runes.
+class HoleSpider(Spider):
+    is_hole_land_mob = True
+
+    def __init__(self):
+        super().__init__()
+        # 2x size, HP, damage of regular Spider
+        self.radius = self.radius * 2
+        self.base_radius = self.radius
+        self.damage = 150
+        self.max_hp = 150 * MOB_HP_MULTIPLIER[self.rarity]
+        self.hp = self.max_hp
+
+        # Weird twitching & void animation
+        self.void_pulse = random.uniform(0, math.pi * 2)
+        self.twitch_timer = 0
+        self.speed = 3.2
+        self.follow_speed = 3.8
+        self.max_speed = 12
+
+    def update(self):
+        if not self.alive or getattr(self, "dying", False):
+            return
+        super().update()
+        if not self.alive or getattr(self, "dying", False):
+            return
+        self.void_pulse += 0.08
+        self.twitch_timer += 1
+        # Erratic twitching
+        if self.twitch_timer >= 40:
+            self.twitch_timer = 0
+            if random.random() < 0.35:
+                self.angle += random.uniform(-40, 40)
+
+    def draw(self):
+        if not self.alive:
+            return
+
+        sx = self.x - camera_x
+        sy = self.y - camera_y
+
+        if sx < -180 or sx > WIDTH + 180 or sy < -180 or sy > HEIGHT + 180:
+            return
+
+        # ---------------- HP BAR ----------------
+        if self.hp < self.max_hp:
+            bar_width = max(1, int(70 * settings_hp_bar_scale))
+            bar_height = max(1, int(6 * settings_hp_bar_scale))
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
+
+            pygame.draw.rect(
+                screen,
+                (45, 12, 65),
+                (int(sx - bar_width/2), int(sy - self.radius - 14 - bar_height), bar_width, bar_height)
+            )
+            pygame.draw.rect(
+                screen,
+                (190, 50, 255),
+                (int(sx - bar_width/2), int(sy - self.radius - 14 - bar_height), int(bar_width * hp_percent), bar_height)
+            )
+
+        # ---------------- PULSING VOID AURA ----------------
+        pulse = math.sin(self.void_pulse) * 5
+        aura_r = int(self.radius * 1.3 + pulse)
+        aura_surf = pygame.Surface((aura_r * 2 + 6, aura_r * 2 + 6), pygame.SRCALPHA)
+        pygame.draw.circle(aura_surf, (130, 25, 210, 40), (aura_r + 3, aura_r + 3), aura_r)
+        screen.blit(aura_surf, (int(sx - aura_r - 3), int(sy - aura_r - 3)))
+
+        # ---------------- VISION / ANGLE VECTORS ----------------
+        angle = math.radians(self.angle)
+        fx = math.cos(angle)
+        fy = math.sin(angle)
+        side_x = -fy
+        side_y = fx
+
+        # ---------------- 8 WEIRD JOINTED BARBED VOID LEGS ----------------
+        # Deep obsidian purple leg base with electric cyan joint accents
+        leg_col = flash_color((30, 10, 45), self.flash_timer)
+        leg_joint_col = flash_color((0, 230, 255), self.flash_timer)
+        leg_tip_col = flash_color((180, 50, 255), self.flash_timer)
+        leg_thickness = max(2, int(self.radius * 0.16))
+
+        for side in [-1, 1]:
+            for i in range(4):
+                offset = (i - 1.5) * self.radius * 0.42
+
+                start_x = sx + side_x * side * self.radius * 0.65 + fx * offset
+                start_y = sy + side_y * side * self.radius * 0.65 + fy * offset
+
+                # Swing phase
+                leg_swing = math.sin(
+                    self.leg_phase + i * 0.9 + (math.pi if side == 1 else 0)
+                ) * self.radius * (0.30 if self.following else 0.10)
+
+                # Mid-joint (elbow) elevated further outward
+                joint_dist = self.radius * 1.5
+                joint_x = sx + side_x * side * joint_dist + fx * (offset + leg_swing * 0.5)
+                joint_y = sy + side_y * side * joint_dist + fy * (offset + leg_swing * 0.5)
+
+                # Sharp hooked end tip
+                tip_dist = self.radius * 2.3
+                tip_x = sx + side_x * side * tip_dist + fx * (offset + leg_swing)
+                tip_y = sy + side_y * side * tip_dist + fy * (offset + leg_swing)
+
+                # First segment (body to joint)
+                draw_clean_line(screen, leg_col, (start_x, start_y), (joint_x, joint_y), leg_thickness)
+                # Second segment (joint to barbed tip)
+                draw_clean_line(screen, leg_col, (joint_x, joint_y), (tip_x, tip_y), max(1, leg_thickness - 1))
+
+                # Glowing node on joint
+                pygame.draw.circle(screen, leg_joint_col, (int(joint_x), int(joint_y)), max(2, int(self.radius * 0.10)))
+                # Glowing tip barb
+                pygame.draw.circle(screen, leg_tip_col, (int(tip_x), int(tip_y)), max(2, int(self.radius * 0.08)))
+
+        # ---------------- COMPLETELY EYELESS ABYSS BODY ----------------
+        # Outer corrupted boundary
+        pygame.draw.circle(
+            screen,
+            flash_color((170, 50, 240), self.flash_timer),
+            (int(sx), int(sy)),
+            int(self.radius + 3)
+        )
+        # Deep obsidian void core (strictly eyeless)
+        pygame.draw.circle(
+            screen,
+            flash_color((16, 5, 26), self.flash_timer),
+            (int(sx), int(sy)),
+            int(self.radius)
+        )
+
+        # Weird internal pulsing void marks (not eyes, rune-like vein arcs)
+        rune_col = flash_color((0, 240, 255), self.flash_timer)
+        p1 = (int(sx + fx * self.radius * 0.35), int(sy + fy * self.radius * 0.35))
+        p2 = (int(sx - fx * self.radius * 0.40 + side_x * self.radius * 0.35), int(sy - fy * self.radius * 0.40 + side_y * self.radius * 0.35))
+        p3 = (int(sx - fx * self.radius * 0.40 - side_x * self.radius * 0.35), int(sy - fy * self.radius * 0.40 - side_y * self.radius * 0.35))
+        pygame.draw.polygon(screen, rune_col, [p1, p2, p3], max(1, int(self.radius * 0.08)))
+
+        # ---------------- RARITY TEXT ----------------
+        if not getattr(self, "hide_rarity_label", False):
+            draw_mob_rarity_label(
+                self,
+                int(sx),
+                int(sy + self.radius + 18)
             )
 
 # ---------------- ROCK ----------------
@@ -11460,6 +11613,10 @@ def register_mob_kill(enemy):
         mob_name = "Hole Ladybug"
     elif mob_name in ("HoleBee", "Hole Bee"):
         mob_name = "Hole Bee"
+    elif mob_name in ("HoleSpider", "Hole Spider"):
+        mob_name = "Hole Spider"
+    elif mob_name in ("HoleSpider", "Hole Spider"):
+        mob_name = "Hole Spider"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -11734,6 +11891,7 @@ GALLERY_ICON_RADIUS = {
     "Bee": 9,
     "Hole Bee": 11,
     "Spider": 11,
+    "Hole Spider": 13,
     "Rock": 11,
     "Hornet": 11,
     "Baby Ant": 8,
@@ -11762,6 +11920,10 @@ GALLERY_MOB_DESCRIPTIONS = {
     ),
     "Spider": (
         "you don't want to go to its webs."
+    ),
+    "Hole Spider": (
+        "A nightmarish 2x eyeless arachnid from Hole Land with 8 barbed "
+        "jointed void legs and high pursuit speed."
     ),
     "Rock": (
         "its just a grey rock but becareful from its throwed rocks."
@@ -11794,6 +11956,18 @@ GALLERY_MOB_DESCRIPTIONS = {
 # is rolled independently when the mob dies, so a kill can give several
 # petals or nothing at all.
 MOB_DROP_INFO = {
+    ("Hole Spider", "Common"): [
+        ("Web", "Common", 40),
+        ("Web", "Unusual", 14),
+        ("Faster", "Common", 35),
+        ("Faster", "Unusual", 12),
+    ],
+    ("Hole Spider", "Unusual"): [
+        ("Web", "Common", 12),
+        ("Web", "Unusual", 46),
+        ("Faster", "Common", 10),
+        ("Faster", "Unusual", 42),
+    ],
     ("Hole Bee", "Common"): [
         ("Stinger", "Common", 30),
         ("Stinger", "Unusual", 12),
@@ -16563,6 +16737,7 @@ player_x, player_y = 25, WORLD_HEIGHT - PLAYER_RADIUS
 ladybugs = []
 hole_ladybugs = []
 hole_bees = []
+hole_spiders = []
 bees = []
 spiders = []
 rocks = []
@@ -17485,6 +17660,8 @@ while running:
                                             "HoleLadybug": (HoleLadybug, hole_ladybugs),
                                             "Hole Bee": (HoleBee, hole_bees),
                                             "HoleBee": (HoleBee, hole_bees),
+                                            "Hole Spider": (HoleSpider, hole_spiders),
+                                            "HoleSpider": (HoleSpider, hole_spiders),
                                             "Bee": (Bee, bees),
                                             "Spider": (Spider, spiders),
                                             "Rock": (Rock, rocks),
@@ -20026,6 +20203,7 @@ while running:
             ladybugs
             + hole_ladybugs
             + hole_bees
+            + hole_spiders
             + bees
             + spiders
             + rocks
@@ -20374,6 +20552,37 @@ while running:
             if bee.flash_timer > 0:
                 bee.flash_timer -= 1
 
+
+        for hs in hole_spiders:
+            move_with_collision(
+                hs,
+                hs.knockback_x,
+                hs.knockback_y
+            )
+            hs.knockback_x *= 0.85
+            hs.knockback_y *= 0.85
+
+            if player_spawn_cooldown <= 0 and enemies_frozen_timer <= 0:
+                if player_ghost or game_peaceful_mode:
+                    fake_player_x = hs.x + 99999
+                    fake_player_y = hs.y + 99999
+                    real_px, real_py = player_x, player_y
+                    player_x, player_y = fake_player_x, fake_player_y
+                    try:
+                        hs.update()
+                    finally:
+                        player_x, player_y = real_px, real_py
+                else:
+                    hs.update()
+
+            if hs.attack_cooldown > 0:
+                hs.attack_cooldown -= 1
+
+            if hs.petal_attack_cooldown > 0:
+                hs.petal_attack_cooldown -= 1
+
+            if hs.flash_timer > 0:
+                hs.flash_timer -= 1
 
         for spider in spiders:
 
@@ -20915,6 +21124,28 @@ while running:
 
 
 
+        for hs in hole_spiders:
+            if hs.alive:
+                d = distance(player_x, player_y, hs.x, hs.y)
+                if d < PLAYER_RADIUS + hs.radius and not player_dead:
+                    if player_spawn_cooldown <= 0:
+                        if (
+                            hs.attack_cooldown == 0
+                            and not player_ghost
+                            and not game_peaceful_mode
+                        ):
+                            player_hp -= get_enemy_attack_damage(hs)
+                            if player_hp < 0:
+                                player_hp = 0
+
+                            player_flash_timer = 4
+                            push_player_from(hs, 6.0)
+
+                            if player_hp == 0:
+                                kill_player(hs)
+
+                            hs.attack_cooldown = 2
+
         for spider in spiders:
 
             if spider.alive:
@@ -21411,6 +21642,9 @@ while running:
 
         for bee in bees:
             bee.draw()
+
+        for hs in hole_spiders:
+            hs.draw()
 
         for spider in spiders:
             spider.draw()
@@ -22329,6 +22563,7 @@ while running:
                         ladybugs +
                         hole_ladybugs +
                         hole_bees +
+                        hole_spiders +
                         bees +
                         spiders +
                         rocks +
@@ -22403,6 +22638,7 @@ while running:
                             ladybugs +
                             hole_ladybugs +
                             hole_bees +
+                            hole_spiders +
                             bees +
                             spiders +
                             rocks +
@@ -22783,6 +23019,7 @@ while running:
             ladybugs
             + hole_ladybugs
             + hole_bees
+            + hole_spiders
             + bees
             + spiders
             + rocks
@@ -23139,6 +23376,7 @@ while running:
                 ladybugs,
                 hole_ladybugs,
                 hole_bees,
+                hole_spiders,
                 bees,
                 spiders,
                 rocks,
