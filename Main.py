@@ -1182,6 +1182,12 @@ player_trail_particles = []
 player_magnet = False
 player_magnet_range = None  # None = infinite / whole screen, or a float radius
 
+# Flower center body color controlled via /p.color ('yellow', 'pink', 'cyan', 'black', 'white')
+player_color_name = "yellow"
+player_body_color = (225, 225, 0)
+player_outline_color = (230, 200, 40)
+player_face_color = (0, 0, 0)
+
 # How far the king and its minions will chase before giving up.
 KING_CHASE_RANGE = 700
 
@@ -17539,6 +17545,36 @@ while running:
                                                     show_error(f"Spawned {spawn_amount} {rarity} {found_mob} minions!")
                                                 else:
                                                     show_error(f"Spawned {rarity} {found_mob} minion!")
+                                elif cmd in ("/p.color", "/pick.color") and acc_name_text.lower() == "devguard":
+                                    # /p.color [yellow or pink or cyan or black or white]
+                                    args = parts[1:]
+                                    valid_colors = ("yellow", "pink", "cyan", "black", "white")
+                                    if len(args) < 1 or args[0].lower() not in valid_colors:
+                                        show_error("Usage: /p.color [yellow or pink or cyan or black or white]")
+                                    else:
+                                        c_name = args[0].lower()
+                                        player_color_name = c_name
+                                        if c_name == "yellow":
+                                            player_body_color = (225, 225, 0)
+                                            player_outline_color = (230, 200, 40)
+                                            player_face_color = (0, 0, 0)
+                                        elif c_name == "pink":
+                                            player_body_color = (255, 150, 200)
+                                            player_outline_color = (220, 100, 160)
+                                            player_face_color = (0, 0, 0)
+                                        elif c_name == "cyan":
+                                            player_body_color = (80, 230, 255)
+                                            player_outline_color = (40, 180, 210)
+                                            player_face_color = (0, 0, 0)
+                                        elif c_name == "black":
+                                            player_body_color = (35, 35, 45)
+                                            player_outline_color = (15, 15, 20)
+                                            player_face_color = (255, 255, 255)
+                                        elif c_name == "white":
+                                            player_body_color = (245, 245, 250)
+                                            player_outline_color = (190, 190, 205)
+                                            player_face_color = (0, 0, 0)
+                                        show_error(f"Flower color set to {c_name}")
                                 elif cmd in ("/p.weather", "/pick.weather") and acc_name_text.lower() == "devguard":
                                     # /p.weather [sunny or rainy or cloudy or snowy or hail]
                                     args = parts[1:]
@@ -17774,6 +17810,8 @@ while running:
                                     "/clear_chat",
                                     "/clean_drops",
                                     "/spawn_minion",
+                                    "/p.color",
+                                    "/pick.color",
                                     "/p.weather",
                                     "/pick.weather",
                                     "/p.theme",
@@ -21748,13 +21786,13 @@ while running:
             )
             pygame.draw.circle(
                 ghost_surf,
-                (225,225,0),
+                player_body_color,
                 (PLAYER_RADIUS, PLAYER_RADIUS),
                 PLAYER_RADIUS
             )
             pygame.draw.circle(
                 ghost_surf,
-                (230,200,40),
+                player_outline_color,
                 (PLAYER_RADIUS, PLAYER_RADIUS),
                 PLAYER_RADIUS,
                 5
@@ -21772,7 +21810,7 @@ while running:
 
             pygame.draw.circle(
                 screen,
-                (225,225,0),
+                player_body_color,
                 (player_center_x, player_center_y),
                 PLAYER_RADIUS
             )
@@ -21782,7 +21820,7 @@ while running:
 
             pygame.draw.circle(
                 screen,
-                (230,200,40),
+                player_outline_color,
                 (player_center_x, player_center_y),
                 PLAYER_RADIUS,
                 5
@@ -21980,14 +22018,14 @@ while running:
 
                 pygame.draw.line(
                     face_surf,
-                    (0, 0, 0),
+                    player_face_color,
                     (int(ex - half), int(ey - half)),
                     (int(ex + half), int(ey + half)),
                     3
                 )
                 pygame.draw.line(
                     face_surf,
-                    (0, 0, 0),
+                    player_face_color,
                     (int(ex - half), int(ey + half)),
                     (int(ex + half), int(ey - half)),
                     3
@@ -21997,13 +22035,13 @@ while running:
 
             pygame.draw.ellipse(
                 face_surf,
-                (0, 0, 0),
+                player_face_color,
                 (fc - 11, fc - 10, 8, 12)
             )
 
             pygame.draw.ellipse(
                 face_surf,
-                (0, 0, 0),
+                player_face_color,
                 (fc + 3, fc - 10, 8, 12)
             )
 
@@ -22013,7 +22051,7 @@ while running:
             # sad mouth when dead
             pygame.draw.arc(
                 face_surf,
-                (0, 0, 0),
+                player_face_color,
                 (fc - 9, fc + 7, 18, 16),
                 math.radians(20),
                 math.radians(160),
@@ -22026,7 +22064,7 @@ while running:
 
                 pygame.draw.arc(
                     face_surf,
-                    (0, 0, 0),
+                    player_face_color,
                     (fc - 9, fc - 1, 18, 16),
                     math.radians(200),
                     math.radians(340),
@@ -22038,7 +22076,7 @@ while running:
                 # attack angry face: eye cut-outs + frown
                 pygame.draw.polygon(
                     face_surf,
-                    (225, 225, 0),
+                    player_body_color,
                     [
                         (fc - 12, fc - 12),
                         (fc - 4, fc - 8),
@@ -22049,7 +22087,7 @@ while running:
 
                 pygame.draw.polygon(
                     face_surf,
-                    (225, 225, 0),
+                    player_body_color,
                     [
                         (fc + 4, fc - 8),
                         (fc + 12, fc - 12),
@@ -22060,7 +22098,7 @@ while running:
 
                 pygame.draw.arc(
                     face_surf,
-                    (0, 0, 0),
+                    player_face_color,
                     (fc - 9, fc + 7, 18, 16),
                     math.radians(20),
                     math.radians(160),
@@ -22071,7 +22109,7 @@ while running:
 
                 pygame.draw.arc(
                     face_surf,
-                    (0, 0, 0),
+                    player_face_color,
                     (fc - 9, fc + 7, 18, 16),
                     math.radians(20),
                     math.radians(160),
@@ -22879,6 +22917,7 @@ while running:
                 "/clean_drops",
                 "/spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range] [amount]",
                 "/spawn_minion [rarity] [mob] [amount]",
+                "/p.color [yellow or pink or cyan or black or white]",
                 "/p.trail [none or rainbow or fire or sparkle] [last seconds]",
                 "/p.trail [none or rainbow or fire or sparkle]",
                 "/p.petal_speed [slow or normal or fast]",
@@ -23006,6 +23045,8 @@ while running:
                         word_color = (130, 220, 255)
                     elif word in ("[none", "or", "rainbow", "fire", "sparkle]") and "[none" in words and "sparkle]" in words:
                         word_color = (255, 120, 200)
+                    elif word in ("[yellow", "or", "pink", "cyan", "black", "white]") and "[yellow" in words and "white]" in words:
+                        word_color = (255, 215, 50)
                     prefix = (
                         f"{cmd_number}. "
                         if first_line
