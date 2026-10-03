@@ -17545,36 +17545,79 @@ while running:
                                                     show_error(f"Spawned {spawn_amount} {rarity} {found_mob} minions!")
                                                 else:
                                                     show_error(f"Spawned {rarity} {found_mob} minion!")
-                                elif cmd in ("/p.color", "/pick.color") and acc_name_text.lower() == "devguard":
-                                    # /p.color [yellow or pink or cyan or black or white]
+                                elif cmd in ("/p.flower", "/pick.flower", "/p.color", "/pick.color") and acc_name_text.lower() == "devguard":
+                                    # /p.flower [color] or [hex] - customize flower color or reset with none
                                     args = parts[1:]
-                                    valid_colors = ("yellow", "pink", "cyan", "black", "white")
-                                    if len(args) < 1 or args[0].lower() not in valid_colors:
-                                        show_error("Usage: /p.color [yellow or pink or cyan or black or white]")
+                                    if len(args) < 1:
+                                        show_error("Usage: /p.flower [color] or [hex]")
                                     else:
-                                        c_name = args[0].lower()
-                                        player_color_name = c_name
-                                        if c_name == "yellow":
+                                        raw_input = args[0].strip().lower()
+                                        # Check for none / default reset
+                                        if raw_input in ("none", "default", "reset"):
+                                            player_color_name = "yellow"
                                             player_body_color = (225, 225, 0)
                                             player_outline_color = (230, 200, 40)
                                             player_face_color = (0, 0, 0)
-                                        elif c_name == "pink":
-                                            player_body_color = (255, 150, 200)
-                                            player_outline_color = (220, 100, 160)
-                                            player_face_color = (0, 0, 0)
-                                        elif c_name == "cyan":
-                                            player_body_color = (80, 230, 255)
-                                            player_outline_color = (40, 180, 210)
-                                            player_face_color = (0, 0, 0)
-                                        elif c_name == "black":
-                                            player_body_color = (35, 35, 45)
-                                            player_outline_color = (15, 15, 20)
-                                            player_face_color = (255, 255, 255)
-                                        elif c_name == "white":
-                                            player_body_color = (245, 245, 250)
-                                            player_outline_color = (190, 190, 205)
-                                            player_face_color = (0, 0, 0)
-                                        show_error(f"Flower color set to {c_name}")
+                                            show_error("Flower color reset to default (yellow)")
+                                        else:
+                                            parsed = False
+                                            # Try hex color (#RGB, #RRGGBB, RGB, RRGGBB)
+                                            hex_cand = raw_input.lstrip("#")
+                                            if len(hex_cand) in (3, 6):
+                                                try:
+                                                    if len(hex_cand) == 3:
+                                                        hex_cand = "".join([c * 2 for c in hex_cand])
+                                                    r = int(hex_cand[0:2], 16)
+                                                    g = int(hex_cand[2:4], 16)
+                                                    b = int(hex_cand[4:6], 16)
+                                                    out_r = max(0, int(r * 0.8))
+                                                    out_g = max(0, int(g * 0.8))
+                                                    out_b = max(0, int(b * 0.8))
+                                                    lum = 0.299 * r + 0.587 * g + 0.114 * b
+                                                    player_face_color = (255, 255, 255) if lum < 120 else (0, 0, 0)
+                                                    player_body_color = (r, g, b)
+                                                    player_outline_color = (out_r, out_g, out_b)
+                                                    player_color_name = f"#{hex_cand}"
+                                                    parsed = True
+                                                    show_error(f"Flower color set to #{hex_cand}")
+                                                except ValueError:
+                                                    pass
+
+                                            # Try named color if not parsed as hex
+                                            if not parsed:
+                                                clean_name = raw_input.replace(" ", "").replace("_", "")
+                                                # Check custom presets first
+                                                presets = {
+                                                    "yellow": ((225, 225, 0), (230, 200, 40), (0, 0, 0)),
+                                                    "pink": ((255, 150, 200), (220, 100, 160), (0, 0, 0)),
+                                                    "cyan": ((80, 230, 255), (40, 180, 210), (0, 0, 0)),
+                                                    "black": ((35, 35, 45), (15, 15, 20), (255, 255, 255)),
+                                                    "white": ((245, 245, 250), (190, 190, 205), (0, 0, 0)),
+                                                }
+                                                if clean_name in presets:
+                                                    b_col, o_col, f_col = presets[clean_name]
+                                                    player_body_color = b_col
+                                                    player_outline_color = o_col
+                                                    player_face_color = f_col
+                                                    player_color_name = clean_name
+                                                    parsed = True
+                                                    show_error(f"Flower color set to {clean_name}")
+                                                elif clean_name in pygame.color.THECOLORS:
+                                                    c = pygame.color.THECOLORS[clean_name]
+                                                    r, g, b = c[0], c[1], c[2]
+                                                    out_r = max(0, int(r * 0.8))
+                                                    out_g = max(0, int(g * 0.8))
+                                                    out_b = max(0, int(b * 0.8))
+                                                    lum = 0.299 * r + 0.587 * g + 0.114 * b
+                                                    player_face_color = (255, 255, 255) if lum < 120 else (0, 0, 0)
+                                                    player_body_color = (r, g, b)
+                                                    player_outline_color = (out_r, out_g, out_b)
+                                                    player_color_name = raw_input
+                                                    parsed = True
+                                                    show_error(f"Flower color set to {raw_input}")
+
+                                            if not parsed:
+                                                show_error("Invalid color or hex code")
                                 elif cmd in ("/p.weather", "/pick.weather") and acc_name_text.lower() == "devguard":
                                     # /p.weather [sunny or rainy or cloudy or snowy or hail]
                                     args = parts[1:]
@@ -17810,6 +17853,8 @@ while running:
                                     "/clear_chat",
                                     "/clean_drops",
                                     "/spawn_minion",
+                                    "/p.flower",
+                                    "/pick.flower",
                                     "/p.color",
                                     "/pick.color",
                                     "/p.weather",
@@ -22917,7 +22962,7 @@ while running:
                 "/clean_drops",
                 "/spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range] [amount]",
                 "/spawn_minion [rarity] [mob] [amount]",
-                "/p.color [yellow or pink or cyan or black or white]",
+                "/p.flower [color] or [hex]",
                 "/p.trail [none or rainbow or fire or sparkle] [last seconds]",
                 "/p.trail [none or rainbow or fire or sparkle]",
                 "/p.petal_speed [slow or normal or fast]",
@@ -22963,6 +23008,8 @@ while running:
                 "seconds]": (0, 255, 128),
                 "[state]": (255, 185, 30),
                 "[multiplier]": (60, 235, 220),
+                "[color]": (255, 150, 200),
+                "[hex]": (120, 220, 255),
                 "[x]": (190, 120, 255),
                 "[y]": (255, 130, 220),
                 "from.[user]": (128, 255, 0),
@@ -23045,8 +23092,8 @@ while running:
                         word_color = (130, 220, 255)
                     elif word in ("[none", "or", "rainbow", "fire", "sparkle]") and "[none" in words and "sparkle]" in words:
                         word_color = (255, 120, 200)
-                    elif word in ("[yellow", "or", "pink", "cyan", "black", "white]") and "[yellow" in words and "white]" in words:
-                        word_color = (255, 215, 50)
+                    elif word == "or" and "[color]" in words and "[hex]" in words:
+                        word_color = (200, 200, 200)
                     prefix = (
                         f"{cmd_number}. "
                         if first_line
