@@ -1172,6 +1172,10 @@ player_speed_mult = 1.0
 # HUD visibility (True = show HUD, False = hide HUD) controlled via /hud or /p.hud.
 show_hud = True
 
+# Player movement particle trail ('none', 'rainbow', 'fire', 'sparkle') controlled via /p.trail.
+player_trail = "none"
+player_trail_particles = []
+
 # How far the king and its minions will chase before giving up.
 KING_CHASE_RANGE = 700
 
@@ -17517,6 +17521,19 @@ while running:
                                         game_theme = "day"
                                         game_target_grid_color = (60, 180, 75)
                                         show_error("Day theme ON")
+                                elif cmd in ("/p.trail", "/pick.trail") and acc_name_text.lower() == "devguard":
+                                    # /p.trail [none or rainbow or fire or sparkle] - pick movement trail
+                                    args = parts[1:]
+                                    valid_trails = ("none", "rainbow", "fire", "sparkle")
+                                    if len(args) < 1 or args[0].lower() not in valid_trails:
+                                        show_error("Usage: /p.trail [none or rainbow or fire or sparkle]")
+                                    else:
+                                        player_trail = args[0].lower()
+                                        player_trail_particles.clear()
+                                        if player_trail == "none":
+                                            show_error("Movement trail OFF")
+                                        else:
+                                            show_error(f"Movement trail set to {player_trail}")
                                 elif cmd in ("/p.petal_speed", "/pick.petal_speed") and acc_name_text.lower() == "devguard":
                                     # /p.petal_speed [slow or normal or fast] - pick petal rotation speed
                                     args = parts[1:]
@@ -17708,6 +17725,8 @@ while running:
                                     "/pick.weather",
                                     "/p.theme",
                                     "/pick.theme",
+                                    "/p.trail",
+                                    "/pick.trail",
                                     "/p.petal_speed",
                                     "/pick.petal_speed",
                                     "/p.ghost",
@@ -18937,6 +18956,58 @@ while running:
 
             player_x += move_x * move_speed
             player_y += move_y * move_speed
+
+            if player_trail != "none" and (move_x != 0 or move_y != 0):
+                # Spawn trail particles behind the flower
+                for _ in range(2):
+                    offset_angle = random.uniform(0, 2 * math.pi)
+                    offset_dist = random.uniform(0, PLAYER_RADIUS * 0.7)
+                    px = player_x + math.cos(offset_angle) * offset_dist
+                    py = player_y + math.sin(offset_angle) * offset_dist
+                    if player_trail == "rainbow":
+                        colors = [
+                            (255, 75, 75),   # Red
+                            (255, 160, 40),  # Orange
+                            (255, 235, 50),  # Yellow
+                            (75, 225, 90),   # Green
+                            (50, 180, 255),  # Cyan
+                            (120, 100, 255), # Blue/Purple
+                            (230, 90, 230),  # Magenta
+                        ]
+                        col = random.choice(colors)
+                        player_trail_particles.append({
+                            "x": px, "y": py,
+                            "vx": random.uniform(-0.6, 0.6) - move_x * 0.4,
+                            "vy": random.uniform(-0.6, 0.6) - move_y * 0.4,
+                            "life": 32, "max_life": 32,
+                            "size": random.uniform(PLAYER_RADIUS * 0.35, PLAYER_RADIUS * 0.6),
+                            "color": col,
+                            "type": "circle"
+                        })
+                    elif player_trail == "fire":
+                        fire_cols = [(255, 60, 20), (255, 140, 20), (255, 220, 40), (255, 255, 180)]
+                        player_trail_particles.append({
+                            "x": px, "y": py,
+                            "vx": random.uniform(-0.8, 0.8) - move_x * 0.5,
+                            "vy": random.uniform(-0.8, 0.8) - move_y * 0.5 - random.uniform(0.5, 1.5),
+                            "life": 26, "max_life": 26,
+                            "size": random.uniform(PLAYER_RADIUS * 0.35, PLAYER_RADIUS * 0.65),
+                            "color": random.choice(fire_cols),
+                            "type": "flame"
+                        })
+                    elif player_trail == "sparkle":
+                        sparkle_cols = [(255, 255, 255), (255, 250, 160), (200, 240, 255), (255, 220, 255)]
+                        player_trail_particles.append({
+                            "x": px, "y": py,
+                            "vx": random.uniform(-1.2, 1.2),
+                            "vy": random.uniform(-1.2, 1.2),
+                            "life": 24, "max_life": 24,
+                            "size": random.uniform(PLAYER_RADIUS * 0.25, PLAYER_RADIUS * 0.5),
+                            "color": random.choice(sparkle_cols),
+                            "type": "star",
+                            "rot": random.uniform(0, 360),
+                            "vrot": random.uniform(-8, 8)
+                        })
 
             # small knockback from enemy hits decays with friction so the
             # flower gets pushed a little and then recovers
@@ -20568,6 +20639,51 @@ while running:
 
         for wall in walls:
             wall.draw()
+
+        # ---------------- PLAYER MOVEMENT TRAIL ----------------
+        if player_trail_particles:
+            for pt in player_trail_particles[:]:
+                pt["x"] += pt["vx"]
+                pt["y"] += pt["vy"]
+                pt["life"] -= 1
+                if pt.get("type") == "star":
+                    pt["rot"] = (pt["rot"] + pt.get("vrot", 0)) % 360
+                if pt["life"] <= 0:
+                    player_trail_particles.remove(pt)
+                    continue
+
+                t = pt["life"] / pt["max_life"]
+                curr_size = max(1, int(pt["size"] * t))
+                alpha = int(220 * t)
+                screen_px = int(pt["x"] - camera_x)
+                screen_py = int(pt["y"] - camera_y)
+
+                if -50 <= screen_px <= WIDTH + 50 and -50 <= screen_py <= HEIGHT + 50:
+                    surf = pygame.Surface((curr_size * 2 + 4, curr_size * 2 + 4), pygame.SRCALPHA)
+                    center = (curr_size + 2, curr_size + 2)
+                    r, g, b = pt["color"]
+
+                    if pt.get("type") == "circle":
+                        pygame.draw.circle(surf, (r, g, b, alpha), center, curr_size)
+                        pygame.draw.circle(surf, (255, 255, 255, min(255, alpha + 30)), center, max(1, curr_size // 2))
+                    elif pt.get("type") == "flame":
+                        # Inner bright core
+                        pygame.draw.circle(surf, (r, g, b, alpha), center, curr_size)
+                        pygame.draw.circle(surf, (255, 255, 200, min(255, int(alpha * 1.2))), center, max(1, curr_size // 2))
+                    elif pt.get("type") == "star":
+                        # 4-point sparkle star
+                        star_r = curr_size
+                        rot_rad = math.radians(pt.get("rot", 0))
+                        cos_r = math.cos(rot_rad)
+                        sin_r = math.sin(rot_rad)
+                        pts = []
+                        for i_sp in range(8):
+                            sp_angle = rot_rad + i_sp * (math.pi / 4)
+                            sp_rad = star_r if i_sp % 2 == 0 else star_r * 0.3
+                            pts.append((center[0] + math.cos(sp_angle) * sp_rad, center[1] + math.sin(sp_angle) * sp_rad))
+                        pygame.draw.polygon(surf, (r, g, b, alpha), pts)
+
+                    screen.blit(surf, (screen_px - (curr_size + 2), screen_py - (curr_size + 2)))
 
             # Draw petals
 
@@ -22692,6 +22808,7 @@ while running:
                 "/clean_drops",
                 "/spawn_minion [rarity] [mob] [damage] [health] [speed] [size] [view range] [amount]",
                 "/spawn_minion [rarity] [mob] [amount]",
+                "/p.trail [none or rainbow or fire or sparkle]",
                 "/p.petal_speed [slow or normal or fast]",
                 "/p.theme [day or night]",
                 "/p.weather [sunny or rainy or cloudy or snowy or hail]",
@@ -22813,6 +22930,8 @@ while running:
                         word_color = (80, 200, 255)
                     elif word in ("[sunny", "or", "rainy", "cloudy", "snowy", "hail]") and "[sunny" in words and "hail]" in words:
                         word_color = (130, 220, 255)
+                    elif word in ("[none", "or", "rainbow", "fire", "sparkle]") and "[none" in words and "sparkle]" in words:
+                        word_color = (255, 120, 200)
                     prefix = (
                         f"{cmd_number}. "
                         if first_line
