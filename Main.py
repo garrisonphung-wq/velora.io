@@ -12199,8 +12199,6 @@ def register_mob_kill(enemy):
         mob_name = "Hole Hornet"
     elif mob_name in ("HoleBabyAnt", "Hole Baby Ant"):
         mob_name = "Hole Baby Ant"
-    elif mob_name in ("HoleBabyAnt", "Hole Baby Ant"):
-        mob_name = "Hole Baby Ant"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -12253,6 +12251,8 @@ def drop_mob_loot(enemy):
         mob_name = "Hole Rock"
     elif mob_name in ("HoleHornet", "Hole Hornet"):
         mob_name = "Hole Hornet"
+    elif mob_name in ("HoleBabyAnt", "Hole Baby Ant"):
+        mob_name = "Hole Baby Ant"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -12765,6 +12765,7 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
         "Hornet": Hornet,
         "Hole Hornet": HoleHornet,
         "Baby Ant": BabyAnt,
+        "Hole Baby Ant": HoleBabyAnt,
         "Soldier Ant": SoldierAnt,
         "Worker Ant": WorkerAnt,
         "Queen Ant": QueenAnt,
@@ -12806,7 +12807,8 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
                 "leg_phase",
                 "wing_phase",
                 "wing_jitter",
-                "void_pulse"
+                "void_pulse",
+                "mandible_snap"
             ):
                 if hasattr(enemy, animation_attribute):
                     setattr(enemy, animation_attribute, 0)
