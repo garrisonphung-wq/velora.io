@@ -3088,6 +3088,24 @@ def update_hornet_missiles():
             missile["shrink"] = 1.0
             continue
 
+        # Hole Hornet missiles home in on the player
+        if missile.get("is_hole_projectile") and not player_dead and not player_ghost and not game_peaceful_mode:
+            target_angle = math.atan2(
+                player_y - missile["y"],
+                player_x - missile["x"]
+            )
+            current_angle = math.atan2(missile["dy"], missile["dx"])
+            # Smooth steering turn towards flower
+            diff = (target_angle - current_angle + math.pi) % (2 * math.pi) - math.pi
+            turn_rate = 0.08  # agile tracking turn rate
+            if abs(diff) <= turn_rate:
+                new_angle = target_angle
+            else:
+                new_angle = current_angle + (turn_rate if diff > 0 else -turn_rate)
+            speed = math.hypot(missile["dx"], missile["dy"])
+            missile["dx"] = math.cos(new_angle) * speed
+            missile["dy"] = math.sin(new_angle) * speed
+
         missile["x"] += missile["dx"]
         missile["y"] += missile["dy"]
 
