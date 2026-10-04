@@ -3703,7 +3703,6 @@ def spawn_custom_flower_minion(rarity, mob_name, custom_damage=None, custom_hp=N
         "Hole Baby Ant": HoleBabyAnt,
         "Soldier Ant": SoldierAnt,
         "Hole Soldier Ant": HoleSoldierAnt,
-        "Hole Soldier Ant": HoleSoldierAnt,
         "BabyAnt": BabyAnt,
         "SoldierAnt": SoldierAnt,
         "Worker Ant": WorkerAnt,
@@ -12370,8 +12369,6 @@ def register_mob_kill(enemy):
         mob_name = "Hole Baby Ant"
     elif mob_name in ("HoleSoldierAnt", "Hole Soldier Ant"):
         mob_name = "Hole Soldier Ant"
-    elif mob_name in ("HoleSoldierAnt", "Hole Soldier Ant"):
-        mob_name = "Hole Soldier Ant"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -12426,6 +12423,8 @@ def drop_mob_loot(enemy):
         mob_name = "Hole Hornet"
     elif mob_name in ("HoleBabyAnt", "Hole Baby Ant"):
         mob_name = "Hole Baby Ant"
+    elif mob_name in ("HoleSoldierAnt", "Hole Soldier Ant"):
+        mob_name = "Hole Soldier Ant"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -12961,6 +12960,7 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
         "Baby Ant": BabyAnt,
         "Hole Baby Ant": HoleBabyAnt,
         "Soldier Ant": SoldierAnt,
+        "Hole Soldier Ant": HoleSoldierAnt,
         "Worker Ant": WorkerAnt,
         "Queen Ant": QueenAnt,
         "Ant Egg": AntEgg
