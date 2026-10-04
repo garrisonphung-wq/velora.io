@@ -261,6 +261,7 @@ MOB_WEIGHT = {
     "HoleSoldierAnt": 2.5,
     "HoleWorkerAnt": 2.8,
     "HoleQueenAnt": 1.5,
+    "HoleAntEgg": 3.5,
     "HoleEgg": 3.5,
     "Bee": 0.8,
     "Spider": 1.1,
@@ -3716,8 +3717,10 @@ def spawn_custom_flower_minion(rarity, mob_name, custom_damage=None, custom_hp=N
         "QueenAnt": QueenAnt,
         "Ant Egg": AntEgg,
         "AntEgg": AntEgg,
-        "Hole Egg": HoleEgg,
-        "HoleEgg": HoleEgg,
+        "Hole Ant Egg": HoleAntEgg,
+        "HoleAntEgg": HoleAntEgg,
+        "Hole Egg": HoleAntEgg,
+        "HoleEgg": HoleAntEgg,
     }
     cls = enemy_classes.get(mob_name, SoldierAnt)
     minion = cls()
@@ -5141,7 +5144,7 @@ mob_gallery_names = (
     "Queen Ant",
     "Hole Queen Ant",
     "Ant Egg",
-    "Hole Egg"
+    "Hole Ant Egg"
 )
 mob_gallery_scroll_target = 0
 mob_gallery_scroll_position = 0.0
@@ -11625,7 +11628,7 @@ class AntEgg:
 # Stygian obsidian shell with jagged crystalline void fissures,
 # glowing cyan-magenta core, pulsing void aura, and when broken,
 # has a chance to hatch an enraged Hole Baby Ant!
-class HoleEgg(AntEgg):
+class HoleAntEgg(AntEgg):
     is_hole_land_mob = True
 
     def __init__(self):
@@ -11781,6 +11784,8 @@ class HoleEgg(AntEgg):
                 int(draw_y + current_radius + 15)
             )
 
+
+HoleEgg = HoleAntEgg
 
 def delete_enemy(enemy):
 
@@ -12980,10 +12985,8 @@ def register_mob_kill(enemy):
         mob_name = "Hole Queen Ant"
     elif mob_name == "QueenAnt":
         mob_name = "Queen Ant"
-    elif mob_name in ("HoleEgg", "Hole Egg"):
-        mob_name = "Hole Egg"
-    elif mob_name in ("HoleEgg", "Hole Egg"):
-        mob_name = "Hole Egg"
+    elif mob_name in ("HoleAntEgg", "Hole Ant Egg", "HoleEgg", "Hole Egg"):
+        mob_name = "Hole Ant Egg"
     elif mob_name == "AntEgg":
         mob_name = "Ant Egg"
 
@@ -13276,7 +13279,7 @@ GALLERY_ICON_RADIUS = {
     "Queen Ant": 8,
     "Hole Queen Ant": 8,
     "Ant Egg": 11,
-    "Hole Egg": 11,
+    "Hole Ant Egg": 11,
 }
 
 # Short lore text shown in the gallery hover rectangle.
@@ -13351,7 +13354,7 @@ GALLERY_MOB_DESCRIPTIONS = {
         "a fragile ant egg that stays still. when broken, a baby ant "
         "might hatch from it and chase you!"
     ),
-    "Hole Egg": (
+    "Hole Ant Egg": (
         "A 2x corrupted void egg from Hole Land. Shelled in jagged crystalline obsidian "
         "with glowing cyan fissures. Breaking it may awaken an enraged Hole Baby Ant!"
     )
@@ -13560,7 +13563,7 @@ MOB_DROP_INFO = {
         ("Soil", "Common", 31),
         ("Soil", "Unusual", 11),
     ],
-    ("Hole Egg", "Common"): [
+    ("Hole Ant Egg", "Common"): [
         ("Ant Egg", "Common", 48),
         ("Ant Egg", "Unusual", 20),
         ("Soil", "Common", 35),
@@ -13568,7 +13571,7 @@ MOB_DROP_INFO = {
         ("Heavy", "Common", 25),
         ("Heavy", "Unusual", 10),
     ],
-    ("Hole Egg", "Unusual"): [
+    ("Hole Ant Egg", "Unusual"): [
         ("Ant Egg", "Common", 15),
         ("Ant Egg", "Unusual", 55),
         ("Soil", "Common", 10),
@@ -13638,7 +13641,7 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
         "Queen Ant": QueenAnt,
         "Hole Queen Ant": HoleQueenAnt,
         "Ant Egg": AntEgg,
-        "Hole Egg": HoleEgg
+        "Hole Ant Egg": HoleAntEgg
     }
     enemy_class = enemy_classes.get(mob_name)
     if enemy_class is None:
@@ -19224,8 +19227,10 @@ while running:
                                             "HoleQueenAnt": (HoleQueenAnt, hole_queen_ants),
                                             "Ant Egg": (AntEgg, ant_eggs),
                                             "AntEgg": (AntEgg, ant_eggs),
-                                            "Hole Egg": (HoleEgg, hole_eggs),
-                                            "HoleEgg": (HoleEgg, hole_eggs),
+                                            "Hole Ant Egg": (HoleAntEgg, hole_eggs),
+                                            "HoleAntEgg": (HoleAntEgg, hole_eggs),
+                                            "Hole Egg": (HoleAntEgg, hole_eggs),
+                                            "HoleEgg": (HoleAntEgg, hole_eggs),
                                         }
                                         mob_type = None
                                         trailing_args = []
@@ -19907,8 +19912,10 @@ while running:
                                             "HoleQueenAnt": HoleQueenAnt,
                                             "Ant Egg": AntEgg,
                                             "AntEgg": AntEgg,
-                                            "Hole Egg": HoleEgg,
-                                            "HoleEgg": HoleEgg,
+                                            "Hole Ant Egg": HoleAntEgg,
+                                            "HoleAntEgg": HoleAntEgg,
+                                            "Hole Egg": HoleAntEgg,
+                                            "HoleEgg": HoleAntEgg,
                                         }
                                         found_mob = None
                                         trailing = []
