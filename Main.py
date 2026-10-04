@@ -261,6 +261,7 @@ MOB_WEIGHT = {
     "HoleSoldierAnt": 2.5,
     "HoleWorkerAnt": 2.8,
     "HoleQueenAnt": 1.5,
+    "HoleEgg": 3.5,
     "Bee": 0.8,
     "Spider": 1.1,
     "Rock": 1.0,
@@ -3715,6 +3716,8 @@ def spawn_custom_flower_minion(rarity, mob_name, custom_damage=None, custom_hp=N
         "QueenAnt": QueenAnt,
         "Ant Egg": AntEgg,
         "AntEgg": AntEgg,
+        "Hole Egg": HoleEgg,
+        "HoleEgg": HoleEgg,
     }
     cls = enemy_classes.get(mob_name, SoldierAnt)
     minion = cls()
@@ -5137,7 +5140,8 @@ mob_gallery_names = (
     "Hole Worker Ant",
     "Queen Ant",
     "Hole Queen Ant",
-    "Ant Egg"
+    "Ant Egg",
+    "Hole Egg"
 )
 mob_gallery_scroll_target = 0
 mob_gallery_scroll_position = 0.0
@@ -11615,6 +11619,169 @@ class AntEgg:
             )
 
 
+# ---------------- HOLE EGG ----------------
+# A 2x corrupted void egg from Hole Land.
+# 2x size, 2x HP, 2x damage.
+# Stygian obsidian shell with jagged crystalline void fissures,
+# glowing cyan-magenta core, pulsing void aura, and when broken,
+# has a chance to hatch an enraged Hole Baby Ant!
+class HoleEgg(AntEgg):
+    is_hole_land_mob = True
+
+    def __init__(self):
+        super().__init__()
+        # 2x stats & size
+        self.radius = 32
+        self.base_radius = self.radius
+        self.damage = 50
+        self.max_hp = 100 * MOB_HP_MULTIPLIER[self.rarity]
+        self.hp = self.max_hp
+
+        # Void aesthetics & animations
+        self.void_pulse = random.uniform(0, math.pi * 2)
+        self.crystal_shiver = random.uniform(0, math.pi * 2)
+
+    def take_damage(self, amount):
+        if not self.alive:
+            return
+
+        self.hp -= int(amount)
+        self.flash_timer = 4
+
+        if self.hp <= 0:
+            if getattr(self, "death_registered", False):
+                return
+            self.death_registered = True
+
+            cleanup_king(self)
+            register_mob_kill(self)
+            drop_mob_loot(self)
+
+            # Fast shrink death animation
+            self.dying = True
+            self.shrink_scale = 1.0
+            self.full_radius = self.radius
+
+            if self.rarity in ("Celestial", "Omnient"):
+                show_defeat_message(
+                    self.rarity,
+                    type(self).__name__
+                )
+
+            give_xp(
+                int(
+                    getattr(
+                        self,
+                        "custom_xp",
+                        20 * MOB_XP_MULTIPLIER[self.rarity]
+                    )
+                )
+            )
+
+            # 40% chance an enraged Hole Baby Ant spawns and chases the player
+            if random.random() < 0.40:
+                spawned_baby = HoleBabyAnt()
+                spawned_baby.x = self.x
+                spawned_baby.y = self.y
+                spawned_baby.rarity = self.rarity
+                apply_enemy_rarity_stats(spawned_baby)
+                spawned_baby.angry = True
+                hole_baby_ants.append(spawned_baby)
+
+    def update(self):
+        if not self.alive or getattr(self, "dying", False):
+            return
+        self.void_pulse += 0.08
+        self.crystal_shiver += 0.15
+
+    def draw(self):
+        if not self.alive:
+            return
+
+        sx = self.x - camera_x
+        sy = self.y - camera_y
+
+        if sx < -140 or sx > WIDTH + 140 or sy < -140 or sy > HEIGHT + 140:
+            return
+
+        current_radius = int(
+            self.radius * getattr(self, "shrink_scale", 1.0)
+        )
+        if current_radius <= 0:
+            return
+
+        wobble_offset = 0
+        if not getattr(self, "freeze_animation", False):
+            wobble_offset = math.sin(time.time() * 7 + self.wobble) * 2.5
+
+        draw_y = int(sy + wobble_offset)
+
+        # ---------------- HP BAR ----------------
+        if self.hp < self.max_hp and not getattr(self, "dying", False):
+            bar_width = max(12, int(min(60, max(24, current_radius * 1.5)) * settings_hp_bar_scale))
+            bar_height = max(1, int(5 * settings_hp_bar_scale))
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
+
+            pygame.draw.rect(
+                screen,
+                (45, 12, 60),
+                (int(sx - bar_width / 2), int(draw_y - current_radius - 12 - bar_height), bar_width, bar_height)
+            )
+            pygame.draw.rect(
+                screen,
+                (190, 50, 255),
+                (int(sx - bar_width / 2), int(draw_y - current_radius - 12 - bar_height), int(bar_width * hp_percent), bar_height)
+            )
+
+        # ---------------- PULSING VOID AURA ----------------
+        pulse = math.sin(self.void_pulse) * 4
+        aura_r = int(current_radius * 1.35 + pulse)
+        aura_surf = pygame.Surface((aura_r * 2 + 6, aura_r * 2 + 6), pygame.SRCALPHA)
+        pygame.draw.circle(aura_surf, (140, 20, 220, 45), (aura_r + 3, aura_r + 3), aura_r)
+        screen.blit(aura_surf, (int(sx - aura_r - 3), int(draw_y - aura_r - 3)))
+
+        # ---------------- OBSIDIAN EGG BODY ----------------
+        body_col = flash_color((24, 8, 36), self.flash_timer)
+        shell_rim = flash_color((0, 240, 255), self.flash_timer)
+        pygame.draw.circle(screen, body_col, (int(sx), draw_y), current_radius)
+        pygame.draw.circle(screen, shell_rim, (int(sx), draw_y), current_radius, max(2, int(current_radius * 0.12)))
+
+        # ---------------- CRYSTALLINE VOID FISSURES ----------------
+        fissure_col = flash_color((200, 50, 255), self.flash_timer)
+        glow_dot_col = flash_color((0, 255, 240), self.flash_timer)
+
+        # Crack 1 (Upper-left jagged vein)
+        c1 = [
+            (int(sx - current_radius * 0.65), int(draw_y - current_radius * 0.35)),
+            (int(sx - current_radius * 0.25), int(draw_y - current_radius * 0.45)),
+            (int(sx - current_radius * 0.05), int(draw_y - current_radius * 0.15)),
+        ]
+        pygame.draw.lines(screen, fissure_col, False, c1, max(2, int(current_radius * 0.09)))
+        pygame.draw.circle(screen, glow_dot_col, c1[1], max(2, int(current_radius * 0.08)))
+
+        # Crack 2 (Lower-right jagged vein)
+        c2 = [
+            (int(sx + current_radius * 0.60), int(draw_y + current_radius * 0.30)),
+            (int(sx + current_radius * 0.30), int(draw_y + current_radius * 0.40)),
+            (int(sx + current_radius * 0.05), int(draw_y + current_radius * 0.15)),
+        ]
+        pygame.draw.lines(screen, fissure_col, False, c2, max(2, int(current_radius * 0.09)))
+        pygame.draw.circle(screen, glow_dot_col, c2[1], max(2, int(current_radius * 0.08)))
+
+        # Center glowing void crystal embryo core
+        core_r = max(3, int(current_radius * 0.32 + math.sin(self.crystal_shiver) * 2))
+        pygame.draw.circle(screen, flash_color((255, 60, 220), self.flash_timer), (int(sx), draw_y), core_r)
+        pygame.draw.circle(screen, flash_color((0, 240, 255), self.flash_timer), (int(sx), draw_y), max(2, int(core_r * 0.5)))
+
+        # ---------------- RARITY TEXT ----------------
+        if not getattr(self, "hide_rarity_label", False):
+            draw_mob_rarity_label(
+                self,
+                int(sx),
+                int(draw_y + current_radius + 15)
+            )
+
+
 def delete_enemy(enemy):
 
     if acc_name_text != "DevGuard":
@@ -12813,6 +12980,10 @@ def register_mob_kill(enemy):
         mob_name = "Hole Queen Ant"
     elif mob_name == "QueenAnt":
         mob_name = "Queen Ant"
+    elif mob_name in ("HoleEgg", "Hole Egg"):
+        mob_name = "Hole Egg"
+    elif mob_name in ("HoleEgg", "Hole Egg"):
+        mob_name = "Hole Egg"
     elif mob_name == "AntEgg":
         mob_name = "Ant Egg"
 
@@ -13104,7 +13275,8 @@ GALLERY_ICON_RADIUS = {
     "Hole Worker Ant": 10,
     "Queen Ant": 8,
     "Hole Queen Ant": 8,
-    "Ant Egg": 11
+    "Ant Egg": 11,
+    "Hole Egg": 11,
 }
 
 # Short lore text shown in the gallery hover rectangle.
@@ -13178,6 +13350,10 @@ GALLERY_MOB_DESCRIPTIONS = {
     "Ant Egg": (
         "a fragile ant egg that stays still. when broken, a baby ant "
         "might hatch from it and chase you!"
+    ),
+    "Hole Egg": (
+        "A 2x corrupted void egg from Hole Land. Shelled in jagged crystalline obsidian "
+        "with glowing cyan fissures. Breaking it may awaken an enraged Hole Baby Ant!"
     )
 }
 
@@ -13384,6 +13560,22 @@ MOB_DROP_INFO = {
         ("Soil", "Common", 31),
         ("Soil", "Unusual", 11),
     ],
+    ("Hole Egg", "Common"): [
+        ("Ant Egg", "Common", 48),
+        ("Ant Egg", "Unusual", 20),
+        ("Soil", "Common", 35),
+        ("Soil", "Unusual", 14),
+        ("Heavy", "Common", 25),
+        ("Heavy", "Unusual", 10),
+    ],
+    ("Hole Egg", "Unusual"): [
+        ("Ant Egg", "Common", 15),
+        ("Ant Egg", "Unusual", 55),
+        ("Soil", "Common", 10),
+        ("Soil", "Unusual", 48),
+        ("Heavy", "Common", 8),
+        ("Heavy", "Unusual", 42),
+    ],
     ("Ant Egg", "Common"): [
         ("Ant Egg", "Common", 35),
         ("Ant Egg", "Unusual", 10),
@@ -13445,7 +13637,8 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
         "Hole Worker Ant": HoleWorkerAnt,
         "Queen Ant": QueenAnt,
         "Hole Queen Ant": HoleQueenAnt,
-        "Ant Egg": AntEgg
+        "Ant Egg": AntEgg,
+        "Hole Egg": HoleEgg
     }
     enemy_class = enemy_classes.get(mob_name)
     if enemy_class is None:
@@ -18089,6 +18282,7 @@ hole_worker_ants = []
 queen_ants = []
 hole_queen_ants = []
 ant_eggs = []
+hole_eggs = []
 
 # Eggs laid by queen ants while chasing; they hatch into enemy
 # soldier ant minions.
@@ -19030,6 +19224,8 @@ while running:
                                             "HoleQueenAnt": (HoleQueenAnt, hole_queen_ants),
                                             "Ant Egg": (AntEgg, ant_eggs),
                                             "AntEgg": (AntEgg, ant_eggs),
+                                            "Hole Egg": (HoleEgg, hole_eggs),
+                                            "HoleEgg": (HoleEgg, hole_eggs),
                                         }
                                         mob_type = None
                                         trailing_args = []
@@ -19711,6 +19907,8 @@ while running:
                                             "HoleQueenAnt": HoleQueenAnt,
                                             "Ant Egg": AntEgg,
                                             "AntEgg": AntEgg,
+                                            "Hole Egg": HoleEgg,
+                                            "HoleEgg": HoleEgg,
                                         }
                                         found_mob = None
                                         trailing = []
@@ -21566,6 +21764,7 @@ while running:
             + hole_soldier_ants
             + hole_worker_ants
             + hole_queen_ants
+            + hole_eggs
             + bees
             + spiders
             + rocks
@@ -22389,6 +22588,19 @@ while running:
             if queen_ant.flash_timer > 0:
                 queen_ant.flash_timer -= 1
 
+        for he in hole_eggs:
+            if player_spawn_cooldown <= 0 and enemies_frozen_timer <= 0:
+                he.update()
+
+            if he.attack_cooldown > 0:
+                he.attack_cooldown -= 1
+
+            if he.petal_attack_cooldown > 0:
+                he.petal_attack_cooldown -= 1
+
+            if he.flash_timer > 0:
+                he.flash_timer -= 1
+
         for ant_egg in ant_eggs:
 
             if (
@@ -23105,6 +23317,28 @@ while running:
                     queen_ant.attack_cooldown = 2
                     break
 
+        for he in hole_eggs:
+            if he.alive and not player_dead:
+                d = distance(player_x, player_y, he.x, he.y)
+                if d < PLAYER_RADIUS + he.radius:
+                    if player_spawn_cooldown <= 0:
+                        if (
+                            he.attack_cooldown == 0
+                            and not player_ghost
+                            and not game_peaceful_mode
+                        ):
+                            player_hp -= get_enemy_attack_damage(he)
+                            if player_hp < 0:
+                                player_hp = 0
+
+                            player_flash_timer = 4
+                            push_player_from(he, 6.0)
+
+                            if player_hp == 0:
+                                kill_player(he)
+
+                            he.attack_cooldown = 2
+
         for ant_egg in ant_eggs:
 
             if ant_egg.alive and not player_dead:
@@ -23429,6 +23663,9 @@ while running:
         for queen_ant in queen_ants:
 
             queen_ant.draw()
+
+        for he in hole_eggs:
+            he.draw()
 
         for ant_egg in ant_eggs:
             ant_egg.draw()
@@ -24331,6 +24568,7 @@ while running:
                         hole_soldier_ants +
                         hole_worker_ants +
                         hole_queen_ants +
+                        hole_eggs +
                         bees +
                         spiders +
                         rocks +
@@ -24412,6 +24650,7 @@ while running:
                             hole_soldier_ants +
                             hole_worker_ants +
                             hole_queen_ants +
+                            hole_eggs +
                             bees +
                             spiders +
                             rocks +
@@ -24799,6 +25038,7 @@ while running:
             + hole_soldier_ants
             + hole_worker_ants
             + hole_queen_ants
+            + hole_eggs
             + bees
             + spiders
             + rocks
@@ -25162,6 +25402,7 @@ while running:
                 hole_soldier_ants,
                 hole_worker_ants,
                 hole_queen_ants,
+                hole_eggs,
                 bees,
                 spiders,
                 rocks,
