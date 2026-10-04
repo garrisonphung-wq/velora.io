@@ -2686,6 +2686,8 @@ def fire_rock_volley(rock, is_king):
         )
     )
 
+    is_hole = getattr(rock, "is_hole_land_mob", False) or type(rock).__name__ == "HoleRock"
+
     for rock_index in range(count):
         rock_angle = (
             base_angle
@@ -2693,21 +2695,38 @@ def fire_rock_volley(rock, is_king):
         )
         rad = math.radians(rock_angle)
 
-        # Random rocky silhouette for this projectile.
-        point_count = random.randint(6, 8)
-        shape_points = []
-        for point_i in range(point_count):
-            point_angle = (
-                math.pi * 2 * point_i / point_count
-                + random.uniform(-0.35, 0.35)
-            )
-            point_distance = random.uniform(0.82, 1.15)
-            shape_points.append(
-                (
-                    math.cos(point_angle) * point_distance,
-                    math.sin(point_angle) * point_distance
+        if is_hole:
+            # 80% spikier void shard silhouette
+            point_count = random.randint(12, 16)
+            shape_points = []
+            for point_i in range(point_count):
+                point_angle = (
+                    math.pi * 2 * point_i / point_count
+                    + random.uniform(-0.15, 0.15)
                 )
-            )
+                point_dist = random.uniform(1.65, 2.15) if point_i % 2 == 1 else random.uniform(0.45, 0.65)
+                shape_points.append(
+                    (
+                        math.cos(point_angle) * point_dist,
+                        math.sin(point_angle) * point_dist
+                    )
+                )
+        else:
+            # Random rocky silhouette for normal rock projectile.
+            point_count = random.randint(6, 8)
+            shape_points = []
+            for point_i in range(point_count):
+                point_angle = (
+                    math.pi * 2 * point_i / point_count
+                    + random.uniform(-0.35, 0.35)
+                )
+                point_distance = random.uniform(0.82, 1.15)
+                shape_points.append(
+                    (
+                        math.cos(point_angle) * point_distance,
+                        math.sin(point_angle) * point_distance
+                    )
+                )
 
         rock_projectiles.append(
             {
@@ -2722,6 +2741,7 @@ def fire_rock_volley(rock, is_king):
                 "max_hp": projectile_hp,
                 "shape": shape_points,
                 "is_king_shot": is_king,
+                "is_hole_projectile": is_hole,
                 "timer": ROCK_PROJECTILE_LIFETIME,
                 "owner": rock
             }
@@ -3026,19 +3046,22 @@ def fire_hornet_missile(hornet):
         else max(1, int(hornet.max_hp / 4))
     )
 
+    is_hole_hornet = getattr(hornet, "is_hole_land_mob", False) or type(hornet).__name__ == "HoleHornet"
+
     hornet_missiles.append(
         {
             "x": hornet.x + back_x * hornet.radius,
             "y": hornet.y + back_y * hornet.radius,
             "dx": (
-                math.cos(aim_angle) * HORNET_MISSILE_SPEED
+                math.cos(aim_angle) * (HORNET_MISSILE_SPEED * 1.15 if is_hole_hornet else HORNET_MISSILE_SPEED)
             ),
             "dy": (
-                math.sin(aim_angle) * HORNET_MISSILE_SPEED
+                math.sin(aim_angle) * (HORNET_MISSILE_SPEED * 1.15 if is_hole_hornet else HORNET_MISSILE_SPEED)
             ),
             "damage": missile_damage,
             "hp": missile_hp,
             "max_hp": missile_hp,
+            "is_hole_projectile": is_hole_hornet,
             "timer": HORNET_MISSILE_LIFETIME,
             "owner": hornet
         }
@@ -22309,28 +22332,50 @@ while running:
                 fy = math.sin(missile_rad)
                 side_x = -fy
                 side_y = fx
-                pygame.draw.polygon(
-                    screen,
-                    (0, 0, 0),
-                    [
-                        (
-                            missile_x + fx * missile_len,
-                            missile_y + fy * missile_len
-                        ),
-                        (
-                            missile_x - fx * missile_len * 0.4
-                            + side_x * missile_w,
-                            missile_y - fy * missile_len * 0.4
-                            + side_y * missile_w
-                        ),
-                        (
-                            missile_x - fx * missile_len * 0.4
-                            - side_x * missile_w,
-                            missile_y - fy * missile_len * 0.4
-                            - side_y * missile_w
-                        )
+                if missile.get("is_hole_projectile"):
+                    # Void Torpedo: Glowing cyan thruster trail, obsidian dart body, neon violet wings
+                    flame_fx = -fx * missile_len * 0.7
+                    flame_fy = -fy * missile_len * 0.7
+                    flame_pts = [
+                        (missile_x - fx * missile_len * 0.4 + side_x * missile_w * 0.4, missile_y - fy * missile_len * 0.4 + side_y * missile_w * 0.4),
+                        (missile_x + flame_fx, missile_y + flame_fy),
+                        (missile_x - fx * missile_len * 0.4 - side_x * missile_w * 0.4, missile_y - fy * missile_len * 0.4 - side_y * missile_w * 0.4),
                     ]
-                )
+                    pygame.draw.polygon(screen, (0, 240, 255), flame_pts)
+                    # Obsidian missile chassis
+                    body_pts = [
+                        (missile_x + fx * missile_len * 1.15, missile_y + fy * missile_len * 1.15),
+                        (missile_x - fx * missile_len * 0.35 + side_x * missile_w * 1.25, missile_y - fy * missile_len * 0.35 + side_y * missile_w * 1.25),
+                        (missile_x - fx * missile_len * 0.4, missile_y - fy * missile_len * 0.4),
+                        (missile_x - fx * missile_len * 0.35 - side_x * missile_w * 1.25, missile_y - fy * missile_len * 0.35 - side_y * missile_w * 1.25),
+                    ]
+                    pygame.draw.polygon(screen, (22, 6, 35), body_pts)
+                    pygame.draw.polygon(screen, (190, 50, 255), body_pts, 2)
+                    # Neon warhead core
+                    pygame.draw.circle(screen, (255, 0, 140), (int(missile_x + fx * missile_len * 0.7), int(missile_y + fy * missile_len * 0.7)), max(2, int(missile_w * 0.4)))
+                else:
+                    pygame.draw.polygon(
+                        screen,
+                        (0, 0, 0),
+                        [
+                            (
+                                missile_x + fx * missile_len,
+                                missile_y + fy * missile_len
+                            ),
+                            (
+                                missile_x - fx * missile_len * 0.4
+                                + side_x * missile_w,
+                                missile_y - fy * missile_len * 0.4
+                                + side_y * missile_w
+                            ),
+                            (
+                                missile_x - fx * missile_len * 0.4
+                                - side_x * missile_w,
+                                missile_y - fy * missile_len * 0.4
+                                - side_y * missile_w
+                            )
+                        ]
+                    )
                 draw_projectile_hp_bar(
                     missile_x,
                     missile_y,
@@ -22386,17 +22431,24 @@ while running:
                         [(0, -1), (-1, 1), (1, 1)]
                     )
                 ]
-                pygame.draw.polygon(
-                    screen,
-                    (110, 110, 110),
-                    rock_pts
-                )
-                pygame.draw.polygon(
-                    screen,
-                    (70, 70, 70),
-                    rock_pts,
-                    2
-                )
+                if rock_p.get("is_hole_projectile"):
+                    # Violent 80% spikier void shard: obsidian core, glowing purple outline, electric cyan spike nodes
+                    pygame.draw.polygon(screen, (25, 8, 38), rock_pts)
+                    pygame.draw.polygon(screen, (190, 50, 255), rock_pts, 2)
+                    for pt in rock_pts[1::2]:
+                        pygame.draw.circle(screen, (0, 240, 255), (int(pt[0]), int(pt[1])), max(1, int(rock_r * 0.15)))
+                else:
+                    pygame.draw.polygon(
+                        screen,
+                        (110, 110, 110),
+                        rock_pts
+                    )
+                    pygame.draw.polygon(
+                        screen,
+                        (70, 70, 70),
+                        rock_pts,
+                        2
+                    )
                 draw_projectile_hp_bar(
                     rock_x,
                     rock_y,
