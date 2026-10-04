@@ -259,6 +259,7 @@ MOB_WEIGHT = {
     "HoleHornet": 2.0,
     "HoleBabyAnt": 3.0,
     "HoleSoldierAnt": 2.5,
+    "HoleWorkerAnt": 2.8,
     "Bee": 0.8,
     "Spider": 1.1,
     "Rock": 1.0,
@@ -3706,6 +3707,7 @@ def spawn_custom_flower_minion(rarity, mob_name, custom_damage=None, custom_hp=N
         "BabyAnt": BabyAnt,
         "SoldierAnt": SoldierAnt,
         "Worker Ant": WorkerAnt,
+        "Hole Worker Ant": HoleWorkerAnt,
         "WorkerAnt": WorkerAnt,
         "Queen Ant": QueenAnt,
         "QueenAnt": QueenAnt,
@@ -5118,6 +5120,7 @@ mob_gallery_names = (
     "Soldier Ant",
     "Hole Soldier Ant",
     "Worker Ant",
+    "Hole Worker Ant",
     "Queen Ant",
     "Ant Egg"
 )
@@ -10951,6 +10954,158 @@ class WorkerAnt:
                 int(sy + self.radius + 15)
             )
 
+# ---------------- HOLE WORKER ANT ----------------
+# A 2x eyeless void harvester from Hole Land.
+# 2x size, 2x HP, 2x damage.
+# Eyeless crystalline obsidian chitin, 6 scuttling void crawler legs,
+# dual heavy grappling pincer mandibles, and glowing void core conduits.
+class HoleWorkerAnt(WorkerAnt):
+    is_hole_land_mob = True
+
+    def __init__(self):
+        super().__init__()
+        # 2x stats & size
+        self.radius = self.radius * 2
+        self.base_radius = self.radius
+        self.damage = 160
+        self.petal_damage = 60
+        self.max_hp = 100 * MOB_HP_MULTIPLIER[self.rarity]
+        self.hp = self.max_hp
+
+        # Fast skitter speed
+        self.max_speed = 3.5
+        self.acceleration = 0.45
+        self.friction = 0.4
+        self.charge_speed = 3.8
+        self.view_range = 450
+
+        # Void aesthetics & animations
+        self.void_pulse = random.uniform(0, math.pi * 2)
+        self.leg_phase = random.uniform(0, math.pi * 2)
+        self.mandible_snap = random.uniform(0, math.pi * 2)
+
+    def update(self):
+        if not self.alive or getattr(self, "dying", False):
+            return
+        super().update()
+        if not self.alive or getattr(self, "dying", False):
+            return
+        self.void_pulse += 0.08
+        self.leg_phase += 0.35 if self.speed > 0.1 or getattr(self, "angry", False) else 0.05
+        self.mandible_snap += 0.18
+
+    def draw(self):
+        if not self.alive:
+            return
+
+        sx = self.x - camera_x
+        sy = self.y - camera_y
+
+        if sx < -140 or sx > WIDTH + 140 or sy < -140 or sy > HEIGHT + 140:
+            return
+
+        angle = math.radians(self.angle)
+        front_x = math.cos(angle)
+        front_y = math.sin(angle)
+        side_x = -front_y
+        side_y = front_x
+
+        # ---------------- HP BAR ----------------
+        if self.hp < self.max_hp and not getattr(self, "dying", False):
+            bar_width = max(1, int(55 * settings_hp_bar_scale))
+            bar_height = max(1, int(5 * settings_hp_bar_scale))
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
+
+            pygame.draw.rect(
+                screen,
+                (45, 12, 60),
+                (int(sx - bar_width/2), int(sy - self.radius - 12 - bar_height), bar_width, bar_height)
+            )
+            pygame.draw.rect(
+                screen,
+                (190, 50, 255),
+                (int(sx - bar_width/2), int(sy - self.radius - 12 - bar_height), int(bar_width * hp_percent), bar_height)
+            )
+
+        # ---------------- PULSING VOID AURA ----------------
+        pulse = math.sin(self.void_pulse) * 4
+        aura_r = int(self.radius * 1.35 + pulse)
+        aura_surf = pygame.Surface((aura_r * 2 + 6, aura_r * 2 + 6), pygame.SRCALPHA)
+        pygame.draw.circle(aura_surf, (140, 25, 210, 40), (aura_r + 3, aura_r + 3), aura_r)
+        screen.blit(aura_surf, (int(sx - aura_r - 3), int(sy - aura_r - 3)))
+
+        # ---------------- 1. SIX SCUTTLING VOID LEGS ----------------
+        leg_col = flash_color((30, 10, 44), self.flash_timer)
+        leg_tip_col = flash_color((0, 240, 255), self.flash_timer)
+        for l_idx in range(3):
+            # 3 pairs of legs along the body
+            l_offset = (l_idx - 1) * (self.radius * 0.45)
+            l_base_x = sx + front_x * l_offset
+            l_base_y = sy + front_y * l_offset
+            for s_mult in (-1, 1):
+                leg_swing = math.sin(self.leg_phase + l_idx * 1.5 + (0 if s_mult == 1 else math.pi)) * (self.radius * 0.35)
+                knee_x = l_base_x + side_x * s_mult * (self.radius * 1.05) + front_x * leg_swing
+                knee_y = l_base_y + side_y * s_mult * (self.radius * 1.05) + front_y * leg_swing
+                foot_x = l_base_x + side_x * s_mult * (self.radius * 1.55) + front_x * (leg_swing * 1.4)
+                foot_y = l_base_y + side_y * s_mult * (self.radius * 1.55) + front_y * (leg_swing * 1.4)
+
+                draw_clean_line(screen, leg_col, (int(l_base_x), int(l_base_y)), (int(knee_x), int(knee_y)), max(2, int(self.radius * 0.12)))
+                draw_clean_line(screen, leg_col, (int(knee_x), int(knee_y)), (int(foot_x), int(foot_y)), max(2, int(self.radius * 0.10)))
+                pygame.draw.circle(screen, leg_tip_col, (int(foot_x), int(foot_y)), max(2, int(self.radius * 0.09)))
+
+        # ---------------- 2. THORAX & ABDOMEN (BACK CHASSIS) ----------------
+        abd_x = sx - front_x * (self.radius * 0.65)
+        abd_y = sy - front_y * (self.radius * 0.65)
+        abd_r = int(self.radius * 0.85)
+        pygame.draw.circle(screen, flash_color((22, 6, 34), self.flash_timer), (int(abd_x), int(abd_y)), abd_r)
+        pygame.draw.circle(screen, flash_color((180, 50, 255), self.flash_timer), (int(abd_x), int(abd_y)), abd_r, max(2, int(self.radius * 0.08)))
+
+        # Center thorax core
+        mid_r = int(self.radius * 0.70)
+        pygame.draw.circle(screen, flash_color((16, 4, 26), self.flash_timer), (int(sx), int(sy)), mid_r)
+        pygame.draw.circle(screen, flash_color((0, 240, 255), self.flash_timer), (int(sx), int(sy)), mid_r, max(2, int(self.radius * 0.08)))
+
+        # ---------------- 3. HEAD (EYELESS DOME WITH VOID CONDUIT) ----------------
+        head_x = sx + front_x * (self.radius * 0.70)
+        head_y = sy + front_y * (self.radius * 0.70)
+        head_r = int(self.radius * 0.72)
+        pygame.draw.circle(screen, flash_color((25, 8, 38), self.flash_timer), (int(head_x), int(head_y)), head_r)
+        pygame.draw.circle(screen, flash_color((190, 50, 255), self.flash_timer), (int(head_x), int(head_y)), head_r, max(2, int(self.radius * 0.09)))
+
+        # Glowing cyan triangular visor prism (strictly eyeless)
+        prism_pts = [
+            (int(head_x + front_x * head_r * 0.5), int(head_y + front_y * head_r * 0.5)),
+            (int(head_x - front_x * head_r * 0.1 - side_x * head_r * 0.45), int(head_y - front_y * head_r * 0.1 - side_y * head_r * 0.45)),
+            (int(head_x - front_x * head_r * 0.1 + side_x * head_r * 0.45), int(head_y - front_y * head_r * 0.1 + side_y * head_r * 0.45)),
+        ]
+        pygame.draw.polygon(screen, flash_color((0, 240, 255), self.flash_timer), prism_pts)
+        pygame.draw.circle(screen, flash_color((255, 60, 200), self.flash_timer), (int(head_x), int(head_y)), max(2, int(self.radius * 0.10)))
+
+        # ---------------- 4. HEAVY SERRATED GRAPPLING PINCERS ----------------
+        snap_val = math.sin(self.mandible_snap) * 0.28
+        pincer_col = flash_color((35, 10, 52), self.flash_timer)
+        pincer_blade = flash_color((0, 255, 240), self.flash_timer)
+        for s_mult in (-1, 1):
+            p_base = (head_x + front_x * head_r * 0.65 + side_x * s_mult * (head_r * 0.55),
+                      head_y + front_y * head_r * 0.65 + side_y * s_mult * (head_r * 0.55))
+            p_mid = (head_x + front_x * head_r * 1.45 + side_x * s_mult * (head_r * 1.05 + snap_val * head_r),
+                     head_y + front_y * head_r * 1.45 + side_y * s_mult * (head_r * 1.05 + snap_val * head_r))
+            p_tip = (head_x + front_x * head_r * 1.75 + side_x * s_mult * (head_r * 0.20 - snap_val * head_r * 0.5),
+                     head_y + front_y * head_r * 1.75 + side_y * s_mult * (head_r * 0.20 - snap_val * head_r * 0.5))
+
+            draw_clean_line(screen, pincer_col, p_base, p_mid, max(3, int(self.radius * 0.16)))
+            draw_clean_line(screen, pincer_col, p_mid, p_tip, max(2, int(self.radius * 0.13)))
+            draw_clean_line(screen, pincer_blade, p_mid, p_tip, max(1, int(self.radius * 0.08)))
+            pygame.draw.circle(screen, pincer_blade, (int(p_tip[0]), int(p_tip[1])), max(2, int(self.radius * 0.10)))
+
+        # ---------------- RARITY TEXT ----------------
+        if not getattr(self, "hide_rarity_label", False):
+            draw_mob_rarity_label(
+                self,
+                int(sx),
+                int(sy + self.radius + 15)
+            )
+
 # ---------------- ANT EGG ----------------
 
 class AntEgg:
@@ -12369,6 +12524,8 @@ def register_mob_kill(enemy):
         mob_name = "Hole Baby Ant"
     elif mob_name in ("HoleSoldierAnt", "Hole Soldier Ant"):
         mob_name = "Hole Soldier Ant"
+    elif mob_name in ("HoleWorkerAnt", "Hole Worker Ant"):
+        mob_name = "Hole Worker Ant"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -12425,6 +12582,8 @@ def drop_mob_loot(enemy):
         mob_name = "Hole Baby Ant"
     elif mob_name in ("HoleSoldierAnt", "Hole Soldier Ant"):
         mob_name = "Hole Soldier Ant"
+    elif mob_name in ("HoleWorkerAnt", "Hole Worker Ant"):
+        mob_name = "Hole Worker Ant"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -12663,6 +12822,7 @@ GALLERY_ICON_RADIUS = {
     "Soldier Ant": 10,
     "Hole Soldier Ant": 10,
     "Worker Ant": 10,
+    "Hole Worker Ant": 10,
     "Queen Ant": 8,
     "Ant Egg": 11
 }
@@ -12723,6 +12883,10 @@ GALLERY_MOB_DESCRIPTIONS = {
         "this one worker for the queen ant but it chase you"
         "when you damage it."
     ),
+    "Hole Worker Ant": (
+        "A 2x eyeless void harvester from Hole Land. Possesses 6 barbed scuttling legs, "
+        "crystalline obsidian plates, and heavy grappling pincer mandibles."
+    ),
     "Queen Ant": (
         "the mother of the ant colony. she lays eggs that hatch "
         "into ants while chasing you."
@@ -12738,6 +12902,22 @@ GALLERY_MOB_DESCRIPTIONS = {
 # is rolled independently when the mob dies, so a kill can give several
 # petals or nothing at all.
 MOB_DROP_INFO = {
+    ("Hole Worker Ant", "Common"): [
+        ("Corn", "Common", 45),
+        ("Corn", "Unusual", 18),
+        ("Clover", "Common", 35),
+        ("Clover", "Unusual", 14),
+        ("Soil", "Common", 25),
+        ("Soil", "Unusual", 10),
+    ],
+    ("Hole Worker Ant", "Unusual"): [
+        ("Corn", "Common", 14),
+        ("Corn", "Unusual", 50),
+        ("Clover", "Common", 10),
+        ("Clover", "Unusual", 45),
+        ("Soil", "Common", 8),
+        ("Soil", "Unusual", 40),
+    ],
     ("Hole Soldier Ant", "Common"): [
         ("Wing", "Common", 40),
         ("Wing", "Unusual", 16),
@@ -12962,6 +13142,7 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
         "Soldier Ant": SoldierAnt,
         "Hole Soldier Ant": HoleSoldierAnt,
         "Worker Ant": WorkerAnt,
+        "Hole Worker Ant": HoleWorkerAnt,
         "Queen Ant": QueenAnt,
         "Ant Egg": AntEgg
     }
@@ -17603,6 +17784,7 @@ hole_baby_ants = []
 soldier_ants = []
 hole_soldier_ants = []
 worker_ants = []
+hole_worker_ants = []
 queen_ants = []
 ant_eggs = []
 
@@ -18528,6 +18710,8 @@ while running:
                                             "HoleBabyAnt": (HoleBabyAnt, hole_baby_ants),
                                             "Hole Soldier Ant": (HoleSoldierAnt, hole_soldier_ants),
                                             "HoleSoldierAnt": (HoleSoldierAnt, hole_soldier_ants),
+                                            "Hole Worker Ant": (HoleWorkerAnt, hole_worker_ants),
+                                            "HoleWorkerAnt": (HoleWorkerAnt, hole_worker_ants),
                                             "Bee": (Bee, bees),
                                             "Spider": (Spider, spiders),
                                             "Rock": (Rock, rocks),
@@ -21074,6 +21258,7 @@ while running:
             + hole_hornets
             + hole_baby_ants
             + hole_soldier_ants
+            + hole_worker_ants
             + bees
             + spiders
             + rocks
@@ -21780,6 +21965,37 @@ while running:
             if soldier_ant.flash_timer > 0:
                 soldier_ant.flash_timer -= 1
 
+        for hwa in hole_worker_ants:
+            move_with_collision(
+                hwa,
+                hwa.knockback_x,
+                hwa.knockback_y
+            )
+            hwa.knockback_x *= 0.85
+            hwa.knockback_y *= 0.85
+
+            if player_spawn_cooldown <= 0 and enemies_frozen_timer <= 0:
+                if player_ghost or game_peaceful_mode:
+                    fake_player_x = hwa.x + 99999
+                    fake_player_y = hwa.y + 99999
+                    real_px, real_py = player_x, player_y
+                    player_x, player_y = fake_player_x, fake_player_y
+                    try:
+                        hwa.update()
+                    finally:
+                        player_x, player_y = real_px, real_py
+                else:
+                    hwa.update()
+
+            if hwa.attack_cooldown > 0:
+                hwa.attack_cooldown -= 1
+
+            if hwa.petal_attack_cooldown > 0:
+                hwa.petal_attack_cooldown -= 1
+
+            if hwa.flash_timer > 0:
+                hwa.flash_timer -= 1
+
         for worker_ant in worker_ants:
 
             old_x = worker_ant.x
@@ -22408,6 +22624,28 @@ while running:
 
                             soldier_ant.attack_cooldown = 2
 
+        for hwa in hole_worker_ants:
+            if hwa.alive and not player_dead:
+                d = distance(player_x, player_y, hwa.x, hwa.y)
+                if (
+                    d < PLAYER_RADIUS + hwa.radius
+                    and player_spawn_cooldown <= 0
+                    and hwa.attack_cooldown == 0
+                    and not player_ghost
+                    and not game_peaceful_mode
+                ):
+                    player_hp -= get_enemy_attack_damage(hwa)
+                    if player_hp < 0:
+                        player_hp = 0
+
+                    player_flash_timer = 4
+                    push_player_from(hwa, 6.0)
+
+                    if player_hp == 0:
+                        kill_player(hwa)
+
+                    hwa.attack_cooldown = 2
+
         for worker_ant in worker_ants:
 
             # All worker ants damage and push the flower on
@@ -22755,6 +22993,9 @@ while running:
         for soldier_ant in soldier_ants:
 
             soldier_ant.draw()
+
+        for hwa in hole_worker_ants:
+            hwa.draw()
 
         for worker_ant in worker_ants:
 
@@ -23691,6 +23932,7 @@ while running:
                         hole_hornets +
                         hole_baby_ants +
                         hole_soldier_ants +
+                        hole_worker_ants +
                         bees +
                         spiders +
                         rocks +
@@ -23770,6 +24012,7 @@ while running:
                             hole_hornets +
                             hole_baby_ants +
                             hole_soldier_ants +
+                            hole_worker_ants +
                             bees +
                             spiders +
                             rocks +
@@ -24155,6 +24398,7 @@ while running:
             + hole_hornets
             + hole_baby_ants
             + hole_soldier_ants
+            + hole_worker_ants
             + bees
             + spiders
             + rocks
@@ -24516,6 +24760,7 @@ while running:
                 hole_hornets,
                 hole_baby_ants,
                 hole_soldier_ants,
+                hole_worker_ants,
                 bees,
                 spiders,
                 rocks,
