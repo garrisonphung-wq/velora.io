@@ -258,6 +258,7 @@ MOB_WEIGHT = {
     "HoleRock": 4.0,
     "HoleHornet": 2.0,
     "HoleBabyAnt": 3.0,
+    "HoleSoldierAnt": 2.5,
     "Bee": 0.8,
     "Spider": 1.1,
     "Rock": 1.0,
@@ -3701,6 +3702,8 @@ def spawn_custom_flower_minion(rarity, mob_name, custom_damage=None, custom_hp=N
         "Hole Baby Ant": HoleBabyAnt,
         "Hole Baby Ant": HoleBabyAnt,
         "Soldier Ant": SoldierAnt,
+        "Hole Soldier Ant": HoleSoldierAnt,
+        "Hole Soldier Ant": HoleSoldierAnt,
         "BabyAnt": BabyAnt,
         "SoldierAnt": SoldierAnt,
         "Worker Ant": WorkerAnt,
@@ -5114,6 +5117,7 @@ mob_gallery_names = (
     "Baby Ant",
     "Hole Baby Ant",
     "Soldier Ant",
+    "Hole Soldier Ant",
     "Worker Ant",
     "Queen Ant",
     "Ant Egg"
@@ -10150,6 +10154,171 @@ class SoldierAnt:
                 int(sy + self.radius + 15)
             )
 
+# ---------------- HOLE SOLDIER ANT ----------------
+# A heavily armored, 2x void dreadnought ant from Hole Land.
+# 2x size, 2x HP, 2x damage.
+# Strictly eyeless: jagged obsidian carapace plates, 4 razor void wings,
+# pulsing bioluminescent energy conduits, and massive serrated executioner mandibles.
+class HoleSoldierAnt(SoldierAnt):
+    is_hole_land_mob = True
+
+    def __init__(self):
+        super().__init__()
+        # 2x stats & size
+        self.radius = self.radius * 2
+        self.base_radius = self.radius
+        self.damage = 80
+        self.max_hp = 180 * MOB_HP_MULTIPLIER[self.rarity]
+        self.hp = self.max_hp
+
+        # Heavy aggressive charge
+        self.max_speed = 3.2
+        self.charge_speed = 3.6
+        self.view_range = 550
+
+        # Void aesthetics
+        self.void_pulse = random.uniform(0, math.pi * 2)
+        self.wing_jitter = random.uniform(0, math.pi * 2)
+        self.mandible_snap = random.uniform(0, math.pi * 2)
+
+    def update(self):
+        if not self.alive or getattr(self, "dying", False):
+            return
+        super().update()
+        if not self.alive or getattr(self, "dying", False):
+            return
+        self.void_pulse += 0.08
+        self.wing_jitter += 0.55
+        self.mandible_snap += 0.20
+
+    def draw(self):
+        if not self.alive:
+            return
+
+        sx = self.x - camera_x
+        sy = self.y - camera_y
+
+        if sx < -160 or sx > WIDTH + 160 or sy < -160 or sy > HEIGHT + 160:
+            return
+
+        angle = math.radians(self.angle)
+        front_x = math.cos(angle)
+        front_y = math.sin(angle)
+        side_x = -front_y
+        side_y = front_x
+
+        # ---------------- HP BAR ----------------
+        if self.hp < self.max_hp and not getattr(self, "dying", False):
+            bar_width = max(1, int(65 * settings_hp_bar_scale))
+            bar_height = max(1, int(6 * settings_hp_bar_scale))
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
+
+            pygame.draw.rect(
+                screen,
+                (45, 12, 60),
+                (int(sx - bar_width/2), int(sy - self.radius - 12 - bar_height), bar_width, bar_height)
+            )
+            pygame.draw.rect(
+                screen,
+                (190, 50, 255),
+                (int(sx - bar_width/2), int(sy - self.radius - 12 - bar_height), int(bar_width * hp_percent), bar_height)
+            )
+
+        # ---------------- PULSING VOID AURA ----------------
+        pulse = math.sin(self.void_pulse) * 5
+        aura_r = int(self.radius * 1.35 + pulse)
+        aura_surf = pygame.Surface((aura_r * 2 + 6, aura_r * 2 + 6), pygame.SRCALPHA)
+        pygame.draw.circle(aura_surf, (140, 25, 210, 42), (aura_r + 3, aura_r + 3), aura_r)
+        screen.blit(aura_surf, (int(sx - aura_r - 3), int(sy - aura_r - 3)))
+
+        # ---------------- 1. HEAVY OBSIDIAN ABDOMEN (BACK) ----------------
+        abd_x = sx - front_x * (self.radius * 0.75)
+        abd_y = sy - front_y * (self.radius * 0.75)
+        abd_r = int(self.radius * 0.88)
+        pygame.draw.circle(screen, flash_color((20, 6, 32), self.flash_timer), (int(abd_x), int(abd_y)), abd_r)
+        pygame.draw.circle(screen, flash_color((180, 45, 255), self.flash_timer), (int(abd_x), int(abd_y)), abd_r, max(2, int(self.radius * 0.08)))
+        # Abdomen chitin spikes / ribs
+        for rib_i in (-1, 0, 1):
+            rx = abd_x + front_x * (rib_i * self.radius * 0.3)
+            ry = abd_y + front_y * (rib_i * self.radius * 0.3)
+            draw_clean_line(
+                screen,
+                flash_color((0, 240, 255), self.flash_timer),
+                (int(rx - side_x * abd_r * 0.7), int(ry - side_y * abd_r * 0.7)),
+                (int(rx + side_x * abd_r * 0.7), int(ry + side_y * abd_r * 0.7)),
+                max(2, int(self.radius * 0.07))
+            )
+
+        # ---------------- 2. FOUR SERRATED VOID WINGS ----------------
+        w_flap1 = math.sin(self.wing_jitter) * 22
+        w_flap2 = math.cos(self.wing_jitter * 1.3) * 22
+        wing_len = self.radius * 2.2
+        wing_w = self.radius * 0.8
+        for w_idx, (w_side, flap_ang) in enumerate(((-1, w_flap1), (1, w_flap2), (-1, -w_flap2 * 0.7), (1, -w_flap1 * 0.7))):
+            w_surf = pygame.Surface((int(wing_len * 2), int(wing_w * 2)), pygame.SRCALPHA)
+            w_cx = int(wing_len)
+            w_cy = int(wing_w)
+            w_pts = [
+                (w_cx - int(wing_len * 0.8), w_cy),
+                (w_cx + int(wing_len * 0.6), w_cy - int(wing_w * 0.8)),
+                (w_cx + int(wing_len * 0.8), w_cy),
+                (w_cx + int(wing_len * 0.4), w_cy + int(wing_w * 0.8)),
+            ]
+            wing_col = (0, 240, 255, 95) if w_idx < 2 else (180, 45, 240, 85)
+            edge_col = (200, 60, 255, 200) if w_idx < 2 else (0, 255, 240, 180)
+            pygame.draw.polygon(w_surf, wing_col, w_pts)
+            pygame.draw.polygon(w_surf, edge_col, w_pts, 2)
+            rot_w = pygame.transform.rotate(w_surf, -self.angle + 90 - w_side * (55 + flap_ang))
+            screen.blit(rot_w, rot_w.get_rect(center=(int(sx - front_x * self.radius * 0.2), int(sy - front_y * self.radius * 0.2))))
+
+        # ---------------- 3. THORAX (MIDDLE CORE) ----------------
+        mid_r = int(self.radius * 0.78)
+        pygame.draw.circle(screen, flash_color((25, 8, 38), self.flash_timer), (int(sx), int(sy)), mid_r)
+        pygame.draw.circle(screen, flash_color((0, 240, 255), self.flash_timer), (int(sx), int(sy)), mid_r, max(2, int(self.radius * 0.08)))
+
+        # ---------------- 4. ARMORED HEAD (EYELESS DOME) ----------------
+        head_x = sx + front_x * (self.radius * 0.65)
+        head_y = sy + front_y * (self.radius * 0.65)
+        head_r = int(self.radius * 0.72)
+        pygame.draw.circle(screen, flash_color((18, 5, 28), self.flash_timer), (int(head_x), int(head_y)), head_r)
+        pygame.draw.circle(screen, flash_color((190, 50, 255), self.flash_timer), (int(head_x), int(head_y)), head_r, max(2, int(self.radius * 0.10)))
+
+        # Glowing cyan energy chevron crest across forehead
+        crest_tip = (int(head_x + front_x * head_r * 0.45), int(head_y + front_y * head_r * 0.45))
+        c_left = (int(head_x - side_x * head_r * 0.65 - front_x * head_r * 0.15), int(head_y - side_y * head_r * 0.65 - front_y * head_r * 0.15))
+        c_right = (int(head_x + side_x * head_r * 0.65 - front_x * head_r * 0.15), int(head_y + side_y * head_r * 0.65 - front_y * head_r * 0.15))
+        draw_clean_line(screen, flash_color((0, 255, 255), self.flash_timer), crest_tip, c_left, max(2, int(self.radius * 0.10)))
+        draw_clean_line(screen, flash_color((0, 255, 255), self.flash_timer), crest_tip, c_right, max(2, int(self.radius * 0.10)))
+        pygame.draw.circle(screen, flash_color((255, 60, 200), self.flash_timer), crest_tip, max(2, int(self.radius * 0.12)))
+
+        # ---------------- 5. SERRATED EXECUTIONER MANDIBLES ----------------
+        snap_val = math.sin(self.mandible_snap) * 0.35
+        jaw_col = flash_color((30, 8, 45), self.flash_timer)
+        jaw_blade_col = flash_color((0, 255, 240), self.flash_timer)
+        for s_mult in (-1, 1):
+            m_base = (head_x + front_x * head_r * 0.65 + side_x * s_mult * (head_r * 0.60),
+                      head_y + front_y * head_r * 0.65 + side_y * s_mult * (head_r * 0.60))
+            m_elbow = (head_x + front_x * head_r * 1.50 + side_x * s_mult * (head_r * 1.15 + snap_val * head_r),
+                       head_y + front_y * head_r * 1.50 + side_y * s_mult * (head_r * 1.15 + snap_val * head_r))
+            m_tip = (head_x + front_x * head_r * 1.95 + side_x * s_mult * (head_r * 0.35 - snap_val * head_r * 0.6),
+                     head_y + front_y * head_r * 1.95 + side_y * s_mult * (head_r * 0.35 - snap_val * head_r * 0.6))
+            draw_clean_line(screen, jaw_col, m_base, m_elbow, max(3, int(self.radius * 0.16)))
+            draw_clean_line(screen, jaw_col, m_elbow, m_tip, max(3, int(self.radius * 0.14)))
+            draw_clean_line(screen, jaw_blade_col, m_elbow, m_tip, max(1, int(self.radius * 0.08)))
+            # Serrated teeth on inner blade edge
+            tooth_pt = (m_elbow[0] * 0.5 + m_tip[0] * 0.5 - side_x * s_mult * head_r * 0.25,
+                        m_elbow[1] * 0.5 + m_tip[1] * 0.5 - side_y * s_mult * head_r * 0.25)
+            draw_clean_line(screen, jaw_blade_col, (m_elbow[0]*0.5+m_tip[0]*0.5, m_elbow[1]*0.5+m_tip[1]*0.5), tooth_pt, max(2, int(self.radius * 0.08)))
+            pygame.draw.circle(screen, jaw_blade_col, (int(m_tip[0]), int(m_tip[1])), max(2, int(self.radius * 0.10)))
+
+        # ---------------- RARITY TEXT ----------------
+        if not getattr(self, "hide_rarity_label", False):
+            draw_mob_rarity_label(
+                self,
+                int(sx),
+                int(sy + self.radius + 16)
+            )
+
 class QueenAnt(SoldierAnt):
 
     def __init__(self):
@@ -12199,6 +12368,10 @@ def register_mob_kill(enemy):
         mob_name = "Hole Hornet"
     elif mob_name in ("HoleBabyAnt", "Hole Baby Ant"):
         mob_name = "Hole Baby Ant"
+    elif mob_name in ("HoleSoldierAnt", "Hole Soldier Ant"):
+        mob_name = "Hole Soldier Ant"
+    elif mob_name in ("HoleSoldierAnt", "Hole Soldier Ant"):
+        mob_name = "Hole Soldier Ant"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
@@ -12489,6 +12662,7 @@ GALLERY_ICON_RADIUS = {
     "Baby Ant": 8,
     "Hole Baby Ant": 8,
     "Soldier Ant": 10,
+    "Hole Soldier Ant": 10,
     "Worker Ant": 10,
     "Queen Ant": 8,
     "Ant Egg": 11
@@ -12542,6 +12716,10 @@ GALLERY_MOB_DESCRIPTIONS = {
     "Soldier Ant": (
         "it pretects the ant hole and sometimes their lost."
     ),
+    "Hole Soldier Ant": (
+        "A 2x armored void dreadnought ant from Hole Land with 4 serrated void wings, "
+        "eyeless obsidian armor plates, and massive executioner mandibles."
+    ),
     "Worker Ant": (
         "this one worker for the queen ant but it chase you"
         "when you damage it."
@@ -12561,6 +12739,22 @@ GALLERY_MOB_DESCRIPTIONS = {
 # is rolled independently when the mob dies, so a kill can give several
 # petals or nothing at all.
 MOB_DROP_INFO = {
+    ("Hole Soldier Ant", "Common"): [
+        ("Wing", "Common", 40),
+        ("Wing", "Unusual", 16),
+        ("Glass", "Common", 35),
+        ("Glass", "Unusual", 14),
+        ("Heavy", "Common", 28),
+        ("Heavy", "Unusual", 10),
+    ],
+    ("Hole Soldier Ant", "Unusual"): [
+        ("Wing", "Common", 12),
+        ("Wing", "Unusual", 48),
+        ("Glass", "Common", 10),
+        ("Glass", "Unusual", 44),
+        ("Heavy", "Common", 8),
+        ("Heavy", "Unusual", 38),
+    ],
     ("Hole Baby Ant", "Common"): [
         ("Rice", "Common", 40),
         ("Rice", "Unusual", 16),
@@ -17407,6 +17601,7 @@ hole_hornets = []
 baby_ants = []
 hole_baby_ants = []
 soldier_ants = []
+hole_soldier_ants = []
 worker_ants = []
 queen_ants = []
 ant_eggs = []
@@ -18331,6 +18526,8 @@ while running:
                                             "HoleHornet": (HoleHornet, hole_hornets),
                                             "Hole Baby Ant": (HoleBabyAnt, hole_baby_ants),
                                             "HoleBabyAnt": (HoleBabyAnt, hole_baby_ants),
+                                            "Hole Soldier Ant": (HoleSoldierAnt, hole_soldier_ants),
+                                            "HoleSoldierAnt": (HoleSoldierAnt, hole_soldier_ants),
                                             "Bee": (Bee, bees),
                                             "Spider": (Spider, spiders),
                                             "Rock": (Rock, rocks),
@@ -20876,6 +21073,7 @@ while running:
             + hole_rocks
             + hole_hornets
             + hole_baby_ants
+            + hole_soldier_ants
             + bees
             + spiders
             + rocks
@@ -21511,6 +21709,37 @@ while running:
             if ant.flash_timer > 0:
                 ant.flash_timer -= 1
 
+        for hsa in hole_soldier_ants:
+            move_with_collision(
+                hsa,
+                hsa.knockback_x,
+                hsa.knockback_y
+            )
+            hsa.knockback_x *= 0.85
+            hsa.knockback_y *= 0.85
+
+            if player_spawn_cooldown <= 0 and enemies_frozen_timer <= 0:
+                if player_ghost or game_peaceful_mode:
+                    fake_player_x = hsa.x + 99999
+                    fake_player_y = hsa.y + 99999
+                    real_px, real_py = player_x, player_y
+                    player_x, player_y = fake_player_x, fake_player_y
+                    try:
+                        hsa.update()
+                    finally:
+                        player_x, player_y = real_px, real_py
+                else:
+                    hsa.update()
+
+            if hsa.attack_cooldown > 0:
+                hsa.attack_cooldown -= 1
+
+            if hsa.petal_attack_cooldown > 0:
+                hsa.petal_attack_cooldown -= 1
+
+            if hsa.flash_timer > 0:
+                hsa.flash_timer -= 1
+
         for soldier_ant in soldier_ants:
 
             move_with_collision(
@@ -22122,6 +22351,28 @@ while running:
                             ant.attack_cooldown = 2
 
 
+        for hsa in hole_soldier_ants:
+            if hsa.alive:
+                d = distance(player_x, player_y, hsa.x, hsa.y)
+                if d < PLAYER_RADIUS + hsa.radius and not player_dead:
+                    if player_spawn_cooldown <= 0:
+                        if (
+                            hsa.attack_cooldown == 0
+                            and not player_ghost
+                            and not game_peaceful_mode
+                        ):
+                            player_hp -= get_enemy_attack_damage(hsa)
+                            if player_hp < 0:
+                                player_hp = 0
+
+                            player_flash_timer = 4
+                            push_player_from(hsa, 7.0)
+
+                            if player_hp == 0:
+                                kill_player(hsa)
+
+                            hsa.attack_cooldown = 2
+
         for soldier_ant in soldier_ants:
 
             if soldier_ant.alive:
@@ -22497,6 +22748,9 @@ while running:
 
         for ant in baby_ants:
             ant.draw()
+
+        for hsa in hole_soldier_ants:
+            hsa.draw()
 
         for soldier_ant in soldier_ants:
 
@@ -23436,6 +23690,7 @@ while running:
                         hole_rocks +
                         hole_hornets +
                         hole_baby_ants +
+                        hole_soldier_ants +
                         bees +
                         spiders +
                         rocks +
@@ -23514,6 +23769,7 @@ while running:
                             hole_rocks +
                             hole_hornets +
                             hole_baby_ants +
+                            hole_soldier_ants +
                             bees +
                             spiders +
                             rocks +
@@ -23898,6 +24154,7 @@ while running:
             + hole_rocks
             + hole_hornets
             + hole_baby_ants
+            + hole_soldier_ants
             + bees
             + spiders
             + rocks
@@ -24258,6 +24515,7 @@ while running:
                 hole_rocks,
                 hole_hornets,
                 hole_baby_ants,
+                hole_soldier_ants,
                 bees,
                 spiders,
                 rocks,
