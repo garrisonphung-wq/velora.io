@@ -1320,6 +1320,15 @@ KING_MOB_LIST_NAMES = {
     "SoldierAnt": "soldier_ants",
     "WorkerAnt": "worker_ants",
     "AntEgg": "ant_eggs",
+    "HoleLadybug": "hole_ladybugs",
+    "HoleBee": "hole_bees",
+    "HoleSpider": "hole_spiders",
+    "HoleRock": "hole_rocks",
+    "HoleHornet": "hole_hornets",
+    "HoleBabyAnt": "hole_baby_ants",
+    "HoleSoldierAnt": "hole_soldier_ants",
+    "HoleWorkerAnt": "hole_worker_ants",
+    "HoleAntEgg": "hole_eggs",
 }
 
 def get_king_mob_list(mob_name):
@@ -1566,7 +1575,7 @@ def dev_make_king(enemy):
     if getattr(enemy, "is_king", False):
         show_error("That enemy is already a king")
         return False
-    if isinstance(enemy, QueenAnt):
+    if isinstance(enemy, (QueenAnt, HoleQueenAnt)):
         # The queen ant can never be a king, and she never
         # talks in chat.
         show_error("The Queen Ant can't be a king")
@@ -1628,7 +1637,7 @@ def king_chase_or_guard(enemy):
         )
 
         # The king bumps his own minions aside as he advances.
-        for other in ladybugs:
+        for other in get_king_mob_list(type(enemy).__name__):
             if not getattr(other, "is_minion", False):
                 continue
             if not other.alive:
@@ -3695,26 +3704,35 @@ def spawn_custom_flower_minion(rarity, mob_name, custom_damage=None, custom_hp=N
     enemy_classes = {
         "Ladybug": Ladybug,
         "Hole Ladybug": HoleLadybug,
+        "HoleLadybug": HoleLadybug,
         "Bee": Bee,
         "Hole Bee": HoleBee,
-        "Hole Bee": HoleBee,
+        "HoleBee": HoleBee,
         "Spider": Spider,
+        "Hole Spider": HoleSpider,
+        "HoleSpider": HoleSpider,
         "Rock": Rock,
+        "Hole Rock": HoleRock,
+        "HoleRock": HoleRock,
         "Hornet": Hornet,
         "Hole Hornet": HoleHornet,
+        "HoleHornet": HoleHornet,
         "Baby Ant": BabyAnt,
-        "Hole Baby Ant": HoleBabyAnt,
-        "Hole Baby Ant": HoleBabyAnt,
-        "Soldier Ant": SoldierAnt,
-        "Hole Soldier Ant": HoleSoldierAnt,
         "BabyAnt": BabyAnt,
+        "Hole Baby Ant": HoleBabyAnt,
+        "HoleBabyAnt": HoleBabyAnt,
+        "Soldier Ant": SoldierAnt,
         "SoldierAnt": SoldierAnt,
+        "Hole Soldier Ant": HoleSoldierAnt,
+        "HoleSoldierAnt": HoleSoldierAnt,
         "Worker Ant": WorkerAnt,
-        "Hole Worker Ant": HoleWorkerAnt,
         "WorkerAnt": WorkerAnt,
+        "Hole Worker Ant": HoleWorkerAnt,
+        "HoleWorkerAnt": HoleWorkerAnt,
         "Queen Ant": QueenAnt,
-        "Hole Queen Ant": HoleQueenAnt,
         "QueenAnt": QueenAnt,
+        "Hole Queen Ant": HoleQueenAnt,
+        "HoleQueenAnt": HoleQueenAnt,
         "Ant Egg": AntEgg,
         "AntEgg": AntEgg,
         "Hole Ant Egg": HoleAntEgg,
@@ -13775,14 +13793,23 @@ def update_boss_hp():
         ladybugs +
         hole_ladybugs +
         bees +
+        hole_bees +
         spiders +
+        hole_spiders +
         rocks +
+        hole_rocks +
         hornets +
+        hole_hornets +
         baby_ants +
+        hole_baby_ants +
         soldier_ants +
+        hole_soldier_ants +
         worker_ants +
+        hole_worker_ants +
         queen_ants +
-        ant_eggs
+        hole_queen_ants +
+        ant_eggs +
+        hole_eggs
     )
 
 
@@ -18496,14 +18523,23 @@ while running:
         ladybugs
         + hole_ladybugs
         + bees
+        + hole_bees
         + spiders
+        + hole_spiders
         + rocks
+        + hole_rocks
         + hornets
+        + hole_hornets
         + baby_ants
+        + hole_baby_ants
         + soldier_ants
+        + hole_soldier_ants
         + worker_ants
+        + hole_worker_ants
         + queen_ants
+        + hole_queen_ants
         + ant_eggs
+        + hole_eggs
     )
 
     for event in pygame.event.get():
@@ -19234,8 +19270,16 @@ while running:
                                         }
                                         mob_type = None
                                         trailing_args = []
-                                        if len(args) >= 3:
-                                            # Try 2-word mob names first
+                                        if len(args) >= 4:
+                                            # Try 3-word mob names first (e.g. Hole Soldier Ant)
+                                            three_word = args[1] + " " + args[2] + " " + args[3]
+                                            for key in enemy_classes:
+                                                if key.lower() == three_word.lower():
+                                                    mob_type = key
+                                                    trailing_args = args[4:]
+                                                    break
+                                        if mob_type is None and len(args) >= 3:
+                                            # Try 2-word mob names next
                                             two_word = args[1] + " " + args[2]
                                             for key in enemy_classes:
                                                 if key.lower() == two_word.lower():
@@ -19896,16 +19940,32 @@ while running:
                                         rarity = args[0].capitalize()
                                         minion_mob_classes = {
                                             "Ladybug": Ladybug,
+                                            "Hole Ladybug": HoleLadybug,
+                                            "HoleLadybug": HoleLadybug,
                                             "Bee": Bee,
+                                            "Hole Bee": HoleBee,
+                                            "HoleBee": HoleBee,
                                             "Spider": Spider,
+                                            "Hole Spider": HoleSpider,
+                                            "HoleSpider": HoleSpider,
                                             "Rock": Rock,
+                                            "Hole Rock": HoleRock,
+                                            "HoleRock": HoleRock,
                                             "Hornet": Hornet,
+                                            "Hole Hornet": HoleHornet,
+                                            "HoleHornet": HoleHornet,
                                             "Baby Ant": BabyAnt,
-                                            "Soldier Ant": SoldierAnt,
                                             "BabyAnt": BabyAnt,
+                                            "Hole Baby Ant": HoleBabyAnt,
+                                            "HoleBabyAnt": HoleBabyAnt,
+                                            "Soldier Ant": SoldierAnt,
                                             "SoldierAnt": SoldierAnt,
+                                            "Hole Soldier Ant": HoleSoldierAnt,
+                                            "HoleSoldierAnt": HoleSoldierAnt,
                                             "Worker Ant": WorkerAnt,
                                             "WorkerAnt": WorkerAnt,
+                                            "Hole Worker Ant": HoleWorkerAnt,
+                                            "HoleWorkerAnt": HoleWorkerAnt,
                                             "Queen Ant": QueenAnt,
                                             "QueenAnt": QueenAnt,
                                             "Hole Queen Ant": HoleQueenAnt,
@@ -19919,7 +19979,14 @@ while running:
                                         }
                                         found_mob = None
                                         trailing = []
-                                        if len(args) >= 3:
+                                        if len(args) >= 4:
+                                            three_word = args[1] + " " + args[2] + " " + args[3]
+                                            for k in minion_mob_classes:
+                                                if k.lower() == three_word.lower():
+                                                    found_mob = k
+                                                    trailing = args[4:]
+                                                    break
+                                        if found_mob is None and len(args) >= 3:
                                             two_word = args[1] + " " + args[2]
                                             for k in minion_mob_classes:
                                                 if k.lower() == two_word.lower():
@@ -22663,8 +22730,8 @@ while running:
                     d = distance(ca_x, ca_y, cb_x, cb_y)
                     push_x = (ca_x - cb_x) / d
                     push_y = (ca_y - cb_y) / d
-                    immobile_a = type(enemy_a).__name__ in ("Rock", "AntEgg")
-                    immobile_b = type(enemy_b).__name__ in ("Rock", "AntEgg")
+                    immobile_a = type(enemy_a).__name__ in ("Rock", "AntEgg", "HoleRock", "HoleAntEgg", "HoleEgg")
+                    immobile_b = type(enemy_b).__name__ in ("Rock", "AntEgg", "HoleRock", "HoleAntEgg", "HoleEgg")
                     if immobile_a and immobile_b:
                         pass
                     elif immobile_a:
