@@ -260,6 +260,7 @@ MOB_WEIGHT = {
     "HoleBabyAnt": 3.0,
     "HoleSoldierAnt": 2.5,
     "HoleWorkerAnt": 2.8,
+    "HoleQueenAnt": 1.5,
     "Bee": 0.8,
     "Spider": 1.1,
     "Rock": 1.0,
@@ -3710,6 +3711,7 @@ def spawn_custom_flower_minion(rarity, mob_name, custom_damage=None, custom_hp=N
         "Hole Worker Ant": HoleWorkerAnt,
         "WorkerAnt": WorkerAnt,
         "Queen Ant": QueenAnt,
+        "Hole Queen Ant": HoleQueenAnt,
         "QueenAnt": QueenAnt,
         "Ant Egg": AntEgg,
         "AntEgg": AntEgg,
@@ -4135,18 +4137,30 @@ def update_queen_eggs():
             max(0, rarity_index - 2)
         ]
 
-        ant = SoldierAnt()
-        ant.rarity = lower_rarity
-        apply_enemy_rarity_stats(ant)
-        # The hatched soldier ant is the size of the egg it
-        # hatched from.
-        ant.radius = egg["radius"]
-        ant.base_radius = ant.radius
-        ant.charging = True
-        ant.x = egg["x"] + random.randint(-10, 10)
-        ant.y = egg["y"] + random.randint(-10, 10)
-        ant.queen = egg.get("queen")
-        soldier_ants.append(ant)
+        if egg.get("is_void_egg", False):
+            ant = HoleSoldierAnt()
+            ant.rarity = lower_rarity
+            apply_enemy_rarity_stats(ant)
+            ant.radius = egg["radius"]
+            ant.base_radius = ant.radius
+            ant.charging = True
+            ant.x = egg["x"] + random.randint(-10, 10)
+            ant.y = egg["y"] + random.randint(-10, 10)
+            ant.queen = egg.get("queen")
+            hole_soldier_ants.append(ant)
+        else:
+            ant = SoldierAnt()
+            ant.rarity = lower_rarity
+            apply_enemy_rarity_stats(ant)
+            # The hatched soldier ant is the size of the egg it
+            # hatched from.
+            ant.radius = egg["radius"]
+            ant.base_radius = ant.radius
+            ant.charging = True
+            ant.x = egg["x"] + random.randint(-10, 10)
+            ant.y = egg["y"] + random.randint(-10, 10)
+            ant.queen = egg.get("queen")
+            soldier_ants.append(ant)
 
     # Keep all queen ant eggs inside map boundaries
     for egg in queen_eggs:
@@ -5122,6 +5136,7 @@ mob_gallery_names = (
     "Worker Ant",
     "Hole Worker Ant",
     "Queen Ant",
+    "Hole Queen Ant",
     "Ant Egg"
 )
 mob_gallery_scroll_target = 0
@@ -10437,9 +10452,269 @@ class QueenAnt(SoldierAnt):
 def entity_hit_circles(entity):
     # Collision circles for any mob: queen ants use their three
     # body-part circles, everything else a single body circle.
-    if isinstance(entity, QueenAnt):
+    if isinstance(entity, (QueenAnt, HoleQueenAnt)):
         return entity.hitbox_circles()
     return [(entity.x, entity.y, entity.radius)]
+
+
+# ---------------- HOLE QUEEN ANT ----------------
+# The colossal, eyeless abyss matriarch native to Hole Land.
+# 2x size, 2x HP, 2x damage.
+# Eyeless crystalline obsidian armor, pulsing cyan & magenta biomechanical void runes,
+# 4 fluttering void-glitch wings, and an egg incubator chamber laying Void Eggs.
+class HoleQueenAnt(QueenAnt):
+    is_hole_land_mob = True
+
+    def __init__(self):
+        super().__init__()
+        # 2x stats & size
+        self.radius = self.radius * 2
+        self.base_radius = self.radius
+        self.body_length_scale = 1.65
+        self.damage = 100
+        self.max_hp = 230 * MOB_HP_MULTIPLIER[self.rarity]
+        self.hp = self.max_hp
+
+        # Movement & Charge
+        self.max_speed = 2.8
+        self.charge_speed = 3.2
+        self.view_range = 600
+
+        # Void aesthetics
+        self.void_pulse = random.uniform(0, math.pi * 2)
+        self.wing_jitter = random.uniform(0, math.pi * 2)
+        self.mandible_snap = random.uniform(0, math.pi * 2)
+
+    def count_active_minions(self):
+        eggs = globals().get("queen_eggs", [])
+        ants = globals().get("hole_soldier_ants", [])
+        egg_count = sum(
+            1 for egg in eggs
+            if egg.get("queen") is self
+        )
+        minion_count = sum(
+            1 for ant in ants
+            if getattr(ant, "queen", None) is self
+            and ant.alive
+            and not getattr(ant, "dying", False)
+        )
+        return egg_count + minion_count
+
+    def update(self):
+        if not self.alive or getattr(self, "dying", False):
+            return
+        if dead_flower_ai(self):
+            return
+
+        if self.lay_freeze_timer > 0:
+            self.lay_freeze_timer -= 1
+            return
+
+        self.void_pulse += 0.08
+        self.wing_jitter += 0.55
+        self.mandible_snap += 0.20
+
+        # Lays dark Void Eggs that hatch into HoleSoldierAnts
+        if self.charging and not player_dead:
+            if self.count_active_minions() < 5:
+                self.egg_timer += 1
+                if self.egg_timer >= 54:
+                    self.egg_timer = 0
+                    self.lay_freeze_timer = 18
+                    lay_rad = math.radians(self.angle)
+                    queen_eggs.append(
+                        {
+                            "x": (
+                                self.x
+                                - math.cos(lay_rad)
+                                * self.radius * 1.3
+                            ),
+                            "y": (
+                                self.y
+                                - math.sin(lay_rad)
+                                * self.radius * 1.3
+                            ),
+                            "timer": 90,
+                            "radius": max(
+                                16,
+                                int(self.radius * 0.45)
+                            ),
+                            "rarity": self.rarity,
+                            "wobble": random.uniform(0, 360),
+                            "queen": self,
+                            "is_void_egg": True
+                        }
+                    )
+            else:
+                self.egg_timer = 0
+
+        # Call SoldierAnt.update logic for movement and turning
+        super(QueenAnt, self).update()
+
+    def draw(self):
+        if not self.alive:
+            return
+
+        sx = self.x - camera_x
+        sy = self.y - camera_y
+
+        if sx < -200 or sx > WIDTH + 200 or sy < -200 or sy > HEIGHT + 200:
+            return
+
+        angle = math.radians(self.angle)
+        front_x = math.cos(angle)
+        front_y = math.sin(angle)
+        side_x = -front_y
+        side_y = front_x
+
+        head_size = self.radius * 0.80
+
+        # ---------------- HP BAR ----------------
+        if self.hp < self.max_hp and not getattr(self, "dying", False):
+            bar_width = max(1, int(80 * settings_hp_bar_scale))
+            bar_height = max(1, int(7 * settings_hp_bar_scale))
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
+
+            pygame.draw.rect(
+                screen,
+                (45, 12, 60),
+                (int(sx - bar_width/2), int(sy - self.radius - 14 - bar_height), bar_width, bar_height)
+            )
+            pygame.draw.rect(
+                screen,
+                (190, 50, 255),
+                (int(sx - bar_width/2), int(sy - self.radius - 14 - bar_height), int(bar_width * hp_percent), bar_height)
+            )
+
+        # ---------------- PULSING VOID AURA ----------------
+        pulse = math.sin(self.void_pulse) * 6
+        aura_r = int(self.radius * 1.45 + pulse)
+        aura_surf = pygame.Surface((aura_r * 2 + 8, aura_r * 2 + 8), pygame.SRCALPHA)
+        pygame.draw.circle(aura_surf, (140, 20, 220, 48), (aura_r + 4, aura_r + 4), aura_r)
+        screen.blit(aura_surf, (int(sx - aura_r - 4), int(sy - aura_r - 4)))
+
+        # ---------------- 1. THREE-SEGMENT CORRUPTED QUEEN CHASSIS ----------------
+        # Abdomen (back) and Thorax (middle)
+        for part_offset, part_scale, is_abdomen in (
+            (-0.65, 1.25, True),
+            (0.0, 1.12, False),
+        ):
+            part_x = sx + front_x * self.radius * part_offset
+            part_y = sy + front_y * self.radius * part_offset
+            part_r = int(head_size * part_scale)
+
+            pygame.draw.circle(
+                screen,
+                flash_color((20, 6, 32), self.flash_timer),
+                (int(part_x), int(part_y)),
+                part_r
+            )
+            pygame.draw.circle(
+                screen,
+                flash_color((180, 45, 255), self.flash_timer),
+                (int(part_x), int(part_y)),
+                part_r,
+                max(2, int(self.radius * 0.08))
+            )
+
+            # Abdomen bio-luminescent void ribs & egg incubator glow
+            if is_abdomen:
+                for rib_i in (-1, 0, 1):
+                    rx = part_x + front_x * (rib_i * part_r * 0.35)
+                    ry = part_y + front_y * (rib_i * part_r * 0.35)
+                    draw_clean_line(
+                        screen,
+                        flash_color((0, 240, 255), self.flash_timer),
+                        (int(rx - side_x * part_r * 0.72), int(ry - side_y * part_r * 0.72)),
+                        (int(rx + side_x * part_r * 0.72), int(ry + side_y * part_r * 0.72)),
+                        max(2, int(self.radius * 0.07))
+                    )
+                # Glowing void core center in abdomen
+                pygame.draw.circle(
+                    screen,
+                    flash_color((255, 60, 220), self.flash_timer),
+                    (int(part_x), int(part_y)),
+                    max(3, int(part_r * 0.32))
+                )
+
+        # ---------------- 2. FOUR GLITCHING VOID WINGS ----------------
+        w_flap1 = math.sin(self.wing_jitter) * 25
+        w_flap2 = math.cos(self.wing_jitter * 1.3) * 25
+        wing_len = self.radius * 2.5
+        wing_w = self.radius * 0.95
+        for w_idx, (w_side, flap_ang) in enumerate(((-1, w_flap1), (1, w_flap2), (-1, -w_flap2 * 0.7), (1, -w_flap1 * 0.7))):
+            w_surf = pygame.Surface((int(wing_len * 2), int(wing_w * 2)), pygame.SRCALPHA)
+            w_cx = int(wing_len)
+            w_cy = int(wing_w)
+            w_pts = [
+                (w_cx - int(wing_len * 0.85), w_cy),
+                (w_cx + int(wing_len * 0.7), w_cy - int(wing_w * 0.85)),
+                (w_cx + int(wing_len * 0.9), w_cy),
+                (w_cx + int(wing_len * 0.5), w_cy + int(wing_w * 0.85)),
+            ]
+            wing_col = (0, 240, 255, 105) if w_idx < 2 else (200, 50, 255, 95)
+            edge_col = (200, 60, 255, 220) if w_idx < 2 else (0, 255, 240, 200)
+            pygame.draw.polygon(w_surf, wing_col, w_pts)
+            pygame.draw.polygon(w_surf, edge_col, w_pts, 2)
+            rot_w = pygame.transform.rotate(w_surf, -self.angle + 90 - w_side * (55 + flap_ang))
+            screen.blit(rot_w, rot_w.get_rect(center=(int(sx), int(sy))))
+
+        # ---------------- 3. ARMORED MATRIARCH HEAD (FRONT, EYELESS) ----------------
+        head_x = sx + front_x * self.radius * 0.7
+        head_y = sy + front_y * self.radius * 0.7
+        pygame.draw.circle(
+            screen,
+            flash_color((24, 6, 36), self.flash_timer),
+            (int(head_x), int(head_y)),
+            int(head_size)
+        )
+        pygame.draw.circle(
+            screen,
+            flash_color((180, 50, 255), self.flash_timer),
+            (int(head_x), int(head_y)),
+            int(head_size),
+            max(2, int(self.radius * 0.09))
+        )
+
+        # Royal void crown crest (tri-spike crown emblazoned on forehead, strictly eyeless)
+        crown_mid = (int(head_x + front_x * head_size * 0.55), int(head_y + front_y * head_size * 0.55))
+        c_left = (int(head_x + front_x * head_size * 0.35 - side_x * head_size * 0.6), int(head_y + front_y * head_size * 0.35 - side_y * head_size * 0.6))
+        c_right = (int(head_x + front_x * head_size * 0.35 + side_x * head_size * 0.6), int(head_y + front_y * head_size * 0.35 + side_y * head_size * 0.6))
+        c_base = (int(head_x), int(head_y))
+        draw_clean_line(screen, flash_color((0, 255, 255), self.flash_timer), c_base, crown_mid, max(2, int(self.radius * 0.08)))
+        draw_clean_line(screen, flash_color((0, 255, 255), self.flash_timer), c_base, c_left, max(2, int(self.radius * 0.08)))
+        draw_clean_line(screen, flash_color((0, 255, 255), self.flash_timer), c_base, c_right, max(2, int(self.radius * 0.08)))
+        pygame.draw.circle(screen, flash_color((255, 60, 200), self.flash_timer), crown_mid, max(2, int(self.radius * 0.10)))
+        pygame.draw.circle(screen, flash_color((0, 240, 255), self.flash_timer), c_left, max(2, int(self.radius * 0.08)))
+        pygame.draw.circle(screen, flash_color((0, 240, 255), self.flash_timer), c_right, max(2, int(self.radius * 0.08)))
+
+        # ---------------- 4. MASSIVE MATRIARCH EXECUTIONER MANDIBLES ----------------
+        snap_val = math.sin(self.mandible_snap) * 0.35
+        jaw_col = flash_color((32, 8, 48), self.flash_timer)
+        jaw_blade_col = flash_color((0, 255, 240), self.flash_timer)
+        for s_mult in (-1, 1):
+            m_base = (head_x + front_x * head_size * 0.65 + side_x * s_mult * (head_size * 0.60),
+                      head_y + front_y * head_size * 0.65 + side_y * s_mult * (head_size * 0.60))
+            m_elbow = (head_x + front_x * head_size * 1.55 + side_x * s_mult * (head_size * 1.20 + snap_val * head_size),
+                       head_y + front_y * head_size * 1.55 + side_y * s_mult * (head_size * 1.20 + snap_val * head_size))
+            m_tip = (head_x + front_x * head_size * 2.05 + side_x * s_mult * (head_size * 0.30 - snap_val * head_size * 0.6),
+                     head_y + front_y * head_size * 2.05 + side_y * s_mult * (head_size * 0.30 - snap_val * head_size * 0.6))
+            draw_clean_line(screen, jaw_col, m_base, m_elbow, max(3, int(self.radius * 0.16)))
+            draw_clean_line(screen, jaw_col, m_elbow, m_tip, max(3, int(self.radius * 0.14)))
+            draw_clean_line(screen, jaw_blade_col, m_elbow, m_tip, max(1, int(self.radius * 0.08)))
+            # Serrated tooth on inner edge
+            tooth_pt = (m_elbow[0] * 0.5 + m_tip[0] * 0.5 - side_x * s_mult * head_size * 0.3,
+                        m_elbow[1] * 0.5 + m_tip[1] * 0.5 - side_y * s_mult * head_size * 0.3)
+            draw_clean_line(screen, jaw_blade_col, (m_elbow[0]*0.5+m_tip[0]*0.5, m_elbow[1]*0.5+m_tip[1]*0.5), tooth_pt, max(2, int(self.radius * 0.08)))
+            pygame.draw.circle(screen, jaw_blade_col, (int(m_tip[0]), int(m_tip[1])), max(2, int(self.radius * 0.10)))
+
+        # ---------------- RARITY TEXT ----------------
+        if not getattr(self, "hide_rarity_label", False):
+            draw_mob_rarity_label(
+                self,
+                int(sx),
+                int(sy + self.radius + 18)
+            )
 
 
 # ----- DIF SECTION -----
@@ -12526,12 +12801,16 @@ def register_mob_kill(enemy):
         mob_name = "Hole Soldier Ant"
     elif mob_name in ("HoleWorkerAnt", "Hole Worker Ant"):
         mob_name = "Hole Worker Ant"
+    elif mob_name in ("HoleQueenAnt", "Hole Queen Ant"):
+        mob_name = "Hole Queen Ant"
     elif mob_name == "BabyAnt":
         mob_name = "Baby Ant"
     elif mob_name == "SoldierAnt":
         mob_name = "Soldier Ant"
     elif mob_name == "WorkerAnt":
         mob_name = "Worker Ant"
+    elif mob_name in ("HoleQueenAnt", "Hole Queen Ant"):
+        mob_name = "Hole Queen Ant"
     elif mob_name == "QueenAnt":
         mob_name = "Queen Ant"
     elif mob_name == "AntEgg":
@@ -12824,6 +13103,7 @@ GALLERY_ICON_RADIUS = {
     "Worker Ant": 10,
     "Hole Worker Ant": 10,
     "Queen Ant": 8,
+    "Hole Queen Ant": 8,
     "Ant Egg": 11
 }
 
@@ -12890,6 +13170,10 @@ GALLERY_MOB_DESCRIPTIONS = {
     "Queen Ant": (
         "the mother of the ant colony. she lays eggs that hatch "
         "into ants while chasing you."
+    ),
+    "Hole Queen Ant": (
+        "A 2x colossal void matriarch from Hole Land. Eyeless obsidian armor, "
+        "4 fluttering void-glitch wings, and an egg incubator chamber that spawns Void Eggs."
     ),
     "Ant Egg": (
         "a fragile ant egg that stays still. when broken, a baby ant "
@@ -13078,6 +13362,22 @@ MOB_DROP_INFO = {
         ("Clover", "Common", 30),
         ("Clover", "Unusual", 17),
     ],
+    ("Hole Queen Ant", "Common"): [
+        ("Ant Egg", "Common", 45),
+        ("Ant Egg", "Unusual", 18),
+        ("Soil", "Common", 40),
+        ("Soil", "Unusual", 16),
+        ("Heavy", "Common", 30),
+        ("Heavy", "Unusual", 12),
+    ],
+    ("Hole Queen Ant", "Unusual"): [
+        ("Ant Egg", "Common", 14),
+        ("Ant Egg", "Unusual", 50),
+        ("Soil", "Common", 12),
+        ("Soil", "Unusual", 46),
+        ("Heavy", "Common", 10),
+        ("Heavy", "Unusual", 40),
+    ],
     ("Queen Ant", "Common"): [
         ("Ant Egg", "Common", 34),
         ("Ant Egg", "Unusual", 9),
@@ -13144,6 +13444,7 @@ def draw_gallery_enemy_icon(surface, mob_name, center, rarity):
         "Worker Ant": WorkerAnt,
         "Hole Worker Ant": HoleWorkerAnt,
         "Queen Ant": QueenAnt,
+        "Hole Queen Ant": HoleQueenAnt,
         "Ant Egg": AntEgg
     }
     enemy_class = enemy_classes.get(mob_name)
@@ -17786,6 +18087,7 @@ hole_soldier_ants = []
 worker_ants = []
 hole_worker_ants = []
 queen_ants = []
+hole_queen_ants = []
 ant_eggs = []
 
 # Eggs laid by queen ants while chasing; they hatch into enemy
@@ -18724,6 +19026,8 @@ while running:
                                             "WorkerAnt": (WorkerAnt, worker_ants),
                                             "Queen Ant": (QueenAnt, queen_ants),
                                             "QueenAnt": (QueenAnt, queen_ants),
+                                            "Hole Queen Ant": (HoleQueenAnt, hole_queen_ants),
+                                            "HoleQueenAnt": (HoleQueenAnt, hole_queen_ants),
                                             "Ant Egg": (AntEgg, ant_eggs),
                                             "AntEgg": (AntEgg, ant_eggs),
                                         }
@@ -19403,6 +19707,8 @@ while running:
                                             "WorkerAnt": WorkerAnt,
                                             "Queen Ant": QueenAnt,
                                             "QueenAnt": QueenAnt,
+                                            "Hole Queen Ant": HoleQueenAnt,
+                                            "HoleQueenAnt": HoleQueenAnt,
                                             "Ant Egg": AntEgg,
                                             "AntEgg": AntEgg,
                                         }
@@ -21259,6 +21565,7 @@ while running:
             + hole_baby_ants
             + hole_soldier_ants
             + hole_worker_ants
+            + hole_queen_ants
             + bees
             + spiders
             + rocks
@@ -22026,6 +22333,32 @@ while running:
             if worker_ant.flash_timer > 0:
                 worker_ant.flash_timer -= 1
 
+        for hqa in hole_queen_ants:
+            old_x = hqa.x
+            old_y = hqa.y
+
+            if player_spawn_cooldown <= 0 and enemies_frozen_timer <= 0:
+                if player_ghost or game_peaceful_mode:
+                    fake_player_x = hqa.x + 99999
+                    fake_player_y = hqa.y + 99999
+                    real_px, real_py = player_x, player_y
+                    player_x, player_y = fake_player_x, fake_player_y
+                    try:
+                        hqa.update()
+                    finally:
+                        player_x, player_y = real_px, real_py
+                else:
+                    hqa.update()
+
+            if hqa.attack_cooldown > 0:
+                hqa.attack_cooldown -= 1
+
+            if hqa.petal_attack_cooldown > 0:
+                hqa.petal_attack_cooldown -= 1
+
+            if hqa.flash_timer > 0:
+                hqa.flash_timer -= 1
+
         for queen_ant in queen_ants:
 
             old_x = queen_ant.x
@@ -22136,6 +22469,13 @@ while running:
         # The queen ant is solid: push the flower out of every
         # body-part circle.
         if not player_dead:
+            for hqa in hole_queen_ants:
+                for c_x, c_y, c_r in hqa.hitbox_circles():
+                    d = distance(player_x, player_y, c_x, c_y)
+                    min_dist = PLAYER_RADIUS + c_r
+                    if 0 < d < min_dist:
+                        player_x = c_x + ((player_x - c_x) / d * min_dist)
+                        player_y = c_y + ((player_y - c_y) / d * min_dist)
             for queen_ant in queen_ants:
                 for c_x, c_y, c_r in queen_ant.hitbox_circles():
                     d = distance(
@@ -22679,6 +23019,39 @@ while running:
 
                     worker_ant.attack_cooldown = 2
 
+        for hqa in hole_queen_ants:
+            if hqa.alive and not player_dead:
+                for c_x, c_y, c_r in hqa.hitbox_circles():
+                    d = distance(player_x, player_y, c_x, c_y)
+                    if not (
+                        0 < d < PLAYER_RADIUS + c_r
+                        and player_spawn_cooldown <= 0
+                        and hqa.attack_cooldown == 0
+                        and not player_ghost
+                        and not game_peaceful_mode
+                    ):
+                        continue
+
+                    player_hp -= get_enemy_attack_damage(hqa)
+                    if player_hp < 0:
+                        player_hp = 0
+
+                    player_flash_timer = 4
+
+                    knock_x = player_x - c_x
+                    knock_y = player_y - c_y
+                    knock_len = math.sqrt(knock_x * knock_x + knock_y * knock_y)
+                    if knock_len > 0:
+                        knock_x /= knock_len
+                        knock_y /= knock_len
+                        player_x += knock_x * 8.0
+                        player_y += knock_y * 8.0
+
+                    if player_hp == 0:
+                        kill_player(hqa)
+
+                    hqa.attack_cooldown = 2
+
         for queen_ant in queen_ants:
 
             # Queen ants damage the flower on contact with any of
@@ -23015,19 +23388,43 @@ while running:
                     time.time() * 8 + egg["wobble"]
                 ) * 1.5
             )
-            pygame.draw.circle(
-                screen,
-                (250, 240, 180),
-                (egg_x, int(egg_y + wobble)),
-                egg_r
-            )
-            pygame.draw.circle(
-                screen,
-                (200, 175, 110),
-                (egg_x, int(egg_y + wobble)),
-                egg_r,
-                3
-            )
+            if egg.get("is_void_egg", False):
+                pygame.draw.circle(
+                    screen,
+                    (28, 8, 42),
+                    (egg_x, int(egg_y + wobble)),
+                    egg_r
+                )
+                pygame.draw.circle(
+                    screen,
+                    (0, 240, 255),
+                    (egg_x, int(egg_y + wobble)),
+                    egg_r,
+                    3
+                )
+                pygame.draw.circle(
+                    screen,
+                    (200, 50, 255),
+                    (egg_x, int(egg_y + wobble)),
+                    max(2, int(egg_r * 0.45))
+                )
+            else:
+                pygame.draw.circle(
+                    screen,
+                    (250, 240, 180),
+                    (egg_x, int(egg_y + wobble)),
+                    egg_r
+                )
+                pygame.draw.circle(
+                    screen,
+                    (200, 175, 110),
+                    (egg_x, int(egg_y + wobble)),
+                    egg_r,
+                    3
+                )
+
+        for hqa in hole_queen_ants:
+            hqa.draw()
 
         for queen_ant in queen_ants:
 
@@ -23933,6 +24330,7 @@ while running:
                         hole_baby_ants +
                         hole_soldier_ants +
                         hole_worker_ants +
+                        hole_queen_ants +
                         bees +
                         spiders +
                         rocks +
@@ -24013,6 +24411,7 @@ while running:
                             hole_baby_ants +
                             hole_soldier_ants +
                             hole_worker_ants +
+                            hole_queen_ants +
                             bees +
                             spiders +
                             rocks +
@@ -24399,6 +24798,7 @@ while running:
             + hole_baby_ants
             + hole_soldier_ants
             + hole_worker_ants
+            + hole_queen_ants
             + bees
             + spiders
             + rocks
@@ -24761,6 +25161,7 @@ while running:
                 hole_baby_ants,
                 hole_soldier_ants,
                 hole_worker_ants,
+                hole_queen_ants,
                 bees,
                 spiders,
                 rocks,
