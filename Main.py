@@ -8473,14 +8473,16 @@ class HoleHornet(Hornet):
 
         # ---------------- PULSING VOID AURA ----------------
         pulse = math.sin(self.void_pulse) * 5
-        aura_r = int(self.radius * 1.35 + pulse)
+        aura_r = int(self.radius * 1.4 + pulse)
         aura_surf = pygame.Surface((aura_r * 2 + 6, aura_r * 2 + 6), pygame.SRCALPHA)
         pygame.draw.circle(aura_surf, (140, 25, 210, 42), (aura_r + 3, aura_r + 3), aura_r)
         screen.blit(aura_surf, (int(sx - aura_r - 3), int(sy - aura_r - 3)))
 
-        # ---------------- WARPED SURFACE RENDERING ----------------
-        length = self.radius * 3.2
-        width = self.radius * 1.6
+        # ---------------- BIO-INTERCEPTOR FIGHTER CHASSIS ----------------
+        # Distinct aerodynamic dart design with swept delta wings, underwing missiles,
+        # and pulsing exhaust jets so it looks completely distinct from Hole Bee.
+        length = self.radius * 3.8
+        width = self.radius * 2.6
         padding = self.radius * 2.2
 
         surf_w = int(length + padding * 2)
@@ -8489,114 +8491,128 @@ class HoleHornet(Hornet):
         cx = surf_w // 2
         cy = surf_h // 2
 
-        # 1. FOUR TREMBLING VOID WINGS (electric cyan and neon violet membranes)
-        w_flap1 = math.sin(self.wing_jitter) * (self.radius * 0.32)
-        w_flap2 = math.cos(self.wing_jitter * 1.3) * (self.radius * 0.32)
+        # 1. TWIN REAR VOID JET EXHAUST PLUMES (flickering electric cyan and magenta thrust)
+        flame_len = self.radius * (0.8 + 0.3 * math.sin(self.wing_jitter * 2.0))
+        for jet_offset_y in (-int(width * 0.16), int(width * 0.16)):
+            flame_pts = [
+                (cx - int(length * 0.42), cy + jet_offset_y - int(self.radius * 0.14)),
+                (cx - int(length * 0.42 + flame_len), cy + jet_offset_y),
+                (cx - int(length * 0.42), cy + jet_offset_y + int(self.radius * 0.14)),
+            ]
+            pygame.draw.polygon(hornet_surf, (0, 240, 255, 180), flame_pts)
+            inner_flame = [
+                (cx - int(length * 0.42), cy + jet_offset_y - int(self.radius * 0.07)),
+                (cx - int(length * 0.42 + flame_len * 0.6), cy + jet_offset_y),
+                (cx - int(length * 0.42), cy + jet_offset_y + int(self.radius * 0.07)),
+            ]
+            pygame.draw.polygon(hornet_surf, (255, 255, 255, 230), inner_flame)
 
-        # Main forewings
-        w1_pts = [
-            (cx - int(length * 0.05), cy - int(width * 0.35)),
-            (cx - int(length * 0.45), cy - int(width * 1.05 + w_flap1)),
-            (cx + int(length * 0.25), cy - int(width * 0.90 + w_flap2)),
+        # 2. SWEPT-BACK SHARP DELTA WINGS (angular interceptor wings)
+        wing_flare = math.sin(self.wing_jitter) * (self.radius * 0.15)
+        # Left (top) swept delta wing
+        w_top = [
+            (cx + int(length * 0.05), cy - int(width * 0.18)),
+            (cx - int(length * 0.38), cy - int(width * 0.95 + wing_flare)),
+            (cx - int(length * 0.28), cy - int(width * 0.22)),
         ]
-        pygame.draw.polygon(hornet_surf, (0, 240, 255, 95), w1_pts)
-        pygame.draw.polygon(hornet_surf, (200, 60, 255, 190), w1_pts, 2)
+        pygame.draw.polygon(hornet_surf, (20, 8, 38, 240), w_top)
+        pygame.draw.polygon(hornet_surf, flash_color((0, 240, 255), self.flash_timer), w_top, 2)
 
-        w2_pts = [
-            (cx - int(length * 0.05), cy + int(width * 0.35)),
-            (cx - int(length * 0.45), cy + int(width * 1.05 + w_flap2)),
-            (cx + int(length * 0.25), cy + int(width * 0.90 + w_flap1)),
+        # Right (bottom) swept delta wing
+        w_bot = [
+            (cx + int(length * 0.05), cy + int(width * 0.18)),
+            (cx - int(length * 0.38), cy + int(width * 0.95 - wing_flare)),
+            (cx - int(length * 0.28), cy + int(width * 0.22)),
         ]
-        pygame.draw.polygon(hornet_surf, (0, 240, 255, 95), w2_pts)
-        pygame.draw.polygon(hornet_surf, (200, 60, 255, 190), w2_pts, 2)
+        pygame.draw.polygon(hornet_surf, (20, 8, 38, 240), w_bot)
+        pygame.draw.polygon(hornet_surf, flash_color((0, 240, 255), self.flash_timer), w_bot, 2)
 
-        # Secondary hindwings
-        w3_pts = [
-            (cx - int(length * 0.25), cy - int(width * 0.25)),
-            (cx - int(length * 0.65), cy - int(width * 0.75 + w_flap2)),
-            (cx - int(length * 0.15), cy - int(width * 0.65 + w_flap1)),
-        ]
-        pygame.draw.polygon(hornet_surf, (180, 40, 240, 80), w3_pts)
-        pygame.draw.polygon(hornet_surf, (0, 240, 255, 160), w3_pts, 1)
+        # Glowing neon chevron decals along the wings
+        pygame.draw.line(
+            hornet_surf,
+            flash_color((210, 50, 255), self.flash_timer),
+            (cx - int(length * 0.08), cy - int(width * 0.30)),
+            (cx - int(length * 0.32), cy - int(width * 0.85 + wing_flare)),
+            max(2, int(self.radius * 0.10))
+        )
+        pygame.draw.line(
+            hornet_surf,
+            flash_color((210, 50, 255), self.flash_timer),
+            (cx - int(length * 0.08), cy + int(width * 0.30)),
+            (cx - int(length * 0.32), cy + int(width * 0.85 - wing_flare)),
+            max(2, int(self.radius * 0.10))
+        )
 
-        w4_pts = [
-            (cx - int(length * 0.25), cy + int(width * 0.25)),
-            (cx - int(length * 0.65), cy + int(width * 0.75 + w_flap1)),
-            (cx - int(length * 0.15), cy + int(width * 0.65 + w_flap2)),
-        ]
-        pygame.draw.polygon(hornet_surf, (180, 40, 240, 80), w4_pts)
-        pygame.draw.polygon(hornet_surf, (0, 240, 255, 160), w4_pts, 1)
-
-        # 2. SEGMENTED OBSIDIAN BODY
-        # Rear segment (dark obsidian purple)
-        seg_rear_rect = pygame.Rect(int(cx - length * 0.46), int(cy - width * 0.36), int(length * 0.40), int(width * 0.72))
-        pygame.draw.ellipse(hornet_surf, flash_color((28, 8, 42), self.flash_timer), seg_rear_rect)
-        pygame.draw.ellipse(hornet_surf, flash_color((170, 45, 255), self.flash_timer), seg_rear_rect, 2)
-
-        # Mid thorax (deep midnight indigo)
-        seg_mid_rect = pygame.Rect(int(cx - length * 0.15), int(cy - width * 0.46), int(length * 0.38), int(width * 0.92))
-        pygame.draw.ellipse(hornet_surf, flash_color((18, 5, 32), self.flash_timer), seg_mid_rect)
-        pygame.draw.ellipse(hornet_surf, flash_color((0, 230, 255), self.flash_timer), seg_mid_rect, 2)
-
-        # Bio-mechanic glowing missile intake lines
-        for st_x in (cx - length * 0.04, cx + length * 0.08):
-            pygame.draw.line(
-                hornet_surf,
-                flash_color((0, 255, 240), self.flash_timer),
-                (st_x, cy - width * 0.38),
-                (st_x, cy + width * 0.38),
-                max(2, int(self.radius * 0.14))
+        # 3. MOUNTED UNDER-WING MISSILE PODS (clearly visible void ordnance)
+        for pod_y in (-int(width * 0.48), int(width * 0.48)):
+            # Missile body (dark purple cylindrical dart)
+            missile_rect = pygame.Rect(
+                cx - int(length * 0.28),
+                cy + pod_y - int(self.radius * 0.12),
+                int(length * 0.32),
+                int(self.radius * 0.24)
             )
+            pygame.draw.rect(hornet_surf, flash_color((15, 5, 25), self.flash_timer), missile_rect)
+            pygame.draw.rect(hornet_surf, flash_color((0, 255, 240), self.flash_timer), missile_rect, 1)
+            # Glowing warhead tip
+            warhead = [
+                (cx + int(length * 0.04), cy + pod_y),
+                (cx - int(length * 0.04), cy + pod_y - int(self.radius * 0.12)),
+                (cx - int(length * 0.04), cy + pod_y + int(self.radius * 0.12)),
+            ]
+            pygame.draw.polygon(hornet_surf, flash_color((255, 0, 120), self.flash_timer), warhead)
 
-        # Completely eyeless head dome
-        head_cx = int(cx + length * 0.32)
-        head_r = int(self.radius * 0.55)
-        pygame.draw.circle(hornet_surf, flash_color((15, 3, 24), self.flash_timer), (head_cx, cy), head_r)
-        pygame.draw.circle(hornet_surf, flash_color((190, 60, 255), self.flash_timer), (head_cx, cy), head_r, 2)
-
-        # 3. DUAL REAR VOID MISSILE PODS / STINGERS
-        pod_base_x = int(cx - length * 0.46)
-        pod_tip_x = int(cx - length * 0.78)
-        upper_pod = [
-            (pod_base_x, cy - int(width * 0.20)),
-            (pod_base_x, cy - int(width * 0.04)),
-            (pod_tip_x, cy - int(width * 0.24)),
+        # 4. SLEEK ANGULAR FUSELAGE / HULL (sharp diamond/arrowhead body)
+        hull_pts = [
+            (cx + int(length * 0.44), cy),                                # Needle nose
+            (cx + int(length * 0.18), cy - int(width * 0.24)),           # Forward port shoulder
+            (cx - int(length * 0.38), cy - int(width * 0.20)),           # Port engine bay
+            (cx - int(length * 0.44), cy),                                # Rear centerline exhaust
+            (cx - int(length * 0.38), cy + int(width * 0.20)),           # Starboard engine bay
+            (cx + int(length * 0.18), cy + int(width * 0.24)),           # Forward starboard shoulder
         ]
-        pygame.draw.polygon(hornet_surf, flash_color((0, 240, 255), self.flash_timer), upper_pod)
+        pygame.draw.polygon(hornet_surf, flash_color((18, 6, 32), self.flash_timer), hull_pts)
+        pygame.draw.polygon(hornet_surf, flash_color((180, 45, 255), self.flash_timer), hull_pts, max(2, int(self.radius * 0.10)))
 
-        lower_pod = [
-            (pod_base_x, cy + int(width * 0.04)),
-            (pod_base_x, cy + int(width * 0.20)),
-            (pod_tip_x, cy + int(width * 0.24)),
+        # Center spine ridge with energy conduit
+        pygame.draw.line(
+            hornet_surf,
+            flash_color((0, 255, 255), self.flash_timer),
+            (cx - int(length * 0.35), cy),
+            (cx + int(length * 0.38), cy),
+            max(2, int(self.radius * 0.12))
+        )
+
+        # Sleek eyeless cockpit visor slit (horizontal cyan visor stripe instead of eyes)
+        visor_pts = [
+            (cx + int(length * 0.12), cy - int(width * 0.10)),
+            (cx + int(length * 0.28), cy),
+            (cx + int(length * 0.12), cy + int(width * 0.10)),
         ]
-        pygame.draw.polygon(hornet_surf, flash_color((0, 240, 255), self.flash_timer), lower_pod)
+        pygame.draw.lines(hornet_surf, flash_color((0, 255, 240), self.flash_timer), False, visor_pts, max(2, int(self.radius * 0.10)))
 
-        # 4. TWISTING VOID ANTENNAE
-        ant_col = flash_color((160, 50, 240), self.flash_timer)
-        ant_node_col = flash_color((0, 255, 255), self.flash_timer)
-        # Upper antenna
-        pygame.draw.lines(
-            hornet_surf, ant_col, False,
-            [
-                (head_cx + int(head_r * 0.5), cy - int(head_r * 0.4)),
-                (head_cx + int(head_r * 1.3), cy - int(head_r * 1.1)),
-                (head_cx + int(head_r * 1.8), cy - int(head_r * 0.7)),
-            ],
+        # 5. SHARP NEEDLE PROBOSCIS & SWEPT MECHANICAL SENSORS
+        # Needle probe jutting far out the front
+        probe_tip = (cx + int(length * 0.65), cy)
+        pygame.draw.line(
+            hornet_surf,
+            flash_color((0, 240, 255), self.flash_timer),
+            (cx + int(length * 0.40), cy),
+            probe_tip,
             max(2, int(self.radius * 0.14))
         )
-        pygame.draw.circle(hornet_surf, ant_node_col, (head_cx + int(head_r * 1.8), cy - int(head_r * 0.7)), max(3, int(self.radius * 0.16)))
+        pygame.draw.circle(hornet_surf, flash_color((255, 60, 200), self.flash_timer), probe_tip, max(2, int(self.radius * 0.10)))
 
-        # Lower antenna
-        pygame.draw.lines(
-            hornet_surf, ant_col, False,
-            [
-                (head_cx + int(head_r * 0.5), cy + int(head_r * 0.4)),
-                (head_cx + int(head_r * 1.2), cy + int(head_r * 1.3)),
-                (head_cx + int(head_r * 1.9), cy + int(head_r * 1.4)),
-            ],
-            max(2, int(self.radius * 0.14))
-        )
-        pygame.draw.circle(hornet_surf, ant_node_col, (head_cx + int(head_r * 1.9), cy + int(head_r * 1.4)), max(3, int(self.radius * 0.16)))
+        # Swept-forward sensor antennae
+        ant_col = flash_color((190, 50, 255), self.flash_timer)
+        ant_tip_col = flash_color((0, 255, 255), self.flash_timer)
+        for s_mult in (-1, 1):
+            s_base = (cx + int(length * 0.26), cy + s_mult * int(width * 0.12))
+            s_mid = (cx + int(length * 0.45), cy + s_mult * int(width * 0.28))
+            s_tip = (cx + int(length * 0.58), cy + s_mult * int(width * 0.22))
+            draw_clean_line(hornet_surf, ant_col, s_base, s_mid, max(2, int(self.radius * 0.10)))
+            draw_clean_line(hornet_surf, ant_col, s_mid, s_tip, max(2, int(self.radius * 0.08)))
+            pygame.draw.circle(hornet_surf, ant_tip_col, s_tip, max(2, int(self.radius * 0.10)))
 
         # Blit rotated
         rot_surf = pygame.transform.rotate(hornet_surf, -self.angle)
