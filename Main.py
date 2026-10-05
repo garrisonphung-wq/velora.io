@@ -1575,7 +1575,7 @@ def dev_make_king(enemy):
     if getattr(enemy, "is_king", False):
         show_error("That enemy is already a king")
         return False
-    if isinstance(enemy, (QueenAnt, HoleQueenAnt)):
+    if type(enemy).__name__ in ("QueenAnt", "HoleQueenAnt"):
         # The queen ant can never be a king, and she never
         # talks in chat.
         show_error("The Queen Ant can't be a king")
@@ -1927,6 +1927,7 @@ def fire_king_stinger_volley(king):
     stinger_damage = int(king.damage)
     stinger_hp = max(1, int(king.max_hp / KING_STINGER_HP_FRACTION))
     stinger_radius = max(4, int(king.radius / 3))
+    is_hole = getattr(king, "is_hole_land_mob", False) or type(king).__name__ == "HoleBee"
     for stinger_index in range(KING_STINGER_VOLLEY_COUNT):
         stinger_angle = (
             king.angle
@@ -1945,6 +1946,7 @@ def fire_king_stinger_volley(king):
                 "hp": stinger_hp,
                 "max_hp": stinger_hp,
                 "has_homed": False,
+                "is_hole_projectile": is_hole,
                 "timer": KING_STINGER_LIFETIME,
                 "owner": king
             }
@@ -2321,6 +2323,7 @@ def fire_soldier_wing(king):
     # The soldier ant king fires one giant spinning wing petal with
     # 2x the king's HP and 2x the king's damage. It is 2x bigger
     # than the king and chases the flower.
+    is_hole = getattr(king, "is_hole_land_mob", False) or type(king).__name__ == "HoleSoldierAnt"
     soldier_wing_projectiles.append(
         {
             "x": king.x,
@@ -2333,6 +2336,7 @@ def fire_soldier_wing(king):
             "radius": king.radius * 2,
             "spin": random.uniform(0, 360),
             "spin_speed": 12,
+            "is_hole_projectile": is_hole,
             "timer": SOLDIER_WING_LIFETIME,
             "owner": king,
         }
@@ -5723,125 +5727,72 @@ class Ladybug:
 
 
 
-        # ---------------- LADYBUG BODY SURFACE ----------------
+        # ---------------- VELORA.IO LADYBUG (ACCURATE TO SCREENSHOT) ----------------
+        # Exact reproduction of screenshot:
+        # - Head is drawn at the front (+x along self.angle) in charcoal black: (28, 30, 31)
+        # - Outer shell rim: (153, 57, 45) (or golden for yellow minion)
+        # - Inner shell: (200, 69, 53) (or bright yellow for minion)
+        # - The inner shell has a smooth circular cutout around the head, revealing the rim color
+        # - Clean charcoal spots on the inner shell: (28, 30, 31)
 
-        size = self.radius * 2
+        r = self.radius
+        pad = int(r * 0.8)
+        surf_size = int((r + pad) * 2)
+        cx = surf_size // 2
+        cy = surf_size // 2
 
+        lb_surf = pygame.Surface((surf_size, surf_size), pygame.SRCALPHA)
 
-        body_surface = pygame.Surface(
-            (
-                int(size),
-                int(size)
-            ),
-            pygame.SRCALPHA
-        )
+        is_yellow = getattr(self, "yellow_minion", False)
+        rim_col = flash_color((210, 160, 40) if is_yellow else (153, 57, 45), self.flash_timer)
+        body_col = flash_color((255, 230, 100) if is_yellow else (200, 69, 53), self.flash_timer)
+        charcoal_col = flash_color((28, 30, 31), self.flash_timer)
 
+        head_dist = r * 0.72
+        head_r = max(3, int(r * 0.44))
+        head_pos = (int(cx + head_dist), cy)
+        rim_w = max(3, int(r * 0.15))
 
-        center = (
-            int(self.radius),
-            int(self.radius)
-        )
+        # 1. OUTER RIM (dark red full circle)
+        pygame.draw.circle(lb_surf, rim_col, (cx, cy), int(r))
 
+        # 2. HEAD (charcoal black circle)
+        pygame.draw.circle(lb_surf, charcoal_col, head_pos, head_r)
 
+        # 3. INNER SHELL WITH CUTOUT & SPOTS
+        inner_r = max(1, int(r - rim_w))
+        inner_surf = pygame.Surface((surf_size, surf_size), pygame.SRCALPHA)
+        pygame.draw.circle(inner_surf, body_col, (cx, cy), inner_r)
 
-        # red body (or yellow if flower minion)
-        lb_body_col = (255, 230, 100) if getattr(self, "yellow_minion", False) else (220, 30, 30)
-        lb_out_col = (210, 160, 40) if getattr(self, "yellow_minion", False) else (105, 25, 25)
+        # Cut out the head socket notch from the inner shell
+        socket_r = head_r + rim_w
+        cutout_mask = pygame.Surface((surf_size, surf_size), pygame.SRCALPHA)
+        cutout_mask.fill((255, 255, 255, 255))
+        pygame.draw.circle(cutout_mask, (0, 0, 0, 0), head_pos, socket_r)
+        inner_surf.blit(cutout_mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
 
-        pygame.draw.circle(
-            body_surface,
-            flash_color(lb_body_col, self.flash_timer),
-            center,
-            int(self.radius)
-        )
-
-
-
-        # black spots
-
+        # Spots drawn inside inner shell
+        spots_surf = pygame.Surface((surf_size, surf_size), pygame.SRCALPHA)
         for spot in self.spots:
+            sp_x = int(cx + spot["x"])
+            sp_y = int(cy + spot["y"])
+            pygame.draw.circle(spots_surf, charcoal_col, (sp_x, sp_y), max(2, int(spot["size"])))
 
-            pygame.draw.circle(
-                body_surface,
-                flash_color((0,0,0), self.flash_timer),
-                (
-                    int(self.radius + spot["x"]),
-                    int(self.radius + spot["y"])
-                ),
-                int(spot["size"])
-            )
-
-
-
-        # clip everything outside body circle
-
-        mask = pygame.Surface(
-            (
-                int(size),
-                int(size)
-            ),
-            pygame.SRCALPHA
-        )
-
-
-        pygame.draw.circle(
-            mask,
-            (255,255,255),
-            center,
-            int(self.radius)
-        )
-
-
-        body_surface.blit(
-            mask,
-            (0,0),
+        # Mask spots to inner shell
+        inner_mask = pygame.mask.from_surface(inner_surf)
+        spots_surf.blit(
+            inner_mask.to_surface(setcolor=(255, 255, 255, 255), unsetcolor=(0, 0, 0, 0)),
+            (0, 0),
             special_flags=pygame.BLEND_RGBA_MULT
         )
+        inner_surf.blit(spots_surf, (0, 0))
 
-        # Dark outline around the body.
-        pygame.draw.circle(
-            body_surface,
-            flash_color(lb_out_col, self.flash_timer),
-            center,
-            int(self.radius),
-            max(2, int(self.radius * 0.14))
-        )
+        # Blit inner shell on top of rim and head
+        lb_surf.blit(inner_surf, (0, 0))
 
-
-
-        screen.blit(
-            body_surface,
-            (
-                int(sx - self.radius),
-                int(sy - self.radius)
-            )
-        )
-
-
-
-        # ---------------- HEAD ----------------
-
-        head_x = (
-            sx +
-            math.cos(angle) * self.radius * 0.8
-        )
-
-
-        head_y = (
-            sy +
-            math.sin(angle) * self.radius * 0.8
-        )
-
-
-        pygame.draw.circle(
-            screen,
-            flash_color((0,0,0), self.flash_timer),
-            (
-                int(head_x),
-                int(head_y)
-            ),
-            int(self.radius * 0.45)
-        )
+        # 4. ROTATE AND BLIT TO SCREEN
+        rot_surf = pygame.transform.rotate(lb_surf, -self.angle)
+        screen.blit(rot_surf, rot_surf.get_rect(center=(int(sx), int(sy))))
 
         # ---------------- KING CROWN ----------------
 
@@ -6390,160 +6341,107 @@ class Bee:
 
 
 
-        # ---------------- BEE ----------------
-        # Draw in local coordinates first, then rotate it with the bee's
-        # direction.  The result matches the simple icon: yellow oval,
-        # diagonal black bands, dark head/tail, and two antennae.
-        length = self.radius * 3.0
-        width = self.radius * 1.55
-        padding = self.radius * 1.7
+        # ---------------- VELORA.IO BEE (ACCURATE TO SCREENSHOT) ----------------
+        # Exact reproduction of screenshot:
+        # - Golden-brown rim: (186, 150, 76)
+        # - Warm honey-yellow body: (236, 195, 95)
+        # - Charcoal stripes & stinger & antennae: (44, 49, 46)
+        # - Rear stinger: short compact conical stinger at the tail
+        # - Antennae: curved stalks emerging forward, bending outwards with prominent round tips/bobbles
 
-        bee = pygame.Surface(
-            (int(length + padding * 2), int(width + padding * 2)),
-            pygame.SRCALPHA
-        )
-        cx = bee.get_width() // 2
-        cy = bee.get_height() // 2
+        length = self.radius * 2.8
+        width = self.radius * 2.05
+        pad = self.radius * 2.5
+        surf_w = int(length + pad * 2)
+        surf_h = int(width + pad * 2)
+
+        bee_surf = pygame.Surface((surf_w, surf_h), pygame.SRCALPHA)
+        cx = surf_w // 2
+        cy = surf_h // 2
+
+        charcoal_col = flash_color((44, 49, 46), self.flash_timer)
+
+        # 1. COMPACT REAR STINGER (pointed triangle at tail, -x)
+        stinger_length = self.radius * 0.70
+        stinger_half_w = width * 0.17
+        stinger_pts = [
+            (cx - length * 0.46, cy - stinger_half_w),
+            (cx - length * 0.46 - stinger_length, cy),
+            (cx - length * 0.46, cy + stinger_half_w),
+        ]
+        pygame.draw.polygon(bee_surf, charcoal_col, stinger_pts)
+
+        # 2. GENTLY CURVED ANTENNAE WITH ROUNDED KNOBS (matching screenshot)
+        # Stalk width & round knob size
+        ant_w = max(2, int(self.radius * 0.18))
+        ant_knob_r = max(3, int(self.radius * 0.26))
+
+        # Top antenna: gently arches forward-outward without extreme bends
+        top_stalk = [
+            (cx + length * 0.38, cy - width * 0.12),
+            (cx + length * 0.42 + self.radius * 0.45, cy - width * 0.25),
+            (cx + length * 0.42 + self.radius * 0.85, cy - width * 0.45),
+        ]
+        for i in range(len(top_stalk) - 1):
+            draw_clean_line(bee_surf, charcoal_col, top_stalk[i], top_stalk[i + 1], ant_w)
+        pygame.draw.circle(bee_surf, charcoal_col, (int(top_stalk[-1][0]), int(top_stalk[-1][1])), ant_knob_r)
+
+        # Bottom antenna: symmetric counterpart
+        bot_stalk = [
+            (cx + length * 0.38, cy + width * 0.12),
+            (cx + length * 0.42 + self.radius * 0.45, cy + width * 0.25),
+            (cx + length * 0.42 + self.radius * 0.85, cy + width * 0.45),
+        ]
+        for i in range(len(bot_stalk) - 1):
+            draw_clean_line(bee_surf, charcoal_col, bot_stalk[i], bot_stalk[i + 1], ant_w)
+        pygame.draw.circle(bee_surf, charcoal_col, (int(bot_stalk[-1][0]), int(bot_stalk[-1][1])), ant_knob_r)
+
+        # 3. OUTER GOLDEN-BROWN RIM
         body_rect = pygame.Rect(
             int(cx - length / 2),
             int(cy - width / 2),
             int(length),
             int(width)
         )
+        rim_color = flash_color((186, 150, 76), self.flash_timer)
+        pygame.draw.ellipse(bee_surf, rim_color, body_rect)
 
-        # Yellow body.
-        pygame.draw.ellipse(bee, flash_color((255, 220, 40), self.flash_timer), body_rect)
+        # 4. INNER HONEY-YELLOW BODY
+        rim_thickness = max(4, int(self.radius * 0.25))
+        inner_rect = pygame.Rect(
+            body_rect.left + rim_thickness,
+            body_rect.top + rim_thickness,
+            body_rect.width - rim_thickness * 2,
+            body_rect.height - rim_thickness * 2
+        )
+        body_color = flash_color((236, 195, 95), self.flash_timer)
+        inner_body_surf = pygame.Surface((surf_w, surf_h), pygame.SRCALPHA)
+        pygame.draw.ellipse(inner_body_surf, body_color, inner_rect)
 
-        # Diagonal bands, clipped to the body ellipse.
-        stripes = pygame.Surface(bee.get_size(), pygame.SRCALPHA)
-        for x in (-length * 0.24, length * 0.08, length * 0.36):
-            pygame.draw.line(
-                stripes,
-                flash_color((38, 38, 31), self.flash_timer),
-                (cx + x, cy - width * 0.65),
-                (cx + x, cy + width * 0.65),
-                max(3, int(self.radius * 0.42))
+        # 5. THREE BOLD CHARCOAL STRIPES
+        stripes_surf = pygame.Surface((surf_w, surf_h), pygame.SRCALPHA)
+        stripe_width = max(5, int(length * 0.17))
+        for x_offset in (-0.20, 0.04, 0.27):
+            sx_pos = int(cx + length * x_offset - stripe_width / 2)
+            pygame.draw.rect(
+                stripes_surf,
+                charcoal_col,
+                (sx_pos, 0, stripe_width, surf_h)
             )
-        body_mask = pygame.mask.from_surface(bee)
-        stripes.blit(
-            body_mask.to_surface(setcolor=(255, 255, 255, 255), unsetcolor=(0, 0, 0, 0)),
+
+        # Mask stripes so they stay strictly within the honey-yellow body
+        mask = pygame.mask.from_surface(inner_body_surf)
+        stripes_surf.blit(
+            mask.to_surface(setcolor=(255, 255, 255, 255), unsetcolor=(0, 0, 0, 0)),
             (0, 0),
             special_flags=pygame.BLEND_RGBA_MULT
         )
-        bee.blit(stripes, (0, 0))
+        inner_body_surf.blit(stripes_surf, (0, 0))
+        bee_surf.blit(inner_body_surf, (0, 0))
 
-        # Dark golden petal-style outline around the oval body.
-        pygame.draw.ellipse(
-            bee,
-            flash_color((190, 150, 25), self.flash_timer),
-            body_rect,
-            max(2, int(self.radius * 0.14))
-        )
-
-        # The head faces the movement direction; the pointed tail trails
-        # behind it.
-        head_x = int(cx + length * 0.43)
-        stinger_tip = (
-            0.82
-            if type(self).__name__ == "Hornet"
-            else 0.63
-        )
-        stinger_outline_points = [
-            (int(cx - length * (stinger_tip + 0.04)), cy),
-            (int(cx - length * 0.48), int(cy - width * 0.23)),
-            (int(cx - length * 0.48), int(cy + width * 0.23)),
-        ]
-        stinger_points = [
-            (int(cx - length * stinger_tip), cy),
-            (int(cx - length * 0.50), int(cy - width * 0.18)),
-            (int(cx - length * 0.50), int(cy + width * 0.18)),
-        ]
-        pygame.draw.polygon(
-            bee,
-            flash_color((82, 52, 24), self.flash_timer),
-            stinger_outline_points
-        )
-        pygame.draw.polygon(
-            bee,
-            flash_color((42, 42, 35), self.flash_timer),
-            stinger_points
-        )
-        pygame.draw.aalines(
-            bee,
-            flash_color((42, 42, 35), self.flash_timer),
-            True,
-            stinger_points
-        )
-
-        # Antennae extend from the head, with round tips.
-        antenna_color = flash_color((42, 42, 35), self.flash_timer)
-        antenna_width = max(2, int(self.radius * 0.16))
-        antenna_start_x = head_x + self.radius * 0.12
-
-        if type(self).__name__ == "Hornet":
-            # Hornet antennae are simple and straight.
-            antennae = [
-                [
-                    (antenna_start_x, cy - self.radius * 0.22),
-                    (head_x + self.radius * 0.78,
-                     cy - self.radius * 0.75),
-                ],
-                [
-                    (antenna_start_x, cy + self.radius * 0.22),
-                    (head_x + self.radius * 0.78,
-                     cy + self.radius * 0.75),
-                ],
-            ]
-        else:
-            correct_antenna = [
-                (antenna_start_x, cy + self.radius * 0.22),
-                (head_x + self.radius * 0.55, cy + self.radius * 0.55),
-                (head_x + self.radius * 0.65, cy + self.radius * 0.85),
-            ]
-
-            # Copy the correct antenna, flip it 180 degrees, and move it to
-            # the other side of the head.
-            other_start = (antenna_start_x, cy - self.radius * 0.22)
-            correct_start = correct_antenna[0]
-            flipped_antenna = [
-                (
-                    other_start[0] - (point[0] - correct_start[0]),
-                    other_start[1] - (point[1] - correct_start[1])
-                )
-                for point in correct_antenna
-            ]
-
-            # Turn the copied antenna 90 degrees around its base.
-            flipped_antenna = [
-                (
-                    other_start[0] - (point[1] - other_start[1]),
-                    other_start[1] + (point[0] - other_start[0])
-                )
-                for point in flipped_antenna
-            ]
-            antennae = [correct_antenna, flipped_antenna]
-
-        for points in antennae:
-            # Draw each segment as a clean rotated rectangle so thick
-            # antennae do not get slanted parallelogram ends.
-            for segment_index in range(len(points) - 1):
-                draw_clean_line(
-                    bee,
-                    antenna_color,
-                    points[segment_index],
-                    points[segment_index + 1],
-                    antenna_width
-                )
-            end = points[-1]
-            if type(self).__name__ != "Hornet":
-                pygame.draw.circle(
-                    bee, antenna_color,
-                    (int(end[0]), int(end[1])),
-                    max(2, int(self.radius * 0.22))
-                )
-
-        bee = pygame.transform.rotate(bee, -self.angle)
-        screen.blit(bee, bee.get_rect(center=(int(sx), int(sy))))
+        # 6. ROTATE AND BLIT
+        rot_surf = pygame.transform.rotate(bee_surf, -self.angle)
+        screen.blit(rot_surf, rot_surf.get_rect(center=(int(sx), int(sy))))
 
         # ---------------- KING CROWN ----------------
 
@@ -6998,7 +6896,7 @@ class Spider:
         )
 
         self.following = distance <= self.view_range
-        self.leg_phase += 0.48 if self.following else 0.08
+        self.leg_phase += 0.16 if self.following else 0.06
 
 
         # ---------------- CHASE PLAYER ----------------
@@ -7134,109 +7032,88 @@ class Spider:
 
 
 
-        # ---------------- VISION RANGE ----------------
+        # ---------------- VELORA.IO SPIDER (ACCURATE TO SCREENSHOT) ----------------
+        # Exact reproduction of screenshot:
+        # - Leg & joint color: (45, 51, 50)
+        # - Outer body rim: (67, 59, 49)
+        # - Inner body disc: (88, 74, 59)
+        # - 8 curved arachnid legs with animated crawling movement
+        # - Rounded joints and tips
 
-        angle = math.radians(
-            self.angle
-        )
+        r = self.radius
+        leg_color = flash_color((45, 51, 50), self.flash_timer)
+        is_yellow = getattr(self, "yellow_minion", False)
+        rim_color = flash_color((210, 160, 40) if is_yellow else (67, 59, 49), self.flash_timer)
+        body_color = flash_color((255, 230, 100) if is_yellow else (88, 74, 59), self.flash_timer)
 
+        rad_angle = math.radians(self.angle)
+        leg_w = max(2, int(r * 0.22))
+        tip_r = max(2, int(r * 0.11))
 
-        fx = math.cos(angle)
+        # Base angles for the 8 legs relative to body orientation (4 left, 4 right)
+        # Front pair points slightly forward, side pairs fan outward, back pair points backwards
+        leg_base_angles = [
+            # Right side (indices 0..3)
+            (32, 1.15, 2.10, 0.28),
+            (70, 1.10, 2.05, -0.15),
+            (115, 1.05, 2.00, -0.32),
+            (152, 1.10, 2.15, -0.40),
+            # Left side (indices 4..7)
+            (-32, 1.15, 2.10, -0.28),
+            (-70, 1.10, 2.05, 0.15),
+            (-115, 1.05, 2.00, 0.32),
+            (-152, 1.10, 2.15, 0.40),
+        ]
 
-        fy = math.sin(angle)
+        # Subtle and calm leg crawl animation (not crazy/erratic)
+        swing_amp = 0.12 if self.following else 0.05
 
-        side_x = -fy
+        # Draw 8 legs behind the body
+        for idx, (rel_deg, mid_dist_ratio, tip_dist_ratio, curve_offset) in enumerate(leg_base_angles):
+            # Alternating smooth crawl cycle
+            gait_phase = self.leg_phase + (idx * 0.78)
+            walk_swing = math.sin(gait_phase) * swing_amp
 
-        side_y = fx
+            # Fixed base root on body edge
+            base_rad = rad_angle + math.radians(rel_deg)
+            start_x = sx + math.cos(base_rad) * (r * 0.85)
+            start_y = sy + math.sin(base_rad) * (r * 0.85)
 
+            # Knee with slight swing
+            mid_rad = base_rad + walk_swing * 0.5
+            mid_norm = mid_rad + math.pi / 2
+            mid_dist = r * mid_dist_ratio
+            mid_x = sx + math.cos(mid_rad) * mid_dist + math.cos(mid_norm) * (r * curve_offset)
+            mid_y = sy + math.sin(mid_rad) * mid_dist + math.sin(mid_norm) * (r * curve_offset)
 
+            # Tip with gentle crawl reach
+            tip_rad = base_rad + walk_swing
+            tip_norm = tip_rad + math.pi / 2
+            tip_dist = r * tip_dist_ratio
+            tip_x = sx + math.cos(tip_rad) * tip_dist + math.cos(tip_norm) * (r * curve_offset * 1.5)
+            tip_y = sy + math.sin(tip_rad) * tip_dist + math.sin(tip_norm) * (r * curve_offset * 1.5)
 
-        # ---------------- LEGS ----------------
-
-        for side in [-1, 1]:
-
-            for i in range(4):
-
-                offset = (
-                    i - 1.5
-                ) * self.radius * 0.35
-
-
-
-                start_x = (
-                    sx
-                    + side_x * side * self.radius * 0.6
-                    + fx * offset
-                )
-
-                start_y = (
-                    sy
-                    + side_y * side * self.radius * 0.6
-                    + fy * offset
-                )
-
-
-
-                end_x = (
-                    sx
-                    + side_x * side * self.radius * 1.8
-                    + fx * offset
-                )
-
-                end_y = (
-                    sy
-                    + side_y * side * self.radius * 1.8
-                    + fy * offset
-                )
-
-                # Alternate legs forward and backward.  The motion is
-                # faster while chasing and gentle while wandering.
-                leg_swing = math.sin(
-                    self.leg_phase
-                    + i * 0.85
-                    + (math.pi if side == 1 else 0)
-                ) * self.radius * (0.24 if self.following else 0.07)
-                end_x += fx * leg_swing
-                end_y += fy * leg_swing
-
-
-
-                # Leg thickness follows body size so small portraits
-                # (mob gallery) do not get oversized legs.
-                leg_thickness = max(1, int(self.radius * 0.2))
-
-                draw_clean_line(
-                    screen,
-                    flash_color((20,20,20), self.flash_timer),
-                    (start_x, start_y),
-                    (end_x, end_y),
-                    leg_thickness
-                )
-
-
-
-        # ---------------- BODY ----------------
-        sp_out_col = (210, 160, 40) if getattr(self, "yellow_minion", False) else (18, 18, 18)
-        sp_body_col = (255, 230, 100) if getattr(self, "yellow_minion", False) else (40, 40, 40)
-
+            # Draw smooth clean leg segments
+            draw_clean_line(screen, leg_color, (start_x, start_y), (mid_x, mid_y), leg_w)
+            draw_clean_line(screen, leg_color, (mid_x, mid_y), (tip_x, tip_y), leg_w)
+            pygame.draw.circle(screen, leg_color, (int(mid_x), int(mid_y)), max(1, leg_w // 2))
+            pygame.draw.circle(screen, leg_color, (int(tip_x), int(tip_y)), tip_r)
+        # ---------------- BODY (OUTER RIM + INNER DISC) ----------------
+        # Outer darker circular rim
         pygame.draw.circle(
             screen,
-            flash_color(sp_out_col, self.flash_timer),
-            (
-                int(sx),
-                int(sy)
-            ),
-            self.radius + 2
+            rim_color,
+            (int(sx), int(sy)),
+            int(r)
         )
 
+        # Inner brown circular disc
+        inner_r = max(1, int(r * 0.78))
         pygame.draw.circle(
             screen,
-            flash_color(sp_body_col, self.flash_timer),
-            (
-                int(sx),
-                int(sy)
-            ),
-            self.radius
+            body_color,
+            (int(sx), int(sy)),
+            inner_r
         )
 
         # ---------------- KING CROWN ----------------
@@ -7494,6 +7371,7 @@ class Rock:
         self.is_minion = False
         self.king_minion_timer = 0
         self.king_orbit_slot = 0
+        self.mandible_phase = random.uniform(0, math.pi * 2)
         self.rock_volley_timer = 0
         self.angle = 0
         self.speed = 0
@@ -7660,6 +7538,7 @@ class Rock:
                             ),
                             "shape": self.shape_points,
                             "is_king_shot": False,
+                            "is_hole_projectile": (getattr(self, "is_hole_land_mob", False) or type(self).__name__ == "HoleRock"),
                             "timer": ROCK_PROJECTILE_LIFETIME,
                             "owner": self
                         }
@@ -8114,6 +7993,8 @@ class Hornet:
 
 
 
+        self.wing_phase += 0.35 if self.charging else 0.12
+
         # ---------------- DISTANCE TO PLAYER ----------------
 
         distance_to_player = math.hypot(
@@ -8252,11 +8133,6 @@ class Hornet:
         if not self.alive:
             return
 
-        # Hornets use the finished bee appearance for now; their movement
-        # and attack behavior remain specific to Hornet.
-        Bee.draw(self)
-        return
-
 
         sx = self.x - camera_x
         sy = self.y - camera_y
@@ -8326,167 +8202,108 @@ class Hornet:
 
 
 
-        # ---------------- MISSILE ----------------
+        # ---------------- VELORA.IO HORNET (ACCURATE TO SCREENSHOT) ----------------
+        # Exact reproduction of screenshot:
+        # - Golden-brown rim: (186, 150, 76)
+        # - Warm honey-yellow body: (236, 195, 95)
+        # - Charcoal stripes & stinger & antennae: (44, 49, 46)
+        # - Stinger: sharp elongated triangular cone jutting back from the tail
+        # - Antennae: two outward-curving tapered horns at the head
 
-        back_x = -fx
-        back_y = -fy
+        length = self.radius * 2.8
+        width = self.radius * 2.05
+        pad = self.radius * 2.5
+        surf_w = int(length + pad * 2)
+        surf_h = int(width + pad * 2)
 
+        hornet_surf = pygame.Surface((surf_w, surf_h), pygame.SRCALPHA)
+        cx = surf_w // 2
+        cy = surf_h // 2
 
-        missile_length = self.radius * 2.5
-
-        missile_width = self.radius * 0.45
-
-
-
-        missile_points = [
-
-            (
-                sx + back_x * missile_length,
-                sy + back_y * missile_length
-            ),
-
-            (
-                sx + back_x * self.radius
-                + side_x * missile_width,
-
-                sy + back_y * self.radius
-                + side_y * missile_width
-            ),
-
-            (
-                sx + back_x * self.radius
-                - side_x * missile_width,
-
-                sy + back_y * self.radius
-                - side_y * missile_width
-            )
-
+        # 1. SHARP REAR STINGER (pointed cone at rear, -x)
+        stinger_col = flash_color((44, 49, 46), self.flash_timer)
+        stinger_length = self.radius * 1.35
+        stinger_half_w = width * 0.20
+        stinger_pts = [
+            (cx - length * 0.44, cy - stinger_half_w),
+            (cx - length * 0.44 - stinger_length, cy),
+            (cx - length * 0.44, cy + stinger_half_w),
         ]
+        pygame.draw.polygon(hornet_surf, stinger_col, stinger_pts)
 
+        # 2. TWO GENTLY SPREAD STRAIGHT/SLIGHT-BEND ANTENNAE (matching screenshot)
+        ant_col = flash_color((44, 49, 46), self.flash_timer)
+        # Top antenna: extends forward and slightly outwards, rounded/tapered tip
+        top_ant_pts = [
+            (cx + length * 0.38, cy - width * 0.10),
+            (cx + length * 0.42 + self.radius * 0.60, cy - width * 0.25),
+            (cx + length * 0.42 + self.radius * 1.25, cy - width * 0.46),
+            (cx + length * 0.42 + self.radius * 1.30, cy - width * 0.49),
+            (cx + length * 0.42 + self.radius * 1.25, cy - width * 0.53),
+            (cx + length * 0.42 + self.radius * 0.55, cy - width * 0.33),
+            (cx + length * 0.35, cy - width * 0.18),
+        ]
+        pygame.draw.polygon(hornet_surf, ant_col, top_ant_pts)
 
-        pygame.draw.polygon(
-            screen,
-            (0,0,0),
-            missile_points
+        # Bottom antenna: symmetric counterpart
+        bot_ant_pts = [
+            (cx + length * 0.38, cy + width * 0.10),
+            (cx + length * 0.42 + self.radius * 0.60, cy + width * 0.25),
+            (cx + length * 0.42 + self.radius * 1.25, cy + width * 0.46),
+            (cx + length * 0.42 + self.radius * 1.30, cy + width * 0.49),
+            (cx + length * 0.42 + self.radius * 1.25, cy + width * 0.53),
+            (cx + length * 0.42 + self.radius * 0.55, cy + width * 0.33),
+            (cx + length * 0.35, cy + width * 0.18),
+        ]
+        pygame.draw.polygon(hornet_surf, ant_col, bot_ant_pts)
+
+        # 3. OUTER GOLDEN-BROWN RIM
+        body_rect = pygame.Rect(
+            int(cx - length / 2),
+            int(cy - width / 2),
+            int(length),
+            int(width)
         )
+        rim_color = flash_color((186, 150, 76), self.flash_timer)
+        pygame.draw.ellipse(hornet_surf, rim_color, body_rect)
 
-
-
-        # ---------------- BODY ----------------
-
-        length = self.radius * 3
-
-        width = self.radius * 1.1
-
-
-
-        hornet = pygame.Surface(
-            (
-                int(length*2),
-                int(width*2)
-            ),
-            pygame.SRCALPHA
+        # 4. INNER HONEY-YELLOW BODY
+        rim_thickness = max(4, int(self.radius * 0.25))
+        inner_rect = pygame.Rect(
+            body_rect.left + rim_thickness,
+            body_rect.top + rim_thickness,
+            body_rect.width - rim_thickness * 2,
+            body_rect.height - rim_thickness * 2
         )
+        body_color = flash_color((236, 195, 95), self.flash_timer)
+        inner_body_surf = pygame.Surface((surf_w, surf_h), pygame.SRCALPHA)
+        pygame.draw.ellipse(inner_body_surf, body_color, inner_rect)
 
-
-        cx = hornet.get_width()//2
-
-        cy = hornet.get_height()//2
-
-
-
-        pygame.draw.ellipse(
-            hornet,
-            (255,220,0),
-            (
-                cx-length/2,
-                cy-width/2,
-                length,
-                width
-            )
-        )
-
-
-
-        for offset in [-0.35, 0, 0.35]:
-
-            pygame.draw.line(
-                hornet,
-                (0,0,0),
-                (
-                    cx + offset * length,
-                    cy - width/2
-                ),
-                (
-                    cx + offset * length,
-                    cy + width/2
-                ),
-                3
-            )
-
-
-
-        hornet = pygame.transform.rotate(
-            hornet,
-            -self.angle
-        )
-
-
-        rect = hornet.get_rect(
-            center=(int(sx), int(sy))
-        )
-
-
-        screen.blit(
-            hornet,
-            rect
-        )
-
-
-
-        # ---------------- ANTENNAS ----------------
-
-        head_x = (
-            sx +
-            fx * self.radius * 1.2
-        )
-
-        head_y = (
-            sy +
-            fy * self.radius * 1.2
-        )
-
-
-
-        for side in [-1, 1]:
-
-            end_x = (
-                head_x
-                + side_x * side * self.radius * 0.8
-                + fx * self.radius * 0.5
+        # 5. THREE BOLD CHARCOAL STRIPES (perpendicular to body axis)
+        stripes_surf = pygame.Surface((surf_w, surf_h), pygame.SRCALPHA)
+        stripe_width = max(5, int(length * 0.17))
+        for x_offset in (-0.20, 0.04, 0.27):
+            sx_pos = int(cx + length * x_offset - stripe_width / 2)
+            pygame.draw.rect(
+                stripes_surf,
+                stinger_col,
+                (sx_pos, 0, stripe_width, surf_h)
             )
 
-            end_y = (
-                head_y
-                + side_y * side * self.radius * 0.8
-                + fy * self.radius * 0.5
-            )
+        # Mask stripes so they stay strictly within the honey-yellow body
+        mask = pygame.mask.from_surface(inner_body_surf)
+        stripes_surf.blit(
+            mask.to_surface(setcolor=(255, 255, 255, 255), unsetcolor=(0, 0, 0, 0)),
+            (0, 0),
+            special_flags=pygame.BLEND_RGBA_MULT
+        )
+        inner_body_surf.blit(stripes_surf, (0, 0))
+        hornet_surf.blit(inner_body_surf, (0, 0))
 
-
-            pygame.draw.line(
-                screen,
-                (0,0,0),
-                (
-                    int(head_x),
-                    int(head_y)
-                ),
-                (
-                    int(end_x),
-                    int(end_y)
-                ),
-                2
-            )
-
+        # 6. ROTATE AND BLIT
+        rot_surf = pygame.transform.rotate(hornet_surf, -self.angle)
+        screen.blit(rot_surf, rot_surf.get_rect(center=(int(sx), int(sy))))
+        
         # ---------------- RARITY TEXT ----------------
 
         if not getattr(self, "hide_rarity_label", False):
@@ -8839,6 +8656,9 @@ class BabyAnt:
 
         if not self.alive:
             return
+        if not hasattr(self, "mandible_phase"):
+            self.mandible_phase = 0.0
+        self.mandible_phase += 0.18
 
         if dead_flower_ai(self):
             return
@@ -9060,99 +8880,74 @@ class BabyAnt:
 
 
 
-        # ---------------- HEAD ----------------
-        # The baby ant is drawn as just the head of a soldier ant.
-        ba_head_col = (250, 215, 80) if getattr(self, "yellow_minion", False) else (48, 48, 48)
-        ba_hi_col = (255, 245, 150) if getattr(self, "yellow_minion", False) else (78, 78, 78)
+        # ---------------- VELORA.IO BABY ANT (ACCURATE TO SCREENSHOT) ----------------
+        # Exact reproduction of screenshot:
+        # - Mandibles: (36, 38, 38) - two smooth rounded pincers curving slightly inward
+        # - Outer head rim: (60, 62, 62) (or golden for yellow minion)
+        # - Inner head disc: (78, 80, 80) (or light gold for yellow minion)
+        # - Smooth animated mandible pinching/chomping movement
 
-        head_x = sx
-        head_y = sy
+        r = self.radius
+        rad = math.radians(self.angle)
 
+        is_yellow = getattr(self, "yellow_minion", False)
+        mandible_col = flash_color((40, 35, 20) if is_yellow else (36, 38, 38), self.flash_timer)
+        rim_col = flash_color((210, 160, 40) if is_yellow else (60, 62, 62), self.flash_timer)
+        inner_col = flash_color((255, 240, 130) if is_yellow else (78, 80, 80), self.flash_timer)
+
+        # Mandible pinching animation
+        m_phase = getattr(self, "mandible_phase", 0.0)
+        # Gentle pinching oscillation
+        pinch_angle = math.sin(m_phase) * 0.12
+
+        mandible_w = max(3, int(r * 0.36))
+        mandible_len = r * 0.68
+
+        # Draw left and right mandibles behind the head
+        for s_mult in (-1, 1):
+            # Base angle of mandible relative to head facing direction
+            base_rel = 0.44 * s_mult
+            # When pinching, left and right mandibles rotate toward each other (inward)
+            m_angle = rad + base_rel - (pinch_angle * s_mult)
+
+            # Mandible root attached on inner-front of head
+            m_start_x = sx + math.cos(rad + 0.35 * s_mult) * (r * 0.70)
+            m_start_y = sy + math.sin(rad + 0.35 * s_mult) * (r * 0.70)
+
+            # Curved mid and tip points
+            # Slight inward curve at tip
+            mid_x = m_start_x + math.cos(m_angle) * (mandible_len * 0.55)
+            mid_y = m_start_y + math.sin(m_angle) * (mandible_len * 0.55)
+
+            tip_angle = m_angle - (0.28 * s_mult)
+            tip_x = mid_x + math.cos(tip_angle) * (mandible_len * 0.50)
+            tip_y = mid_y + math.sin(tip_angle) * (mandible_len * 0.50)
+
+            # Draw smooth rounded mandible segments
+            draw_clean_line(screen, mandible_col, (m_start_x, m_start_y), (mid_x, mid_y), mandible_w)
+            draw_clean_line(screen, mandible_col, (mid_x, mid_y), (tip_x, tip_y), mandible_w)
+            # Rounded root, joint, and tip
+            pygame.draw.circle(screen, mandible_col, (int(m_start_x), int(m_start_y)), mandible_w // 2)
+            pygame.draw.circle(screen, mandible_col, (int(mid_x), int(mid_y)), mandible_w // 2)
+            pygame.draw.circle(screen, mandible_col, (int(tip_x), int(tip_y)), mandible_w // 2)
+
+        # ---------------- HEAD (OUTER RIM + INNER DISC) ----------------
+        # Outer rim circle (matching screenshot dark slate ring)
         pygame.draw.circle(
             screen,
-            flash_color(ba_head_col, self.flash_timer),
-            (
-                int(head_x),
-                int(head_y)
-            ),
-            int(self.radius)
+            rim_col,
+            (int(sx), int(sy)),
+            int(r)
         )
 
-        # Soft gray (or golden) center highlight like the reference image.
+        # Inner lighter gray disc (matching screenshot center)
+        inner_r = max(1, int(r * 0.68))
         pygame.draw.circle(
             screen,
-            flash_color(ba_hi_col, self.flash_timer),
-            (
-                int(head_x),
-                int(head_y)
-            ),
-            int(self.radius * 0.74)
+            inner_col,
+            (int(sx), int(sy)),
+            inner_r
         )
-
-        # ---------------- MOUTH / MANDIBLES ----------------
-
-        rad = math.radians(
-            self.angle
-        )
-
-        front_x = math.cos(rad)
-        front_y = math.sin(rad)
-
-        side_x = math.cos(rad + math.pi / 2)
-        side_y = math.sin(rad + math.pi / 2)
-
-        mouth_start_x = (
-            head_x +
-            front_x * self.radius * 0.75
-        )
-
-        mouth_start_y = (
-            head_y +
-            front_y * self.radius * 0.75
-        )
-
-        mouth_end_x = (
-            head_x +
-            front_x * self.radius * 1.25
-        )
-
-        mouth_end_y = (
-            head_y +
-            front_y * self.radius * 1.25
-        )
-
-        jaw_base = max(2, int(self.radius * 0.3))
-        jaw_tip = max(3, int(self.radius * 0.5))
-        jaw_thickness = max(1, int(self.radius * 0.15))
-
-        draw_clean_line(
-            screen,
-            flash_color((40,40,40), self.flash_timer),
-            (
-                mouth_start_x + side_x * jaw_base,
-                mouth_start_y + side_y * jaw_base
-            ),
-            (
-                mouth_end_x + side_x * jaw_tip,
-                mouth_end_y + side_y * jaw_tip
-            ),
-            jaw_thickness
-        )
-
-        draw_clean_line(
-            screen,
-            flash_color((40,40,40), self.flash_timer),
-            (
-                mouth_start_x - side_x * jaw_base,
-                mouth_start_y - side_y * jaw_base
-            ),
-            (
-                mouth_end_x - side_x * jaw_tip,
-                mouth_end_y - side_y * jaw_tip
-            ),
-            jaw_thickness
-        )
-
         # ---------------- KING RICE ORBIT ----------------
 
         if getattr(self, "is_king", False):
@@ -9497,6 +9292,7 @@ class SoldierAnt:
         self.charging = False
         self.charge_speed = 2.5
         self.wing_phase = 0.0
+        self.mandible_phase = random.uniform(0, math.pi * 2)
 
         # King / minion flags (set by the /king command)
         self.is_king = False
@@ -9592,6 +9388,9 @@ class SoldierAnt:
 
         if not self.alive:
             return
+        if not hasattr(self, "mandible_phase"):
+            self.mandible_phase = 0.0
+        self.mandible_phase += 0.28 if getattr(self, "charging", False) else 0.14
 
         if dead_flower_ai(self):
             return
@@ -9846,268 +9645,108 @@ class SoldierAnt:
 
 
 
-        # ---------------- OVAL BODY (BACK) ----------------
+        # ---------------- VELORA.IO SOLDIER ANT (ACCURATE TO SCREENSHOT) ----------------
+        # Exact reproduction of screenshot:
+        # - Mandibles: smooth rounded pincers curving slightly inward with pinching animation
+        # - Rear abdomen: rounded charcoal segment extending behind head
+        # - Translucent fluttering wings fanning backward from thorax
+        # - Prominent round head with dark slate rim (60, 62, 62) and lighter inner disc (78, 80, 80)
 
-        body_length_scale = getattr(
-            self,
-            "body_length_scale",
-            1.0
-        )
+        r = self.radius
+        head_r = r * 0.85
+        rad = math.radians(self.angle)
+        cos_a = math.cos(rad)
+        sin_a = math.sin(rad)
 
-        if body_length_scale > 1.0:
-            # Queen ants have three round body parts: the big
-            # abdomen at the back, a thorax in the middle that is
-            # a little bigger than the head, and the head at the
-            # front (drawn later, on top of both).
-            for part_offset, part_scale in (
-                (-0.65, 1.2),
-                (0.0, 1.1),
-            ):
-                part_x = (
-                    sx
-                    + math.cos(angle)
-                    * self.radius
-                    * part_offset
-                )
-                part_y = (
-                    sy
-                    + math.sin(angle)
-                    * self.radius
-                    * part_offset
-                )
-                part_r = int(head_size * part_scale)
-                pygame.draw.circle(
-                    screen,
-                    ant_color((62, 62, 62)),
-                    (int(part_x), int(part_y)),
-                    part_r
-                )
-                pygame.draw.circle(
-                    screen,
-                    ant_color((22, 22, 22)),
-                    (int(part_x), int(part_y)),
-                    part_r,
-                    max(2, int(self.radius * 0.10))
-                )
-        else:
-            body_surface = pygame.Surface(
-                (
-                    int(body_width * 2),
-                    int(body_height * 2)
-                ),
-                pygame.SRCALPHA
+        is_yellow = getattr(self, "yellow_minion", False)
+        mandible_col = flash_color((40, 35, 20) if is_yellow else (36, 38, 38), self.flash_timer)
+        rim_col = flash_color((210, 160, 40) if is_yellow else (60, 62, 62), self.flash_timer)
+        inner_col = flash_color((255, 240, 130) if is_yellow else (78, 80, 80), self.flash_timer)
+        abdomen_col = flash_color((180, 130, 30) if is_yellow else (50, 52, 52), self.flash_timer)
+
+        # Head center position
+        head_x = sx + cos_a * (r * 0.35)
+        head_y = sy + sin_a * (r * 0.35)
+
+        # 1. MANDIBLES (drawn with pinching animation)
+        m_phase = getattr(self, "mandible_phase", 0.0)
+        pinch_angle = math.sin(m_phase) * 0.20
+        mandible_w = max(3, int(head_r * 0.36))
+        mandible_len = head_r * 0.70
+
+        for s_mult in (-1, 1):
+            base_rel = 0.44 * s_mult
+            m_angle = rad + base_rel - (pinch_angle * s_mult)
+
+            m_start_x = head_x + math.cos(rad + 0.35 * s_mult) * (head_r * 0.70)
+            m_start_y = head_y + math.sin(rad + 0.35 * s_mult) * (head_r * 0.70)
+
+            mid_x = m_start_x + math.cos(m_angle) * (mandible_len * 0.55)
+            mid_y = m_start_y + math.sin(m_angle) * (mandible_len * 0.55)
+
+            tip_angle = m_angle - (0.28 * s_mult)
+            tip_x = mid_x + math.cos(tip_angle) * (mandible_len * 0.50)
+            tip_y = mid_y + math.sin(tip_angle) * (mandible_len * 0.50)
+
+            draw_clean_line(screen, mandible_col, (m_start_x, m_start_y), (mid_x, mid_y), mandible_w)
+            draw_clean_line(screen, mandible_col, (mid_x, mid_y), (tip_x, tip_y), mandible_w)
+            pygame.draw.circle(screen, mandible_col, (int(m_start_x), int(m_start_y)), mandible_w // 2)
+            pygame.draw.circle(screen, mandible_col, (int(mid_x), int(mid_y)), mandible_w // 2)
+            pygame.draw.circle(screen, mandible_col, (int(tip_x), int(tip_y)), mandible_w // 2)
+
+        # 2. REAR ABDOMEN (fill matches the head inner disc fill: inner_col)
+        ab_dist = r * 0.48
+        ab_x = sx - cos_a * ab_dist
+        ab_y = sy - sin_a * ab_dist
+        ab_r = int(head_r * 0.82)
+        pygame.draw.circle(screen, rim_col, (int(ab_x), int(ab_y)), ab_r)
+        # Inner fill matching the head fill
+        pygame.draw.circle(screen, inner_col, (int(ab_x), int(ab_y)), max(1, int(ab_r * 0.70)))
+
+        # 3. WINGS (fluttering translucent wings extending backwards)
+        # Slightly larger wings
+        wing_w = int(r * 1.30)
+        wing_h = int(r * 0.72)
+        wing_surf_size = int(r * 3.0)
+        wing_cx = wing_surf_size // 2
+        wing_cy = wing_surf_size // 2
+
+        wing_flap = math.sin(self.wing_phase) * 14
+
+        for w_side in (-1, 1):
+            w_surf = pygame.Surface((wing_surf_size, wing_surf_size), pygame.SRCALPHA)
+            # Oval wing shape with rounded tip
+            wing_rect = pygame.Rect(
+                wing_cx,
+                wing_cy - wing_h // 2,
+                wing_w,
+                wing_h
             )
+            # Translucent milky white/light gray
+            pygame.draw.ellipse(w_surf, (230, 235, 235, 140), wing_rect)
+            pygame.draw.ellipse(w_surf, (200, 210, 210, 180), wing_rect, max(1, int(r * 0.08)))
 
+            # Angle wing backward (180 deg + angle + side spread)
+            w_rot_angle = -self.angle + 180 + (w_side * (32 + wing_flap))
+            rot_w = pygame.transform.rotate(w_surf, w_rot_angle)
+            # Attach near junction of head and abdomen
+            wing_attach_x = head_x - cos_a * (r * 0.45)
+            wing_attach_y = head_y - sin_a * (r * 0.45)
+            screen.blit(rot_w, rot_w.get_rect(center=(int(wing_attach_x), int(wing_attach_y))))
 
-            pygame.draw.ellipse(
-                body_surface,
-                ant_color((62, 62, 62)),
-                (
-                    0,
-                    0,
-                    int(body_width * 2),
-                    int(body_height * 2)
-                )
-            )
-            pygame.draw.ellipse(
-                body_surface,
-                ant_color((22, 22, 22)),
-                (
-                    0,
-                    0,
-                    int(body_width * 2),
-                    int(body_height * 2)
-                ),
-                max(2, int(self.radius * 0.10))
-            )
-
-
-            body_surface = pygame.transform.rotate(
-                body_surface,
-                -self.angle
-            )
-
-
-            # Longer-bodied ants (the queen) shift the body backward
-            # along their angle so its front tip stays hidden behind
-            # the head instead of sticking out of it.
-            body_shift = (
-                self.radius
-                * 0.8
-                * (getattr(self, "body_length_scale", 1.0) - 1.0)
-            )
-            body_rect = body_surface.get_rect(
-                center=(
-                    int(sx - math.cos(angle) * body_shift),
-                    int(sy - math.sin(angle) * body_shift)
-                )
-            )
-
-
-            screen.blit(
-                body_surface,
-                body_rect
-            )
-
-
-
-        # ---------------- WINGS (MIDDLE LAYER) ----------------
-
-        wing_flap = math.sin(self.wing_phase) * 25
-        wing_size = int(self.radius * 3)
-        cx = self.radius * 1.5
-        cy = self.radius * 1.5
-
-        # The wings move in opposite directions, like mirrored antennae.
-        for wing_side in (-1, 1):
-            wing_surface = pygame.Surface(
-                (wing_size, wing_size),
-                pygame.SRCALPHA
-            )
-            wing_x = (
-                cx - self.radius * 0.9
-                if wing_side == -1
-                else cx + self.radius * 0.1
-            )
-            pygame.draw.ellipse(
-                wing_surface,
-                (220, 245, 245, 125),
-                (
-                    wing_x,
-                    cy - self.radius * 1.2,
-                    self.radius * 0.8,
-                    self.radius * 1.5
-                )
-            )
-            pygame.draw.ellipse(
-                wing_surface,
-                (105, 170, 180, 180),
-                (
-                    wing_x,
-                    cy - self.radius * 1.2,
-                    self.radius * 0.8,
-                    self.radius * 1.5
-                ),
-                max(1, int(self.radius * 0.08))
-            )
-            wing_angle = -self.angle + 90 - wing_side * wing_flap
-            wing_surface = pygame.transform.rotate(
-                wing_surface,
-                wing_angle
-            )
-            wing_rect = wing_surface.get_rect(
-                center=(int(sx), int(sy))
-            )
-            screen.blit(wing_surface, wing_rect)
-
-        # ---------------- HEAD (FRONT) ----------------
-
-        head_x = (
-            sx +
-            math.cos(angle) * self.radius * 0.7
-        )
-
-
-        head_y = (
-            sy +
-            math.sin(angle) * self.radius * 0.7
-        )
-
-
-
+        # 4. HEAD (prominent front circle with dark rim and lighter inner disc)
         pygame.draw.circle(
             screen,
-            ant_color((48, 48, 48)),
-            (
-                int(head_x),
-                int(head_y)
-            ),
-            int(head_size)
+            rim_col,
+            (int(head_x), int(head_y)),
+            int(head_r)
         )
-
-        # Soft gray center highlight like the reference image.
         pygame.draw.circle(
             screen,
-            ant_color((78, 78, 78)),
-            (
-                int(head_x),
-                int(head_y)
-            ),
-            int(head_size * 0.74)
+            inner_col,
+            (int(head_x), int(head_y)),
+            max(1, int(head_r * 0.68))
         )
-
-
-
-        # ---------------- MOUTH / MANDIBLES ----------------
-
-        front_x = math.cos(angle)
-        front_y = math.sin(angle)
-
-
-        side_x = math.cos(angle + math.pi/2)
-        side_y = math.sin(angle + math.pi/2)
-
-
-
-        mouth_start_x = (
-            head_x +
-            front_x * head_size * 0.75
-        )
-
-        mouth_start_y = (
-            head_y +
-            front_y * head_size * 0.75
-        )
-
-
-
-        mouth_end_x = (
-            head_x +
-            front_x * head_size * 1.25
-        )
-
-        mouth_end_y = (
-            head_y +
-            front_y * head_size * 1.25
-        )
-
-        right_jaw_motion = 0
-        left_jaw_motion = 0
-
-
-
-        jaw_scale = max(0.25, self.radius / 24.0)
-        jaw_w = max(1, int(3 * jaw_scale))
-        draw_clean_line(
-            screen,
-            ant_color((40, 40, 40)),
-            (
-                mouth_start_x + side_x * ((5 + right_jaw_motion) * jaw_scale),
-                mouth_start_y + side_y * ((5 + right_jaw_motion) * jaw_scale)
-            ),
-            (
-                mouth_end_x + side_x * ((8 + right_jaw_motion) * jaw_scale),
-                mouth_end_y + side_y * ((8 + right_jaw_motion) * jaw_scale)
-            ),
-            jaw_w
-        )
-
-
-
-        draw_clean_line(
-            screen,
-            ant_color((40, 40, 40)),
-            (
-                mouth_start_x - side_x * ((5 + left_jaw_motion) * jaw_scale),
-                mouth_start_y - side_y * ((5 + left_jaw_motion) * jaw_scale)
-            ),
-            (
-                mouth_end_x - side_x * ((8 + left_jaw_motion) * jaw_scale),
-                mouth_end_y - side_y * ((8 + left_jaw_motion) * jaw_scale)
-            ),
-            jaw_w
-        )
-
         # ---------------- HP BAR ----------------
 
         if (
@@ -10406,49 +10045,208 @@ class QueenAnt(SoldierAnt):
         if dead_flower_ai(self):
             return
 
-        # Laying freeze: stand still for 0.3 seconds, then chase.
+        # Laying freeze: queen freezes in place before laying the egg.
+        # When the freeze finishes, the egg is laid behind her.
         if self.lay_freeze_timer > 0:
             self.lay_freeze_timer -= 1
+            if self.lay_freeze_timer == 0:
+                lay_rad = math.radians(self.angle)
+                queen_eggs.append(
+                    {
+                        "x": (
+                            self.x
+                            - math.cos(lay_rad)
+                            * self.radius * 1.3
+                        ),
+                        "y": (
+                            self.y
+                            - math.sin(lay_rad)
+                            * self.radius * 1.3
+                        ),
+                        "timer": 90,
+                        "radius": max(
+                            10,
+                            int(self.radius * 0.45)
+                        ),
+                        "rarity": self.rarity,
+                        "wobble": random.uniform(0, 360),
+                        "queen": self
+                    }
+                )
             return
 
-        # While chasing the player, lay an egg every 0.9 seconds
-        # (54 frames) if this queen currently has fewer than 5 active
-        # minions (including unhatched eggs). The egg is laid behind
-        # the queen, never in the middle of her body, and hatches in 1.5s.
+        # While chasing the player, prepare to lay an egg every 0.9 seconds
+        # (54 frames) if this queen currently has fewer than 5 active minions.
+        # She freezes first for 0.3s (18 frames), then lays the egg.
         if self.charging and not player_dead:
             if self.count_active_minions() < 5:
                 self.egg_timer += 1
                 if self.egg_timer >= 54:
                     self.egg_timer = 0
                     self.lay_freeze_timer = 18
-                    lay_rad = math.radians(self.angle)
-                    queen_eggs.append(
-                        {
-                            "x": (
-                                self.x
-                                - math.cos(lay_rad)
-                                * self.radius * 1.3
-                            ),
-                            "y": (
-                                self.y
-                                - math.sin(lay_rad)
-                                * self.radius * 1.3
-                            ),
-                            "timer": 90,
-                            # Egg size scales with the queen's size.
-                            "radius": max(
-                                10,
-                                int(self.radius * 0.45)
-                            ),
-                            "rarity": self.rarity,
-                            "wobble": random.uniform(0, 360),
-                            "queen": self
-                        }
-                    )
             else:
                 self.egg_timer = 0
 
         super().update()
+
+    def draw(self):
+        if not self.alive:
+            return
+
+        sx = self.x - camera_x
+        sy = self.y - camera_y
+
+        if sx < -150 or sx > WIDTH + 150 or sy < -150 or sy > HEIGHT + 150:
+            return
+
+        r = self.radius
+        head_r = r * 0.72
+        rad = math.radians(self.angle)
+        cos_a = math.cos(rad)
+        sin_a = math.sin(rad)
+
+        is_yellow = getattr(self, "yellow_minion", False)
+        mandible_col = flash_color((40, 35, 20) if is_yellow else (36, 38, 38), self.flash_timer)
+        rim_col = flash_color((210, 160, 40) if is_yellow else (60, 62, 62), self.flash_timer)
+        inner_col = flash_color((255, 240, 130) if is_yellow else (78, 80, 80), self.flash_timer)
+
+        # ---------------- HP BAR ----------------
+        if self.hp < self.max_hp and not getattr(self, "dying", False):
+            bar_width = max(1, int(60 * settings_hp_bar_scale))
+            bar_height = max(1, int(6 * settings_hp_bar_scale))
+            hp_percent = max(0.0, min(1.0, self.hp / max(1, self.max_hp)))
+
+            pygame.draw.rect(
+                screen,
+                (210, 45, 45),
+                (int(sx - bar_width / 2), int(sy - self.radius - 12 - bar_height), bar_width, bar_height)
+            )
+            pygame.draw.rect(
+                screen,
+                (0, 255, 0),
+                (int(sx - bar_width / 2), int(sy - self.radius - 12 - bar_height), int(bar_width * hp_percent), bar_height)
+            )
+
+        # ---------------- VELORA.IO QUEEN ANT (ACCURATE TO SCREENSHOT) ----------------
+        # Positions & Proportions:
+        # Head is at the front (head_r)
+        # Middle body (Thorax) is a little bigger than the head: thorax_r = head_r * 1.12
+        # Rear body (Abdomen) is streamlined: ab_r = head_r * 1.18 (a little bit smaller than before)
+        head_x = sx + cos_a * (r * 0.62)
+        head_y = sy + sin_a * (r * 0.62)
+
+        thorax_x = sx + cos_a * (r * 0.05)
+        thorax_y = sy + sin_a * (r * 0.05)
+        thorax_r = int(head_r * 1.12)
+
+        ab_x = sx - cos_a * (r * 0.68)
+        ab_y = sy - sin_a * (r * 0.68)
+        ab_r = int(head_r * 1.18)
+
+        # 1. MANDIBLES (drawn in front of head with active pinching animation)
+        m_phase = getattr(self, "mandible_phase", 0.0)
+        pinch_angle = math.sin(m_phase) * 0.20
+        mandible_w = max(3, int(head_r * 0.36))
+        mandible_len = head_r * 0.72
+
+        for s_mult in (-1, 1):
+            base_rel = 0.44 * s_mult
+            m_angle = rad + base_rel - (pinch_angle * s_mult)
+
+            m_start_x = head_x + math.cos(rad + 0.35 * s_mult) * (head_r * 0.70)
+            m_start_y = head_y + math.sin(rad + 0.35 * s_mult) * (head_r * 0.70)
+
+            mid_x = m_start_x + math.cos(m_angle) * (mandible_len * 0.55)
+            mid_y = m_start_y + math.sin(m_angle) * (mandible_len * 0.55)
+
+            tip_angle = m_angle - (0.28 * s_mult)
+            tip_x = mid_x + math.cos(tip_angle) * (mandible_len * 0.50)
+            tip_y = mid_y + math.sin(tip_angle) * (mandible_len * 0.50)
+
+            draw_clean_line(screen, mandible_col, (m_start_x, m_start_y), (mid_x, mid_y), mandible_w)
+            draw_clean_line(screen, mandible_col, (mid_x, mid_y), (tip_x, tip_y), mandible_w)
+            pygame.draw.circle(screen, mandible_col, (int(m_start_x), int(m_start_y)), mandible_w // 2)
+            pygame.draw.circle(screen, mandible_col, (int(mid_x), int(mid_y)), mandible_w // 2)
+            pygame.draw.circle(screen, mandible_col, (int(tip_x), int(tip_y)), mandible_w // 2)
+
+        # 2. BULBOUS REAR ABDOMEN
+        pygame.draw.circle(screen, rim_col, (int(ab_x), int(ab_y)), ab_r)
+        pygame.draw.circle(screen, inner_col, (int(ab_x), int(ab_y)), max(1, int(ab_r * 0.76)))
+
+        # 3. MIDDLE THORAX
+        pygame.draw.circle(screen, rim_col, (int(thorax_x), int(thorax_y)), thorax_r)
+        pygame.draw.circle(screen, inner_col, (int(thorax_x), int(thorax_y)), max(1, int(thorax_r * 0.72)))
+
+        # 4. LARGE TRANSLUCENT OVERLAPPING WINGS (folded back over abdomen as in screenshot)
+        wing_w = int(r * 1.85)
+        wing_h = int(r * 0.98)
+        wing_surf_size = int(r * 4.0)
+        wing_cx = wing_surf_size // 2
+        wing_cy = wing_surf_size // 2
+
+        wing_flap = math.sin(self.wing_phase) * 6
+
+        for w_side in (-1, 1):
+            w_surf = pygame.Surface((wing_surf_size, wing_surf_size), pygame.SRCALPHA)
+            wing_rect = pygame.Rect(
+                wing_cx,
+                wing_cy - wing_h // 2,
+                wing_w,
+                wing_h
+            )
+            # Smooth translucent pearlescent gray wings matching screenshot
+            pygame.draw.ellipse(w_surf, (220, 228, 228, 145), wing_rect)
+            pygame.draw.ellipse(w_surf, (190, 205, 205, 185), wing_rect, max(1, int(r * 0.07)))
+
+            # Folded over the back: close spread angle (180 deg + angle + small spread)
+            w_rot_angle = -self.angle + 180 + (w_side * (18 + wing_flap))
+            rot_w = pygame.transform.rotate(w_surf, w_rot_angle)
+            screen.blit(rot_w, rot_w.get_rect(center=(int(thorax_x), int(thorax_y))))
+
+        # 5. HEAD (front circle with dark slate rim and lighter inner disc)
+        pygame.draw.circle(
+            screen,
+            rim_col,
+            (int(head_x), int(head_y)),
+            int(head_r)
+        )
+        pygame.draw.circle(
+            screen,
+            inner_col,
+            (int(head_x), int(head_y)),
+            max(1, int(head_r * 0.68))
+        )
+
+        # ---------------- KING CROWN ----------------
+        if getattr(self, "is_king", False):
+            crown_y = int(sy - self.radius - 18)
+            crown_w = int(self.radius * 1.2)
+            crown_h = int(self.radius * 0.6)
+            crown_left = int(sx - crown_w / 2)
+            crown_right = int(sx + crown_w / 2)
+
+            crown_points = [
+                (crown_left, crown_y + crown_h),
+                (crown_left, crown_y + crown_h * 0.4),
+                (crown_left + crown_w * 0.25, crown_y + crown_h * 0.4),
+                (int(sx - crown_w * 0.15), crown_y),
+                (int(sx + crown_w * 0.15), crown_y + crown_h * 0.4),
+                (crown_right - crown_w * 0.25, crown_y + crown_h * 0.4),
+                (crown_right, crown_y + crown_h * 0.4),
+                (crown_right, crown_y + crown_h)
+            ]
+            crown_col = (255, 215, 0)
+            crown_out_col = (180, 140, 0)
+            pygame.draw.polygon(screen, flash_color(crown_col, self.flash_timer), crown_points)
+            pygame.draw.lines(screen, flash_color(crown_out_col, self.flash_timer), True, crown_points, max(2, int(self.radius * 0.08)))
+
+        # ---------------- RARITY TEXT ----------------
+        if not getattr(self, "hide_rarity_label", False):
+            draw_mob_rarity_label(
+                self,
+                int(sx),
+                int(sy + self.radius * 1.5 + 16)
+            )
 
     def hitbox_circles(self):
         # The queen's hitbox is three circles that match her three
@@ -10531,45 +10329,47 @@ class HoleQueenAnt(QueenAnt):
         if dead_flower_ai(self):
             return
 
+        # Laying freeze: freezes in place before laying the void egg.
         if self.lay_freeze_timer > 0:
             self.lay_freeze_timer -= 1
+            if self.lay_freeze_timer == 0:
+                lay_rad = math.radians(self.angle)
+                queen_eggs.append(
+                    {
+                        "x": (
+                            self.x
+                            - math.cos(lay_rad)
+                            * self.radius * 1.3
+                        ),
+                        "y": (
+                            self.y
+                            - math.sin(lay_rad)
+                            * self.radius * 1.3
+                        ),
+                        "timer": 90,
+                        "radius": max(
+                            16,
+                            int(self.radius * 0.45)
+                        ),
+                        "rarity": self.rarity,
+                        "wobble": random.uniform(0, 360),
+                        "queen": self,
+                        "is_void_egg": True
+                    }
+                )
             return
 
         self.void_pulse += 0.08
         self.wing_jitter += 0.55
         self.mandible_snap += 0.20
 
-        # Lays dark Void Eggs that hatch into HoleSoldierAnts
+        # Prepares to lay dark Void Eggs: freezes first, then lays
         if self.charging and not player_dead:
             if self.count_active_minions() < 5:
                 self.egg_timer += 1
                 if self.egg_timer >= 54:
                     self.egg_timer = 0
                     self.lay_freeze_timer = 18
-                    lay_rad = math.radians(self.angle)
-                    queen_eggs.append(
-                        {
-                            "x": (
-                                self.x
-                                - math.cos(lay_rad)
-                                * self.radius * 1.3
-                            ),
-                            "y": (
-                                self.y
-                                - math.sin(lay_rad)
-                                * self.radius * 1.3
-                            ),
-                            "timer": 90,
-                            "radius": max(
-                                16,
-                                int(self.radius * 0.45)
-                            ),
-                            "rarity": self.rarity,
-                            "wobble": random.uniform(0, 360),
-                            "queen": self,
-                            "is_void_egg": True
-                        }
-                    )
             else:
                 self.egg_timer = 0
 
@@ -10796,7 +10596,7 @@ class WorkerAnt:
         self.charging = False
 
         self.charge_speed = 2.5
-        self.wing_phase = 0.0
+        self.mandible_phase = random.uniform(0, math.pi * 2)
 
         # Worker ants flee/wander until attacked, then they chase.
         self.angry = False
@@ -10878,6 +10678,9 @@ class WorkerAnt:
 
         if not self.alive:
             return
+        if not hasattr(self, "mandible_phase"):
+            self.mandible_phase = 0.0
+        self.mandible_phase += 0.28 if getattr(self, "angry", False) or getattr(self, "charging", False) else 0.14
 
         if dead_flower_ai(self):
             return
@@ -11030,153 +10833,73 @@ class WorkerAnt:
 
         angle = math.radians(self.angle)
 
-        # ---------------- SIZE ----------------
+        # ---------------- VELORA.IO WORKER ANT (SOLDIER ANT WITHOUT WINGS) ----------------
+        # Same exact styling as SoldierAnt, but wingless:
+        # - Mandibles: smooth rounded pincers curving slightly inward with active pinching animation
+        # - Rear abdomen: rounded charcoal segment snugly behind head, inner fill matches head fill
+        # - Prominent round head with dark slate rim (60, 62, 62) and lighter inner disc (78, 80, 80)
 
-        head_size = self.radius * 0.80
+        r = self.radius
+        head_r = r * 0.85
+        rad = math.radians(self.angle)
+        cos_a = math.cos(rad)
+        sin_a = math.sin(rad)
 
-        body_width = self.radius * 1.2
-        body_height = self.radius * 0.8
+        is_yellow = getattr(self, "yellow_minion", False)
+        mandible_col = flash_color((40, 35, 20) if is_yellow else (36, 38, 38), self.flash_timer)
+        rim_col = flash_color((210, 160, 40) if is_yellow else (60, 62, 62), self.flash_timer)
+        inner_col = flash_color((255, 240, 130) if is_yellow else (78, 80, 80), self.flash_timer)
 
-        # ---------------- OVAL BODY (BACK) ----------------
+        # Head center position
+        head_x = sx + cos_a * (r * 0.35)
+        head_y = sy + sin_a * (r * 0.35)
 
-        body_surface = pygame.Surface(
-            (
-                int(body_width * 2),
-                int(body_height * 2)
-            ),
-            pygame.SRCALPHA
-        )
+        # 1. MANDIBLES (drawn with active pinching animation)
+        m_phase = getattr(self, "mandible_phase", 0.0)
+        pinch_angle = math.sin(m_phase) * 0.20
+        mandible_w = max(3, int(head_r * 0.36))
+        mandible_len = head_r * 0.70
 
-        wa_body_col = (255, 230, 100) if getattr(self, "yellow_minion", False) else (62, 62, 62)
-        wa_out_col = (210, 160, 40) if getattr(self, "yellow_minion", False) else (22, 22, 22)
-        pygame.draw.ellipse(
-            body_surface,
-            flash_color(wa_body_col, self.flash_timer),
-            (
-                0,
-                0,
-                int(body_width * 2),
-                int(body_height * 2)
-            )
-        )
-        pygame.draw.ellipse(
-            body_surface,
-            flash_color(wa_out_col, self.flash_timer),
-            (
-                0,
-                0,
-                int(body_width * 2),
-                int(body_height * 2)
-            ),
-            max(2, int(self.radius * 0.10))
-        )
+        for s_mult in (-1, 1):
+            base_rel = 0.44 * s_mult
+            m_angle = rad + base_rel - (pinch_angle * s_mult)
 
-        body_surface = pygame.transform.rotate(
-            body_surface,
-            -self.angle
-        )
+            m_start_x = head_x + math.cos(rad + 0.35 * s_mult) * (head_r * 0.70)
+            m_start_y = head_y + math.sin(rad + 0.35 * s_mult) * (head_r * 0.70)
 
-        body_rect = body_surface.get_rect(
-            center=(int(sx), int(sy))
-        )
+            mid_x = m_start_x + math.cos(m_angle) * (mandible_len * 0.55)
+            mid_y = m_start_y + math.sin(m_angle) * (mandible_len * 0.55)
 
-        screen.blit(
-            body_surface,
-            body_rect
-        )
+            tip_angle = m_angle - (0.28 * s_mult)
+            tip_x = mid_x + math.cos(tip_angle) * (mandible_len * 0.50)
+            tip_y = mid_y + math.sin(tip_angle) * (mandible_len * 0.50)
 
-        # (No wings: worker ants travel on foot.)
+            draw_clean_line(screen, mandible_col, (m_start_x, m_start_y), (mid_x, mid_y), mandible_w)
+            draw_clean_line(screen, mandible_col, (mid_x, mid_y), (tip_x, tip_y), mandible_w)
+            pygame.draw.circle(screen, mandible_col, (int(m_start_x), int(m_start_y)), mandible_w // 2)
+            pygame.draw.circle(screen, mandible_col, (int(mid_x), int(mid_y)), mandible_w // 2)
+            pygame.draw.circle(screen, mandible_col, (int(tip_x), int(tip_y)), mandible_w // 2)
 
-        # ---------------- HEAD (FRONT) ----------------
+        # 2. REAR ABDOMEN (matching SoldierAnt: snug behind the head, inner fill matches head fill)
+        ab_dist = r * 0.48
+        ab_x = sx - cos_a * ab_dist
+        ab_y = sy - sin_a * ab_dist
+        ab_r = int(head_r * 0.82)
+        pygame.draw.circle(screen, rim_col, (int(ab_x), int(ab_y)), ab_r)
+        pygame.draw.circle(screen, inner_col, (int(ab_x), int(ab_y)), max(1, int(ab_r * 0.70)))
 
-        head_x = (
-            sx +
-            math.cos(angle) * self.radius * 0.7
-        )
-
-        head_y = (
-            sy +
-            math.sin(angle) * self.radius * 0.7
-        )
-
-        wa_head_col = (250, 215, 80) if getattr(self, "yellow_minion", False) else (48, 48, 48)
-        wa_hi_col = (255, 245, 150) if getattr(self, "yellow_minion", False) else (78, 78, 78)
-
+        # 3. HEAD (prominent front circle with dark rim and lighter inner disc)
         pygame.draw.circle(
             screen,
-            flash_color(wa_head_col, self.flash_timer),
-            (
-                int(head_x),
-                int(head_y)
-            ),
-            int(head_size)
+            rim_col,
+            (int(head_x), int(head_y)),
+            int(head_r)
         )
-
-        # Soft highlight like the soldier ant / baby ant minion.
         pygame.draw.circle(
             screen,
-            flash_color(wa_hi_col, self.flash_timer),
-            (
-                int(head_x),
-                int(head_y)
-            ),
-            int(head_size * 0.74)
-        )
-
-        # ---------------- MOUTH / MANDIBLES ----------------
-
-        front_x = math.cos(angle)
-        front_y = math.sin(angle)
-
-        side_x = math.cos(angle + math.pi/2)
-        side_y = math.sin(angle + math.pi/2)
-
-        mouth_start_x = (
-            head_x +
-            front_x * head_size * 0.75
-        )
-
-        mouth_start_y = (
-            head_y +
-            front_y * head_size * 0.75
-        )
-
-        mouth_end_x = (
-            head_x +
-            front_x * head_size * 1.25
-        )
-
-        mouth_end_y = (
-            head_y +
-            front_y * head_size * 1.25
-        )
-
-        draw_clean_line(
-            screen,
-            flash_color((40,40,40), self.flash_timer),
-            (
-                mouth_start_x + side_x * 5,
-                mouth_start_y + side_y * 5
-            ),
-            (
-                mouth_end_x + side_x * 8,
-                mouth_end_y + side_y * 8
-            ),
-            3
-        )
-
-        draw_clean_line(
-            screen,
-            flash_color((40,40,40), self.flash_timer),
-            (
-                mouth_start_x - side_x * 5,
-                mouth_start_y - side_y * 5
-            ),
-            (
-                mouth_end_x - side_x * 8,
-                mouth_end_y - side_y * 8
-            ),
-            3
+            inner_col,
+            (int(head_x), int(head_y)),
+            max(1, int(head_r * 0.68))
         )
 
         # ---------------- HP BAR ----------------
@@ -11804,6 +11527,75 @@ class HoleAntEgg(AntEgg):
 
 
 HoleEgg = HoleAntEgg
+
+MUTATION_MAP = {
+    "Ladybug": (HoleLadybug, "hole_ladybugs"),
+    "HoleLadybug": (Ladybug, "ladybugs"),
+    "Bee": (HoleBee, "hole_bees"),
+    "HoleBee": (Bee, "bees"),
+    "Spider": (HoleSpider, "hole_spiders"),
+    "HoleSpider": (Spider, "spiders"),
+    "Rock": (HoleRock, "hole_rocks"),
+    "HoleRock": (Rock, "rocks"),
+    "Hornet": (HoleHornet, "hole_hornets"),
+    "HoleHornet": (Hornet, "hornets"),
+    "BabyAnt": (HoleBabyAnt, "hole_baby_ants"),
+    "HoleBabyAnt": (BabyAnt, "baby_ants"),
+    "SoldierAnt": (HoleSoldierAnt, "hole_soldier_ants"),
+    "HoleSoldierAnt": (SoldierAnt, "soldier_ants"),
+    "WorkerAnt": (HoleWorkerAnt, "hole_worker_ants"),
+    "HoleWorkerAnt": (WorkerAnt, "worker_ants"),
+    "QueenAnt": (HoleQueenAnt, "hole_queen_ants"),
+    "HoleQueenAnt": (QueenAnt, "queen_ants"),
+    "AntEgg": (HoleAntEgg, "hole_eggs"),
+    "HoleAntEgg": (AntEgg, "ant_eggs"),
+}
+
+def dev_mutate_enemy(enemy, new_rarity=None):
+    if acc_name_text != "DevGuard":
+        return False
+    mob_name = type(enemy).__name__
+    mapping = MUTATION_MAP.get(mob_name)
+    if not mapping:
+        show_error(f"Cannot mutate {mob_name}")
+        return False
+    target_class, target_list_name = mapping
+    src_list_name = KING_MOB_LIST_NAMES.get(mob_name)
+    if not src_list_name:
+        for name, cls_tup in (
+            ("ladybugs", Ladybug), ("hole_ladybugs", HoleLadybug),
+            ("bees", Bee), ("hole_bees", HoleBee),
+            ("spiders", Spider), ("hole_spiders", HoleSpider),
+            ("rocks", Rock), ("hole_rocks", HoleRock),
+            ("hornets", Hornet), ("hole_hornets", HoleHornet),
+            ("baby_ants", BabyAnt), ("hole_baby_ants", HoleBabyAnt),
+            ("soldier_ants", SoldierAnt), ("hole_soldier_ants", HoleSoldierAnt),
+            ("worker_ants", WorkerAnt), ("hole_worker_ants", HoleWorkerAnt),
+            ("queen_ants", QueenAnt), ("hole_queen_ants", HoleQueenAnt),
+            ("ant_eggs", AntEgg), ("hole_eggs", HoleAntEgg)
+        ):
+            if isinstance(enemy, cls_tup):
+                src_list_name = name
+                break
+    src_list = globals().get(src_list_name, [])
+    if enemy in src_list:
+        src_list.remove(enemy)
+    enemy.alive = False
+
+    mutated = target_class()
+    mutated.x = enemy.x
+    mutated.y = enemy.y
+    mutated.rarity = new_rarity if new_rarity else enemy.rarity
+    apply_enemy_rarity_stats(mutated)
+    mutated.hp = mutated.max_hp
+    if hasattr(enemy, "angle") and hasattr(mutated, "angle"):
+        mutated.angle = enemy.angle
+
+    target_list = globals().get(target_list_name)
+    if target_list is not None:
+        target_list.append(mutated)
+    show_error(f"Mutated into {mutated.rarity} {type(mutated).__name__}")
+    return True
 
 def delete_enemy(enemy):
 
@@ -13061,8 +12853,12 @@ def drop_mob_loot(enemy):
         mob_name = "Soldier Ant"
     elif mob_name == "WorkerAnt":
         mob_name = "Worker Ant"
+    elif mob_name in ("HoleQueenAnt", "Hole Queen Ant"):
+        mob_name = "Hole Queen Ant"
     elif mob_name == "QueenAnt":
         mob_name = "Queen Ant"
+    elif mob_name in ("HoleAntEgg", "Hole Ant Egg", "HoleEgg", "Hole Egg"):
+        mob_name = "Hole Ant Egg"
     elif mob_name == "AntEgg":
         mob_name = "Ant Egg"
 
@@ -20280,6 +20076,35 @@ while running:
                                             show_error("No enemy under your mouse")
                                         else:
                                             dev_rarity_to(rarity_target, rarity)
+                                elif cmd == "/mutate" and acc_name_text.lower() == "devguard":
+                                    # /mutate [rarity] or /mutate - mutate the enemy under the mouse into its Hole/Normal counterpart
+                                    args = parts[1:]
+                                    target_rarity = None
+                                    if len(args) >= 1:
+                                        target_rarity = args[0].capitalize()
+                                        if target_rarity not in ENEMY_RARITIES:
+                                            show_error(f"Invalid rarity. Valid: {', '.join(ENEMY_RARITIES)}")
+                                            target_rarity = None
+                                    if len(args) == 0 or target_rarity is not None:
+                                        mouse_x, mouse_y = pygame.mouse.get_pos()
+                                        target_enemy = None
+                                        for enemy in all_enemies:
+                                            if not enemy.alive:
+                                                continue
+                                            if getattr(enemy, "dying", False):
+                                                continue
+                                            if distance(
+                                                mouse_x,
+                                                mouse_y,
+                                                enemy.x - camera_x,
+                                                enemy.y - camera_y
+                                            ) <= enemy.radius:
+                                                target_enemy = enemy
+                                                break
+                                        if target_enemy is None:
+                                            show_error("No enemy under your mouse")
+                                        else:
+                                            dev_mutate_enemy(target_enemy, target_rarity)
                                 elif cmd in (
                                     "/s.enemy_increase",
                                     "/s.enemy_decrease"
@@ -23986,21 +23811,28 @@ while running:
                 )
                 side_x = math.cos(stinger_rad + math.pi / 2)
                 side_y = math.sin(stinger_rad + math.pi / 2)
-                pygame.draw.polygon(
-                    screen,
-                    (50, 50, 55),
-                    [
-                        (tip_x, tip_y),
-                        (
-                            stinger_x + side_x * stinger_r,
-                            stinger_y + side_y * stinger_r
-                        ),
-                        (
-                            stinger_x - side_x * stinger_r,
-                            stinger_y - side_y * stinger_r
-                        )
-                    ]
-                )
+                stinger_pts = [
+                    (tip_x, tip_y),
+                    (
+                        stinger_x + side_x * stinger_r,
+                        stinger_y + side_y * stinger_r
+                    ),
+                    (
+                        stinger_x - side_x * stinger_r,
+                        stinger_y - side_y * stinger_r
+                    )
+                ]
+                if stinger.get("is_hole_projectile"):
+                    # Void stinger: deep obsidian body with glowing cyan and neon violet edges
+                    pygame.draw.polygon(screen, (22, 6, 35), stinger_pts)
+                    pygame.draw.polygon(screen, (0, 240, 255), stinger_pts, 2)
+                    pygame.draw.circle(screen, (200, 50, 255), (int(tip_x), int(tip_y)), max(2, int(stinger_r * 0.35)))
+                else:
+                    pygame.draw.polygon(
+                        screen,
+                        (50, 50, 55),
+                        stinger_pts
+                    )
                 draw_projectile_hp_bar(
                     stinger_x,
                     stinger_y,
@@ -24121,18 +23953,24 @@ while running:
                         + t ** 2 * end_y
                     )
                     points.append((px, py))
-                pygame.draw.polygon(
-                    screen,
-                    (255, 255, 255),
-                    points
-                )
-                pygame.draw.lines(
-                    screen,
-                    (150, 150, 150),
-                    True,
-                    points,
-                    2
-                )
+                if wing.get("is_hole_projectile"):
+                    # Void obsidian wing: dark stygian violet core with pulsing cyan blade edges
+                    pygame.draw.polygon(screen, (24, 7, 38), points)
+                    pygame.draw.lines(screen, (0, 255, 240), True, points, 3)
+                    pygame.draw.circle(screen, (255, 60, 200), (int(wing_x), int(wing_y)), max(3, int(wing_r * 0.2)))
+                else:
+                    pygame.draw.polygon(
+                        screen,
+                        (255, 255, 255),
+                        points
+                    )
+                    pygame.draw.lines(
+                        screen,
+                        (150, 150, 150),
+                        True,
+                        points,
+                        2
+                    )
                 draw_projectile_hp_bar(
                     wing_x,
                     wing_y,
